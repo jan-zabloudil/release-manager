@@ -14,7 +14,6 @@ import (
 
 func (h *Handler) auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		w.Header().Add("Vary", "Authorization")
 		authorizationHeader := r.Header.Get(httpx.Header.Authorization)
 
@@ -77,4 +76,39 @@ func (h *Handler) requireAdminUser(next http.HandlerFunc) http.HandlerFunc {
 	})
 
 	return h.requireAuthUser(fn)
+}
+
+func (h *Handler) requireProjectMembership(next http.Handler) http.Handler {
+	return h.requireAuthUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// TODO implement Project Membership logic
+
+		next.ServeHTTP(w, r)
+	}))
+}
+
+func (h *Handler) handleProject(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id, err := GetIdFromURL(r)
+		if err != nil {
+			WriteNotFoundResponse(w, err)
+			return
+		}
+
+		p, err := h.ProjectSvc.Get(r.Context(), id)
+		if err != nil {
+			switch {
+			case errors.Is(err, reperr.ErrResourceNotFound):
+				WriteNotFoundResponse(w, err)
+				return
+			default:
+				WriteServerErrorResponse(w, err)
+				return
+			}
+		}
+		netp := model.ToNetProject(p)
+		r = ContextSetProject(r, &netp)
+
+		next.ServeHTTP(w, r)
+	})
 }

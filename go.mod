@@ -18,6 +18,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/relvacode/iso8601 v1.4.0 // indirect
 	github.com/sethvargo/go-envconfig v1.0.1 // indirect
 	go.strv.io/net v0.6.2 // indirect
 	go.strv.io/time v0.2.0 // indirect
