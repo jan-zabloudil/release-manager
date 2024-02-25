@@ -3,11 +3,13 @@ package service
 import "release-manager/service/model"
 
 type Service struct {
-	User *UserService
+	User    *UserService
+	Project *ProjectService
 }
 
-func NewService(ur model.UserRepository) *Service {
+func NewService(ur model.UserRepository, pr model.ProjectRepository) *Service {
 	return &Service{
-		User: &UserService{ur},
+		User:    &UserService{ur},
+		Project: &ProjectService{pr},
 	}
 }
