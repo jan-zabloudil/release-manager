@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,13 +10,13 @@ import (
 
 type Response map[string]any
 
-func logError(r *http.Request, err error) {
+func logErrResponse(r *http.Request, err error, level slog.Level) {
 	var (
 		method = r.Method
 		uri    = r.URL.RequestURI()
 	)
 
-	slog.Error(err.Error(), "method", method, "uri", uri)
+	slog.Log(context.TODO(), level, err.Error(), "method", method, "uri", uri)
 }
 
 func WriteResponse(w http.ResponseWriter, status int, data any, headers http.Header) error {
@@ -35,29 +36,48 @@ func WriteResponse(w http.ResponseWriter, status int, data any, headers http.Hea
 	return nil
 }
 
-func WriteErrorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
+func WriteNotFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
+	logErrResponse(r, err, slog.LevelDebug)
+
+	message := "the requested resource could not be found"
+	writeErrorResponse(w, r, http.StatusNotFound, message)
+}
+
+func WriteMethodNotAllowedResponse(w http.ResponseWriter, r *http.Request, err error) {
+	logErrResponse(r, err, slog.LevelDebug)
+
+	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
+	writeErrorResponse(w, r, http.StatusMethodNotAllowed, message)
+}
+
+func WriteServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	logErrResponse(r, err, slog.LevelError)
+
+	message := "the server encountered a problem and could not process your request."
+	writeErrorResponse(w, r, http.StatusInternalServerError, message)
+}
+
+func WriteInvalidAuthenticationResponse(w http.ResponseWriter, r *http.Request, err error) {
+	logErrResponse(r, err, slog.LevelDebug)
+
+	w.Header().Set("WWW-Authenticate", "Bearer")
+	message := "invalid or missing authentication token"
+	writeErrorResponse(w, r, http.StatusUnauthorized, message)
+}
+
+func WriteForbiddenErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	logErrResponse(r, err, slog.LevelDebug)
+
+	message := "you do not have permission to perform this action"
+	writeErrorResponse(w, r, http.StatusForbidden, message)
+}
+
+func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
 	env := Response{"error": message}
 
 	err := WriteResponse(w, status, env, nil)
 	if err != nil {
-		logError(r, err)
+		logErrResponse(r, err, slog.LevelError)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-}
-
-func WriteNotFoundResponse(w http.ResponseWriter, r *http.Request) {
-	message := "the requested resource could not be found"
-	WriteErrorResponse(w, r, http.StatusNotFound, message)
-}
-
-func WriteMethodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
-	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
-	WriteErrorResponse(w, r, http.StatusMethodNotAllowed, message)
-}
-
-func WriteServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	logError(r, err)
-
-	message := "The server encountered a problem and could not process your request."
-	WriteErrorResponse(w, r, http.StatusInternalServerError, message)
 }

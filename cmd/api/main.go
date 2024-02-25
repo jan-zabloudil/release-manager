@@ -12,7 +12,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jan-zabloudil/release-manager/repository"
+	"github.com/jan-zabloudil/release-manager/service"
 	"github.com/jan-zabloudil/release-manager/transport"
+	"github.com/nedpals/supabase-go"
 	envx "go.strv.io/env"
 )
 
@@ -42,13 +45,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	envx.MustApply(&cfg)
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.LogLevel}))
 	slog.SetDefault(logger)
 
-	h := transport.NewHandler()
+	supaClient := supabase.CreateClient(cfg.Supabase.ApiURL, cfg.Supabase.SecretKey)
+
+	repo := repository.NewRepository(supaClient)
+	svc := service.NewService(repo.User)
+	h := transport.NewHandler(svc.User)
 
 	srv := &server{
 		server: &http.Server{
