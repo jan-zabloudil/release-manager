@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"release-manager/transport/utils"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	httpx "go.strv.io/net/http"
@@ -28,6 +30,10 @@ func UnmarshalRequest(r *http.Request, b any) error {
 	}
 
 	if err := json.Unmarshal(body, b); err != nil {
+		return err
+	}
+
+	if err := utils.Validate.Struct(b); err != nil {
 		return err
 	}
 
