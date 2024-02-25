@@ -7,6 +7,7 @@ import (
 	"release-manager/repository/utils"
 	svcmodel "release-manager/service/model"
 
+	"github.com/google/uuid"
 	"github.com/nedpals/supabase-go"
 )
 
@@ -29,4 +30,38 @@ func (r *UserRepository) ReadForToken(ctx context.Context, token string) (svcmod
 		res.CreatedAt,
 		res.UpdatedAt,
 	)
+}
+
+func (r *UserRepository) Read(ctx context.Context, ID uuid.UUID) (svcmodel.User, error) {
+	res, err := r.client.Admin.GetUser(ctx, ID.String())
+	if err != nil {
+		return svcmodel.User{}, utils.WrapSupabaseAdminErr(err)
+	}
+
+	return model.ToSvcUser(
+		res.ID,
+		res.Email,
+		res.AppMetaData["role"],
+		res.UserMetaData["name"],
+		res.UserMetaData["picture"],
+		res.CreatedAt,
+		res.UpdatedAt,
+	)
+}
+
+func (r *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
+	res, err := r.client.Admin.GetUsers(ctx)
+	if err != nil {
+		return nil, utils.WrapSupabaseAdminErr(err)
+	}
+
+	return model.ToSvcUsers(res)
+}
+
+func (r *UserRepository) Delete(ctx context.Context, ID uuid.UUID) error {
+	if err := r.client.Admin.DeleteUser(ctx, ID.String()); err != nil {
+		return utils.WrapSupabaseAdminErr(err)
+	}
+
+	return nil
 }

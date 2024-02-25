@@ -6,6 +6,7 @@ import (
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
+	"github.com/nedpals/supabase-go"
 )
 
 func ToSvcUser(id, email string, roleString, name, picture any, createdAt, updatedAt time.Time) (svcmodel.User, error) {
@@ -35,4 +36,27 @@ func ToSvcUser(id, email string, roleString, name, picture any, createdAt, updat
 
 	u.Email, u.CreatedAt, u.UpdatedAt = email, createdAt, updatedAt
 	return u, nil
+}
+
+func ToSvcUsers(dbUsers []supabase.AdminUser) ([]svcmodel.User, error) {
+	users := make([]svcmodel.User, 0, len(dbUsers))
+
+	for _, dbUser := range dbUsers {
+		user, err := ToSvcUser(
+			dbUser.ID,
+			dbUser.Email,
+			dbUser.AppMetaData["role"],
+			dbUser.UserMetaData["name"],
+			dbUser.UserMetaData["picture"],
+			dbUser.CreatedAt,
+			dbUser.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
 }

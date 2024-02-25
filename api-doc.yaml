@@ -1137,9 +1137,9 @@ components:
           example: 'Jan Zabloudil'
         avatar_image_url:
           type: string
-        is_admin:
-          type: boolean
-          example: false
+        role:
+          type: string
+          example: admin
         created_at:
           type: string
           format: date-time
