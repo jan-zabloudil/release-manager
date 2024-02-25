@@ -1,60 +1,117 @@
 package transport
 
 import (
-	"encoding/json"
-	"fmt"
+	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
+
+	"release-manager/transport/utils"
+
+	"github.com/go-playground/validator/v10"
+	httpx "go.strv.io/net/http"
 )
 
-type Response map[string]any
+func WriteJSONResponse(w http.ResponseWriter, status int, data any) {
+	if err := httpx.WriteResponse(w, data, status, httpx.WithContentType(httpx.ApplicationJSON)); err != nil {
+		slog.Error("writing json response", "error", err)
+	}
+}
 
-func logError(r *http.Request, err error) {
-	var (
-		method = r.Method
-		uri    = r.URL.RequestURI()
+func WriteErrorResponse(w http.ResponseWriter, status int, opts ...httpx.ErrorResponseOption) {
+	if err := httpx.WriteErrorResponse(w, status, opts...); err != nil {
+		slog.Error("writing error response", "error", err)
+	}
+}
+
+func WriteNotFoundResponse(w http.ResponseWriter, err error) {
+	msg := "the requested resource could not be found"
+	WriteErrorResponse(
+		w,
+		http.StatusNotFound,
+		httpx.WithError(err),
+		httpx.WithErrorCode("404"),
+		httpx.WithErrorMessage(msg),
 	)
-
-	slog.Error(err.Error(), "method", method, "uri", uri)
 }
 
-func WriteResponse(w http.ResponseWriter, status int, data any, headers http.Header) error {
-	js, err := json.Marshal(data)
-	if err != nil {
-		return err
+func WriteMethodNotAllowedResponse(w http.ResponseWriter, err error) {
+	msg := "the method is not supported for this resource"
+	WriteErrorResponse(
+		w,
+		http.StatusMethodNotAllowed,
+		httpx.WithError(err),
+		httpx.WithErrorCode(strconv.Itoa(http.StatusMethodNotAllowed)),
+		httpx.WithErrorMessage(msg),
+	)
+}
+
+func WriteServerErrorResponse(w http.ResponseWriter, err error) {
+	msg := "the server encountered a problem and could not process your request."
+	WriteErrorResponse(
+		w,
+		http.StatusInternalServerError,
+		httpx.WithError(err),
+		httpx.WithErrorCode(strconv.Itoa(http.StatusInternalServerError)),
+		httpx.WithErrorMessage(msg),
+	)
+}
+
+func WriteInvalidAuthenticationResponse(w http.ResponseWriter, err error) {
+	w.Header().Set("WWW-Authenticate", "Bearer")
+	msg := "invalid or missing authentication token"
+	WriteErrorResponse(
+		w,
+		http.StatusUnauthorized,
+		httpx.WithError(err),
+		httpx.WithErrorCode(strconv.Itoa(http.StatusUnauthorized)),
+		httpx.WithErrorMessage(msg),
+	)
+}
+
+func WriteForbiddenErrorResponse(w http.ResponseWriter, err error) {
+	msg := "you do not have permission to perform this action"
+	WriteErrorResponse(
+		w,
+		http.StatusForbidden,
+		httpx.WithError(err),
+		httpx.WithErrorCode(strconv.Itoa(http.StatusForbidden)),
+		httpx.WithErrorMessage(msg),
+	)
+}
+
+func WriteBadRequestResponse(w http.ResponseWriter, err error) {
+	WriteErrorResponse(
+		w,
+		http.StatusBadRequest,
+		httpx.WithError(err),
+		httpx.WithErrorCode(strconv.Itoa(http.StatusBadRequest)),
+		httpx.WithErrorMessage(err.Error()),
+	)
+}
+
+func WriteUnprocessableEntityResponse(w http.ResponseWriter, err error) {
+	var verrs validator.ValidationErrors
+	if errors.As(err, &verrs) {
+		msg := "validation errors"
+		te := utils.TranslateValidationErrs(verrs)
+		WriteErrorResponse(
+			w,
+			http.StatusUnprocessableEntity,
+			httpx.WithError(err),
+			httpx.WithErrorMessage(msg),
+			httpx.WithErrorCode(strconv.Itoa(http.StatusUnprocessableEntity)),
+			httpx.WithErrorData(te),
+		)
+
+		return
 	}
 
-	for key, value := range headers {
-		w.Header()[key] = value
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	w.Write(js)
-
-	return nil
-}
-
-func WriteErrorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
-	if err := WriteResponse(w, status, Response{"error": message}, nil); err != nil {
-		logError(r, err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}
-
-func WriteNotFoundResponse(w http.ResponseWriter, r *http.Request) {
-	message := "the requested resource could not be found"
-	WriteErrorResponse(w, r, http.StatusNotFound, message)
-}
-
-func WriteMethodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
-	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
-	WriteErrorResponse(w, r, http.StatusMethodNotAllowed, message)
-}
-
-func WriteServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	logError(r, err)
-
-	message := "The server encountered a problem and could not process your request."
-	WriteErrorResponse(w, r, http.StatusInternalServerError, message)
+	WriteErrorResponse(
+		w,
+		http.StatusUnprocessableEntity,
+		httpx.WithError(err),
+		httpx.WithErrorCode(strconv.Itoa(http.StatusUnprocessableEntity)),
+		httpx.WithErrorMessage(err.Error()),
+	)
 }

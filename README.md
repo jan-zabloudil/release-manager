@@ -26,13 +26,24 @@ Supabase is used for authentication with Google OAuth and storing data in Postgr
 
 1. Now set env variables for REST API:
 
-| Env variable                          | Where do I find this value?                                                                                                                                                           | Default |
-|---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| `RELEASE_MANAGER_PORT`                | -                                                                                                                                                                                     | `8080`  |
-| `RELEASE_MANAGER_LOG_LEVEL`           | Allowed values `DEBUG`, `INFO`, `WARN`, `ERROR`.                                                                                                                                      | `INFO`  |
-| `RELEASE_MANAGER_SUPABASE_API_URL`    | Assuming that the local Supabase instance is running, navigate to the project folder and run `supabase status` in your terminal. The Supabase credentials are printed, use `API URL`. | -       |
-| `RELEASE_MANAGER_SUPABASE_SECRET_KEY` | As mentioned above, run `supabase status` and use `service_role key`.                                                                                                                 | -       |
+| Env variable          | Where do I find this value?                                                                                                                                                           | Default |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `PORT`                | -                                                                                                                                                                                     | `8080`  |
+| `LOG_LEVEL`           | Allowed values `DEBUG`, `INFO`, `WARN`, `ERROR`.                                                                                                                                      | `INFO`  |
+| `SUPABASE_API_URL`    | Assuming that the local Supabase instance is running, navigate to the project folder and run `supabase status` in your terminal. The Supabase credentials are printed, use `API URL`. | -       |
+| `SUPABASE_SECRET_KEY` | As mentioned above, run `supabase status` and use `service_role key`.                                                                                                                 | -       |
 
 > If you are using hosted Supabase, navigate to Supabase Studio, then go to *Your project > Project Settings > API* to find the api url and secret key.
 
 2. Run app `make run_local`
+
+## How to create admin user?
+
+1. Sign up as a regular user.
+2. Navigate to Supabase Studio.
+3. Run the following query to add the `is_admin` flag to the user.
+```
+select set_claim('user_id', 'role', '"admin"');
+```
+_User ID can be found in `auth.users`._
+

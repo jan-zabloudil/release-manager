@@ -60,7 +60,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrganizationSettings'
         '400':
-          $ref: '#/components/responses/ForbiddenErrorResponse'
+          $ref: '#/components/responses/BadRequestErrorResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedErrorResponse'
         '403':
@@ -1056,7 +1056,13 @@ components:
       description: 'Validation errors'
       type: object
       properties:
-        error:
+        errorCode:
+          type: string
+          example: '422'
+        errorMessage:
+          type: string
+          example: 'validation errors'
+        errorData:
           type: object
           properties:
             field1:
@@ -1071,36 +1077,49 @@ components:
                 field1:
                   type: string
                   example: "Validation error"
-      required:
-        - error
     BadRequestError:
       type: object
       properties:
-        error:
+        errorCode:
+          type: string
+          example: '400'
+        errorMessage:
           type: string
           example: "The request is malformed or contains invalid syntax."
     NotFoundError:
       type: object
       properties:
-        error:
+        errorCode:
+          type: string
+          example: '404'
+        errorMessage:
           type: string
           example:  'Resource not found.'
     UnauthorizedError:
       type: object
       properties:
-        error:
+        errorCode:
+          type: string
+          example: '401'
+        errorMessage:
           type: string
           example: 'JWT token is missing or invalid.'
     UnauthorizedErrorGitRepository:
       type: object
       properties:
-        error:
+        errorCode:
+          type: string
+          example: '401'
+        errorMessage:
           type: string
           example: 'Authentication to https://github.com/organization/repo failed. Organization token for GitHub API is missing.'
     ForbiddenError:
       type: object
       properties:
-        error:
+        errorCode:
+          type: string
+          example: '403'
+        errorMessage:
           type: string
           example:  'You do not have permission to perform this action.'
     UserResponse:

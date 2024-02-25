@@ -1,38 +1,29 @@
 package main
 
 import (
+	"context"
 	"log/slog"
-	"os"
 
-	"github.com/jan-zabloudil/release-manager/utils"
 	"github.com/joho/godotenv"
-	envx "go.strv.io/env"
+	"github.com/sethvargo/go-envconfig"
 )
 
 type supabaseConfig struct {
-	ApiURL    string `env:"SUPABASE_API_URL" validate:"required"`
-	SecretKey string `env:"SUPABASE_SECRET_KEY" validate:"required"`
+	ApiURL    string `env:"API_URL, required"`
+	SecretKey string `env:"SECRET_KEY, required"`
 }
 
 type serviceConfig struct {
-	Port     uint           `env:"PORT"`
-	LogLevel slog.Level     `env:"LOG_LEVEL"`
-	Supabase supabaseConfig `env:",dive"`
+	Port     uint           `env:"PORT, default=8080"`
+	LogLevel slog.Level     `env:"LOG_LEVEL, default=INFO"`
+	Supabase supabaseConfig `env:", prefix=SUPABASE_"`
 }
 
-func loadConfig() serviceConfig {
-	cfg := serviceConfig{
-		Port:     8080,
-		LogLevel: slog.LevelInfo,
-	}
-
-	if err := os.Setenv("APP_PREFIX", "RELEASE_MANAGER"); err != nil {
-		panic(err)
-	}
+func loadConfig(ctx context.Context) serviceConfig {
+	var cfg serviceConfig
 
 	_ = godotenv.Load()
-	envx.MustApply(&cfg)
-	if err := utils.Validate.Struct(&cfg); err != nil {
+	if err := envconfig.Process(ctx, &cfg); err != nil {
 		panic(err)
 	}
 
