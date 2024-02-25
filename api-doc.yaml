@@ -1642,9 +1642,12 @@ components:
         slack_token:
           type: string
           example: 'xoxo-123456789012-1234567890123-AbCdEfGhIjKlMnOpQrStUvWxYz'
-        github_organization_token:
+        github_token:
           type: string
           example: 'ghp_abcdefgh1234567890ijklmnopqrstuvwx'
+        default_release_msg:
+          type: string
+          example: 'Hi everyone,I am thrilled to announce new release!'
   securitySchemes:
     bearerAuth:
       type: http

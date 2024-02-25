@@ -12,14 +12,16 @@ import (
 )
 
 type Handler struct {
-	Mux     *chi.Mux
-	UserSvc model.UserService
+	Mux         *chi.Mux
+	UserSvc     model.UserService
+	SettingsSvc model.SettingsService
 }
 
-func NewHandler(us model.UserService) *Handler {
+func NewHandler(us model.UserService, os model.SettingsService) *Handler {
 	h := Handler{
-		Mux:     chi.NewRouter(),
-		UserSvc: us,
+		Mux:         chi.NewRouter(),
+		UserSvc:     us,
+		SettingsSvc: os,
 	}
 
 	h.Mux.Use(httpx.RequestIDMiddleware(RequestID))
@@ -32,6 +34,9 @@ func NewHandler(us model.UserService) *Handler {
 		r.Get("/", h.requireAdminUser(h.handleUser))
 		r.Delete("/", h.requireAdminUser(h.handleUser))
 	})
+
+	h.Mux.Patch("/organization/settings", h.requireAdminUser(h.setSettings))
+	h.Mux.Get("/organization/settings", h.requireAdminUser(h.getSettings))
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
