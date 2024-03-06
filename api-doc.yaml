@@ -1,0 +1,1633 @@
+openapi: '3.0.0'
+info:
+  version: 1.0.0
+  title: STRV ReleaseManager
+tags:
+  - name: Ping
+  - name: Organization settings
+  - name: Users
+  - name: Projects
+  - name: Project invitations
+  - name: Project members
+  - name: Project applications
+  - name: Application git repository
+  - name: Application releases
+  - name: Release message templates
+
+paths:
+  /ping:
+    get:
+      tags:
+        - Ping
+      responses:
+        204:
+          description: 'API is running'
+  /organization/settings:
+    get:
+      summary: "Get organization's settings"
+      tags:
+        - Organization settings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 'Settings fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationSettings'
+        '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+    patch:
+      summary: 'Update organization settings'
+      security:
+        - bearerAuth: []
+      tags:
+        - Organization settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationSettings'
+      responses:
+        '200':
+          description: 'Settings updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationSettings'
+        '400':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '422':
+              $ref: '#/components/responses/UnprocesssableEntityResponse'
+  /admin/users:
+    get:
+      summary: "List organization's users"
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      responses:
+        '200':
+          description: 'Users fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+  /admin/users/{user-id}:
+    get:
+      summary: "Get user by ID"
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '200':
+          description: 'User fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+    delete:
+      summary: "Delete user"
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: 'User deleted'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+
+  /projects:
+    post:
+      tags:
+        - Projects
+      summary: 'Create project'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+      responses:
+        '201':
+          description: 'Project created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+    get:
+      summary: "List projects for user"
+      security:
+        - bearerAuth: []
+      tags:
+        - Projects
+      responses:
+        '200':
+          description: 'Projects fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+  /projects/{project-id}:
+    get:
+      security:
+        - bearerAuth: []
+      summary: 'Get project by ID'
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      responses:
+        '200':
+          description: 'Project fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+    patch:
+      security:
+        - bearerAuth: []
+      summary: 'Update project'
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+      responses:
+        '200':
+          description: 'Project updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      summary: 'Delete project'
+      responses:
+        '204':
+          description: 'Project deleted'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/invitations:
+    post:
+      summary: 'Invite user to a project'
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectInvitationRequest'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project invitations
+      responses:
+        '202':
+          description: 'Invitation created, email will be sent to user.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectInvitationResponse'
+        '400':
+              $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+              $ref: '#/components/responses/UnprocesssableEntityResponse'
+        '409':
+          description: 'User is already a member or invitation has been sent'
+          content:
+            application/json:
+              example:
+                error: "User is already project memeber."
+    get:
+      summary: "List project's pending invitations"
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project invitations
+      responses:
+        '200':
+          description: 'Invitations fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectInvitationResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /invitations/{invitation-id}:
+    delete:
+      summary: 'Delete invitation'
+      parameters:
+        - $ref: '#/components/parameters/InvitationIdParam'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project invitations
+      responses:
+        '204':
+          description: 'Invitation deleted'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+
+  /invitations/{invitation-id}/confirm:
+    get:
+      summary: 'Confirm invitation'
+      parameters:
+        - $ref: '#/components/parameters/InvitationIdParam'
+        - $ref: '#/components/parameters/InvitationToken'
+      tags:
+        - Project invitations
+      responses:
+        '200':
+          description: "Invitation confirmed. Signed up user is added to a project, unregistered user has to sign up first."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationConfirmationResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/members:
+    get:
+      summary: "List project's members"
+      security:
+        - bearerAuth: []
+      tags:
+        - Project members
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      responses:
+        '200':
+          description: 'Members fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectMemberResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /members/{member-id}:
+    get:
+      summary: 'Get member by ID'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project members
+      parameters:
+        - $ref: '#/components/parameters/MemberIdParam'
+      responses:
+        '200':
+          description: 'Member fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectMemberResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+    patch:
+      summary: "Change member's role"
+      security:
+        - bearerAuth: []
+      tags:
+        - Project members
+      parameters:
+        - $ref: '#/components/parameters/MemberIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectMemberRole'
+      responses:
+        '200':
+          description: 'Member role updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectMemberResponse'
+        '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+            $ref: '#/components/responses/UnprocesssableEntityResponse'
+    delete:
+      summary: 'Remove user from project'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project members
+      parameters:
+        - $ref: '#/components/parameters/MemberIdParam'
+      responses:
+        '204':
+          description: 'User removed from project'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/apps:
+    post:
+      summary: 'Create app in project'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project applications
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppRequest'
+      responses:
+        '201':
+          description: 'App created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResponse'
+        '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          description: 'Invalid uuid provided, resource do not exists or resource exists but user does not have access to a project at all.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+            $ref: '#/components/responses/UnprocesssableEntityResponse'
+    get:
+      summary: 'List apps'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project applications
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      responses:
+        '200':
+          description: 'Apps fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+  /apps/{app-id}:
+    get:
+      summary: 'Get app by ID'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project applications
+      parameters:
+        - $ref: '#/components/parameters/AppIdParam'
+      responses:
+        '200':
+          description: 'App fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+    patch:
+      summary: 'Update app'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project applications
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppRequest'
+      responses:
+        '200':
+          description: 'App updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResponse'
+        '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+            $ref: '#/components/responses/UnprocesssableEntityResponse'
+    delete:
+      summary: 'Delete app'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project applications
+      parameters:
+        - $ref: '#/components/parameters/AppIdParam'
+      responses:
+        '204':
+          description: 'App deleted'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /apps/{app-id}/releases:
+    post:
+      summary: 'Create release'
+      security:
+        - bearerAuth: []
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/AppIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleasePostRequest'
+      responses:
+        '200':
+          description: 'Release created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseCreatedResponse'
+        '400':
+              $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+              $ref: '#/components/responses/UnprocesssableEntityResponse'
+    get:
+      summary: 'List releases'
+      security:
+        - bearerAuth: []
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/AppIdParam'
+      responses:
+        '200':
+          description: 'Releases fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReleaseResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /releases/{release-id}:
+    get:
+      summary: 'Get release by ID'
+      security:
+        - bearerAuth: []
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      responses:
+        '200':
+          description: 'Release fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+    patch:
+      summary: 'Update release'
+      security:
+        - bearerAuth: []
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleasePatchRequest'
+      responses:
+        '200':
+          description: 'Release updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+              $ref: '#/components/responses/UnprocesssableEntityResponse'
+    delete:
+      summary: 'Delete release'
+      security:
+        - bearerAuth: []
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      responses:
+        '204':
+          description: 'Release deleted'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+  /releases/{release-id}/actions:
+    post:
+      summary: "Perform release actions"
+      security:
+        - bearerAuth: []
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseActions'
+      responses:
+        '204':
+          description: 'Action completed'
+        '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /releases/{release-id}/attachments:
+    post:
+      summary: 'Add new attachment to relaase'
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AttachmentRequest'
+      responses:
+        '200':
+          description: 'Signed url for uploaded provided'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        422:
+          $ref: '#/components/schemas/UnprocesssableEntityError'
+  /releases/{release-id}/attachments/{attachment-id}:
+    delete:
+      summary: 'Delete release attachment'
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Application releases
+      parameters:
+        - $ref: '#/components/parameters/ReleaseIdParam'
+        - $ref: '#/components/parameters/AttachmentIdParam'
+      responses:
+        '204':
+          description: 'Attachment deleted'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+  /templates:
+    post:
+      summary: 'Create template'
+      security:
+        - bearerAuth: []
+      tags:
+        - Release message templates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+      responses:
+        '201':
+          description: 'Template created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+              $ref: '#/components/responses/UnprocesssableEntityResponse'
+    get:
+      summary: 'List templates'
+      security:
+        - bearerAuth: []
+      tags:
+        - Release message templates
+      responses:
+        '200':
+          description: 'Templates fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TemplateResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /templates/{template-id}:
+    put:
+      summary: 'Update template'
+      security:
+        - bearerAuth: []
+      tags:
+        - Release message templates
+      parameters:
+        - $ref: '#/components/parameters/TemplateIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+      responses:
+        '200':
+          description: 'Template updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+              $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+              $ref: '#/components/responses/UnprocesssableEntityResponse'
+    get:
+      summary: 'Get template By ID'
+      security:
+        - bearerAuth: []
+      tags:
+        - Release message templates
+      parameters:
+        - $ref: '#/components/parameters/TemplateIdParam'
+      responses:
+        '200':
+          description: 'Template fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+    delete:
+      summary: 'Delete template'
+      security:
+        - bearerAuth: []
+      tags:
+        - Release message templates
+      parameters:
+        - $ref: '#/components/parameters/TemplateIdParam'
+      responses:
+        '204':
+          description: 'Template deleted'
+        '401':
+              $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+              $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+  /app/{app-id}/repository:
+    put:
+      summary: 'Connect GitHub repository'
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Application git repository
+      parameters:
+        - $ref: '#/components/parameters/AppIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GitRepositoryRequest'
+      responses:
+        '200':
+          description: 'Repository connected'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitRepositoryResponse'
+        '401':
+          $ref: '#/components/responses/GitRepositoryUnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+          $ref: '#/components/responses/UnprocesssableEntityResponse'
+    get:
+      summary: 'Get connected repository'
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Application git repository
+      parameters:
+        - $ref: '#/components/parameters/AppIdParam'
+      responses:
+        '200':
+          description: 'Repository fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitRepositoryResponse'
+        '401':
+          $ref: '#/components/responses/GitRepositoryUnauthorizedErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+  /app/{app-id}/repository/tags:
+    get:
+      summary: 'List repository tags'
+      security:
+        - bearerAuth: []
+      tags:
+        - Application git repository
+      parameters:
+        - $ref: '#/components/parameters/AppIdParam'
+      responses:
+        '200':
+          description: 'Retrieves 20 newest tags in git repository'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GitTagResponse'
+        '401':
+              $ref: '#/components/responses/GitRepositoryUnauthorizedErrorResponse'
+        '404':
+              $ref: '#/components/responses/NotFoundErrorResponse'
+components:
+  responses:
+    UnauthorizedErrorResponse:
+      description: 'Authentication was not successful'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthorizedError'
+    GitRepositoryUnauthorizedErrorResponse:
+      description: "Authentication was not successful. Either because of an user's invalid access token or an issue with accessing the GitHub API due to an invalid GitHub token."
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/UnauthorizedErrorGitRepository'
+              - $ref: '#/components/schemas/UnauthorizedError'
+    NotFoundErrorResponse:
+      description: 'Resource does not exist or user cannot access this resource at all.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundError'
+    ForbiddenErrorResponse:
+      description: 'User has no permission to perform this action.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ForbiddenError'
+    UnprocesssableEntityResponse:
+      description: 'Validation errors'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnprocesssableEntityError'
+    BadRequestErrorResponse:
+      description: 'The request was invalid or malformed'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BadRequestError'
+  parameters:
+    InvitationToken:
+      name: token
+      in: query
+      description: Token to confirm invitation
+      required: true
+      schema:
+        type: string
+        example: 09bcb40206b25fe511bfef4d56cbe8c4a141869fc29612fa984b371ef086f5f5
+    InvitationIdParam:
+      name: invitation-id
+      in: path
+      description: Invitation ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ProjectIdParam:
+      name: project-id
+      in: path
+      description: Project ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    UserIdParam:
+      name: user-id
+      in: path
+      description: User ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    MemberIdParam:
+      name: member-id
+      in: path
+      description: Member ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TemplateIdParam:
+      name: template-id
+      in: path
+      description: Template ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AppIdParam:
+      name: app-id
+      in: path
+      description: App ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ReleaseIdParam:
+      name: release-id
+      in: path
+      description: Release ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AttachmentIdParam:
+      name: attachment-id
+      in: path
+      description: Attachment ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    UnprocesssableEntityError:
+      description: 'Validation errors'
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            field1:
+              type: string
+              example: "Validation error"
+            field2:
+              type: string
+              example: "Validation error"
+            object1:
+              type: object
+              properties:
+                field1:
+                  type: string
+                  example: "Validation error"
+      required:
+        - error
+    BadRequestError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "The request is malformed or contains invalid syntax."
+    NotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example:  'Resource not found.'
+    UnauthorizedError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: 'JWT token is missing or invalid.'
+    UnauthorizedErrorGitRepository:
+      type: object
+      properties:
+        error:
+          type: string
+          example: 'Authentication to https://github.com/organization/repo failed. Organization token for GitHub API is missing.'
+    ForbiddenError:
+      type: object
+      properties:
+        error:
+          type: string
+          example:  'You do not have permission to perform this action.'
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+          example: jan@zabloudil.cz
+        name:
+          type: string
+          example: 'Jan Zabloudil'
+        avatar_image_url:
+          type: string
+        is_admin:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - name
+        - avatar_image_url
+        - is_admin
+        - created_at
+        - updated_at
+    ProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Awesome project'
+        description:
+          type: string
+          example: 'This project is about...'
+        notifications:
+          type: object
+          properties:
+            slack_channel_id:
+              type: string
+              example: "C065E66TZ36"
+            message_template:
+              type: string
+          required:
+            - slack_channel_id
+            - message_template_id
+      required:
+        - name
+    ProjectResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProjectRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+          required:
+            - id
+            - created_at
+            - updated_at
+    ProjectMemberRole:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+            - admin
+            - editor
+            - viewer
+      required:
+        - role
+    ProjectMemberResponse:
+        allOf:
+          - $ref: '#/components/schemas/ProjectMemberRole'
+          - type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              user:
+                $ref: '#/components/schemas/UserResponse'
+              invited_by_user_id:
+                type: string
+                format: uuid
+              created_at:
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                format: date-time
+            required:
+              - id
+              - user
+              - invited_by_user_id
+              - created_at
+              - updated_at
+    ProjectInvitationRequest:
+      allOf:
+        - $ref: '#/components/schemas/ProjectMemberRole'
+        - type: object
+          properties:
+            email:
+              type: string
+              format: email
+          required:
+            - email
+    ProjectInvitationResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProjectInvitationRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            invited_by_user_id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              enum:
+                - pending
+                - confirmed_pending_signup
+            created_at:
+              type: string
+              format: date-time
+            valid_until:
+              type: string
+              format: date-time
+      required:
+        - id
+        - invited_by_user_id
+        - status
+        - created_at
+        - valid_until
+    InvitationConfirmationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - confirmed
+            - confirmed_pending_signup
+          example: "confirmed_pending_signup"
+        message:
+          type: string
+          example: 'Invitation confirmed. User needs to sign up to complete the process.'
+        project_name:
+          type: string
+          example: 'Awesome project'
+        project_id:
+          type: string
+          format: uuid
+      required:
+        - status
+        - message
+        - project_name
+        - project_id
+    TemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Production release'
+        type:
+          type: string
+          enum:
+            - 'release-message'
+        content:
+          type: string
+          example: '<p>Hey!<br />We have just released new version of our backend app - {{release.version}}!</>'
+      required:
+        - name
+        - type
+        - content
+    TemplateResponse:
+      allOf:
+        - $ref: '#/components/schemas/TemplateRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+          required:
+            - id
+            - created_at
+            - updated_at
+    AppRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Awesome app backend'
+        description:
+          type: string
+          description: 'Backend API for...'
+        environments:
+          $ref : '#/components/schemas/Environments'
+      required:
+        - name
+    AppResponse:
+      allOf:
+        - $ref: '#/components/schemas/AppRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+          required:
+            - id
+            - created_at
+            - updated_at
+    GitRepositoryRequest:
+      type: object
+      properties:
+        platform:
+          type: string
+          enum:
+            - github
+        repository:
+          type: object
+          properties:
+            url:
+              type: string
+              example: 'https://github.com/organization/repo'
+          required:
+            - url
+      required:
+        - platform
+        - repository
+    GitRepositoryResponse:
+      type: object
+      properties:
+        platform:
+          type: string
+          enum:
+            - github
+        repository:
+          type: object
+          properties:
+            url:
+              type: string
+              example: 'https://github.com/organization/repo'
+            name:
+              type: string
+              example: 'Hello-world'
+          required:
+            - url
+            - name
+    Environments:
+      type: object
+      properties:
+        dev_url:
+          type: string
+        staging_url:
+          type: string
+        prod_url:
+          type: string
+    ReleasePatchRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "V 0.1.1"
+        changelog:
+          type: string
+          example: "Logging improved"
+        deployed_to:
+            type: array
+            items:
+              type: string
+              enum:
+                - dev 
+                - staging 
+                - prod 
+              example: [ "dev", "staging" ]
+        git_tag_sha:
+          type: string 
+        github_release_url:
+          type: string
+    ReleasePostRequest:
+      allOf:
+        - $ref: '#/components/schemas/ReleasePatchRequest'
+        - type: object
+          properties:
+            actions:
+              type: object
+              $ref: '#/components/schemas/ReleaseActions'
+            attachments:
+              type: array
+              items:
+                $ref: '#/components/schemas/AttachmentRequest'
+          required:
+            - name
+    ReleaseActions:
+      type: object
+      properties:
+        create_github_release:
+          type: boolean
+        send_release_message:
+          type: boolean
+    AttachmentRequest:
+      type: object
+      properties:
+        file_name:
+          type: string
+          example: 'api-specification.yaml'
+      required:
+        - file
+        - file_name
+    AttachmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        original_name:
+          type: string
+          example: 'open-api.yaml'
+        download_url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - original_name
+        - download_url
+        - created_at
+    AttachmentCreatedResponse:
+      type: object
+      properties:
+        file_name:
+          type: string
+          example: 'open-api.yaml'
+        upload_url:
+          type: string
+      required:
+        - file_name
+        - upload_url
+    ReleaseResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "V 0.1.1"
+        changelog:
+          type: string
+          example: "Improved logging"
+        git_tag:
+          $ref: '#/components/schemas/GitTagResponse'
+        github_release_url:
+          type: string
+          format: url
+        deployed_to:
+            type: array
+            items:
+              type: string
+              enum:
+                - dev 
+                - staging 
+                - prod 
+              example: [ "dev", "staging" ]
+        created_by_user_id:
+          type: string
+          format: uuid
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentResponse'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - changelog
+        - git_tag
+        - github_release_url
+        - created_by_user_id
+        - created_at
+        - updated_at
+    ReleaseCreatedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "V 0.1.1"
+        changelog:
+          type: string
+          example: "Improved logging"
+        git_tag:
+          $ref: '#/components/schemas/GitTagResponse'
+        github_release_url:
+          type: string
+          format: url
+        deployed_to:
+          type: array
+          items:
+            type: string
+            enum:
+              - dev
+              - staging
+              - prod
+            example: [ "dev", "staging" ]
+        created_by_user_id:
+          type: string
+          format: uuid
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentCreatedResponse'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - changelog
+        - git_tag
+        - github_release_url
+        - created_by_user_id
+        - created_at
+        - updated_at
+    GitTagResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "v0.0.1"
+        sha:
+          type: string
+          example: "940bd336248efae0f9ee5bc7b2d5c985887b16ac"
+        html_url:
+          type: string
+          example: "https://www.github.com/repos/octocat/Hello-World/git/tags/940bd336248efae0f9ee5bc7b2d5c985887b16ac"
+        message:
+          type: string
+          example: "initial version"
+        tagger:
+          $ref: '#/components/schemas/GitUser'
+        commit:
+          type: object
+          properties:
+            sha:
+              type: string
+              example: "c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c"
+            html_url:
+              type: string
+              example: "https://www.github.com/repos/octocat/Hello-World/git/commits/c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c"
+          required:
+            - sha
+            - html_url
+      required:
+        - name
+        - sha
+        - html_url
+        - message
+        - tagger
+        - commit
+    GitUser:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Jan zabloudil"
+        email:
+          type: string
+          format: email
+        date:
+          type: string
+          format: date-time
+      required:
+        - name
+        - email
+        - date
+    OrganizationSettings:
+      type: object
+      properties:
+        organization_name:
+          type: string
+          example: 'STRV'
+        slack_token:
+          type: string
+          example: 'xoxo-123456789012-1234567890123-AbCdEfGhIjKlMnOpQrStUvWxYz'
+        github_organization_token:
+          type: string
+          example: 'ghp_abcdefgh1234567890ijklmnopqrstuvwx'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
