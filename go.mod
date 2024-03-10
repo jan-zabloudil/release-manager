@@ -16,6 +16,7 @@ require (
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/google/go-github/v60 v60.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/sethvargo/go-envconfig v1.0.1 // indirect

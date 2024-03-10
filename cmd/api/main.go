@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"release-manager/github"
 	"release-manager/repository"
 	"release-manager/service"
 	"release-manager/transport"
@@ -25,6 +26,9 @@ func main() {
 	slog.SetDefault(logger)
 
 	supaClient := supabase.CreateClient(cfg.Supabase.ApiURL, cfg.Supabase.SecretKey)
+
+	// TODO remove GitHubAccessToken, GithubOwnerURL  from env and load it from Organization settings
+	_ = github.New(cfg.GitHubAccessToken, cfg.GithubOwnerURL)
 
 	repo := repository.NewRepository(supaClient)
 	svc := service.NewService(repo.User)
