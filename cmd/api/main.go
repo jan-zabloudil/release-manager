@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"release-manager/mailer"
 	"release-manager/repository"
 	"release-manager/service"
 	"release-manager/transport"
@@ -24,6 +25,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.LogLevel}))
 	slog.SetDefault(logger)
 
+	_ = mailer.New(cfg.ToMailerConfig())
 	supaClient := supabase.CreateClient(cfg.Supabase.ApiURL, cfg.Supabase.SecretKey)
 
 	repo := repository.NewRepository(supaClient)

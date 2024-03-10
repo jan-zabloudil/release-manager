@@ -1,0 +1,13 @@
+{{define "subject"}}Test email{{end}}
+
+{{define "htmlContent"}}
+    <h1 style="text-align: center">Test email</h1>
+    <p>Hey!</p>
+    <p>This is a test email.</p>
+    {{template "cta" .}}
+{{end}}
+
+{{define "plainBody"}}
+Hey!
+This is a test email.
+{{end}}
