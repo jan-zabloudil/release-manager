@@ -9,6 +9,7 @@ import (
 
 	"release-manager/repository"
 	"release-manager/service"
+	"release-manager/slacker"
 	"release-manager/transport"
 	"release-manager/transport/utils"
 
@@ -25,6 +26,9 @@ func main() {
 	slog.SetDefault(logger)
 
 	supaClient := supabase.CreateClient(cfg.Supabase.ApiURL, cfg.Supabase.SecretKey)
+
+	// TODO remove SlackAPIKey from env and load it from Organization settings
+	_ = slacker.New(cfg.SlackAPIKey)
 
 	repo := repository.NewRepository(supaClient)
 	svc := service.NewService(repo.User)
