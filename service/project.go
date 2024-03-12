@@ -12,8 +12,8 @@ type ProjectService struct {
 	repository model.ProjectRepository
 }
 
-func (s *ProjectService) Create(ctx context.Context, p model.Project) (model.Project, error) {
-	return s.repository.Insert(ctx, p)
+func (s *ProjectService) Create(ctx context.Context, p model.Project, userID uuid.UUID) (model.Project, error) {
+	return s.repository.Insert(ctx, p, userID)
 }
 
 func (s *ProjectService) Get(ctx context.Context, id uuid.UUID) (model.Project, error) {

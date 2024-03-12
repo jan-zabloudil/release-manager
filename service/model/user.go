@@ -19,4 +19,5 @@ type User struct {
 
 type UserRepository interface {
 	ReadForToken(ctx context.Context, token string) (User, error)
+	ReadByEmail(ctx context.Context, email string) (User, error)
 }

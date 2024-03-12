@@ -115,3 +115,13 @@ func WriteUnprocessableEntityResponse(w http.ResponseWriter, err error) {
 		httpx.WithErrorMessage(err.Error()),
 	)
 }
+
+func WriteConflictResponse(w http.ResponseWriter, err error) {
+	WriteErrorResponse(
+		w,
+		http.StatusConflict,
+		httpx.WithError(err),
+		httpx.WithErrorCode(strconv.Itoa(http.StatusConflict)),
+		httpx.WithErrorMessage(err.Error()),
+	)
+}

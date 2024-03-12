@@ -19,7 +19,7 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := h.ProjectSvc.Create(r.Context(), model.ToSvcProject(input))
+	p, err := h.ProjectSvc.Create(r.Context(), model.ToSvcProject(input), ContextUser(r).ID)
 	if err != nil {
 		WriteServerErrorResponse(w, err)
 		return

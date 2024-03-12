@@ -12,16 +12,22 @@ import (
 )
 
 type Handler struct {
-	Mux        *chi.Mux
-	UserSvc    model.UserService
-	ProjectSvc model.ProjectService
+	Mux                      *chi.Mux
+	UserSvc                  model.UserService
+	ProjectSvc               model.ProjectService
+	ProjectMembershipMgmtSvc model.ProjectMembershipManagementService
+	ProjectInvitationSvc     model.ProjectInvitationService
+	ProjectMemberSvc         model.ProjectMemberService
 }
 
-func NewHandler(us model.UserService, ps model.ProjectService) *Handler {
+func NewHandler(us model.UserService, ps model.ProjectService, pms model.ProjectMembershipManagementService, pis model.ProjectInvitationService, pmrs model.ProjectMemberService) *Handler {
 	h := Handler{
-		Mux:        chi.NewRouter(),
-		UserSvc:    us,
-		ProjectSvc: ps,
+		Mux:                      chi.NewRouter(),
+		UserSvc:                  us,
+		ProjectSvc:               ps,
+		ProjectMembershipMgmtSvc: pms,
+		ProjectInvitationSvc:     pis,
+		ProjectMemberSvc:         pmrs,
 	}
 
 	h.Mux.Use(httpx.RequestIDMiddleware(RequestID))
@@ -36,10 +42,28 @@ func NewHandler(us model.UserService, ps model.ProjectService) *Handler {
 			// TODO implement requireProjectMembership logic
 			r.Use(h.requireProjectMembership)
 			r.Use(h.handleProject)
+
 			r.Get("/", h.getProject)
 			r.Patch("/", h.updateProject)
 			r.Delete("/", h.deleteProject)
+
+			r.Post("/memberships", h.createProjectMembershipRequest) // TODO better route url
+			r.Get("/invitations", h.listProjectInvitations)
+			r.Route("/members", func(r chi.Router) {
+				r.Get("/", h.listProjectMembers)
+				r.Route("/{userID}", func(r chi.Router) {
+					r.Get("/", h.handleProjectMember)
+					r.Patch("/", h.handleProjectMember)
+					r.Delete("/", h.handleProjectMember)
+				})
+			})
 		})
+	})
+
+	h.Mux.Route("/invitations/{id}", func(r chi.Router) {
+		// TODO implement requireProjectMembership logic
+		r.Use(h.requireProjectMembership)
+		r.Delete("/", h.deleteProjectInvitation)
 	})
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {

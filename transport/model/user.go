@@ -40,3 +40,20 @@ func ToAuthUser(id uuid.UUID, isAdmin bool) AuthUser {
 		IsAdmin: isAdmin,
 	}
 }
+
+func ToNetUser(
+	id uuid.UUID,
+	isAdmin bool,
+	email, name, avatarUrl string,
+	createdAt, updatedAt time.Time,
+) User {
+	return User{
+		ID:        id,
+		IsAdmin:   isAdmin,
+		Email:     email,
+		Name:      name,
+		AvatarUrl: avatarUrl,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
+}

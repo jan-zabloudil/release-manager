@@ -81,7 +81,7 @@ func (h *Handler) requireAdminUser(next http.HandlerFunc) http.HandlerFunc {
 func (h *Handler) requireProjectMembership(next http.Handler) http.Handler {
 	return h.requireAuthUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// TODO implement Project Membership logic
+		// TODO implement Project Membership check logic
 
 		next.ServeHTTP(w, r)
 	}))
@@ -89,7 +89,7 @@ func (h *Handler) requireProjectMembership(next http.Handler) http.Handler {
 
 func (h *Handler) handleProject(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id, err := GetIdFromURL(r)
+		id, err := GetUUIDParamFrom(r, "id")
 		if err != nil {
 			WriteNotFoundResponse(w, err)
 			return

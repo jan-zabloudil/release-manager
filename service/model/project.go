@@ -8,7 +8,7 @@ import (
 )
 
 type ProjectRepository interface {
-	Insert(ctx context.Context, p Project) (Project, error)
+	Insert(ctx context.Context, p Project, userId uuid.UUID) (Project, error)
 	Read(ctx context.Context, id uuid.UUID) (Project, error)
 	ReadAll(ctx context.Context) ([]Project, error)
 	Update(ctx context.Context, p Project) (Project, error)

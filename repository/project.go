@@ -12,29 +12,29 @@ import (
 )
 
 type ProjectRepository struct {
-	client *supabase.Client
-	entity string
+	client     *supabase.Client
+	entity     string
+	insertFunc string
 }
 
 func NewProjectRepository(c *supabase.Client) *ProjectRepository {
 	return &ProjectRepository{
-		client: c,
-		entity: "projects",
+		client:     c,
+		entity:     "projects",
+		insertFunc: "create_project_and_assign_member",
 	}
 }
 
-func (r *ProjectRepository) Insert(ctx context.Context, p svcmodel.Project) (svcmodel.Project, error) {
+func (r *ProjectRepository) Insert(ctx context.Context, p svcmodel.Project, userID uuid.UUID) (svcmodel.Project, error) {
 
 	var resp []model.ProjectResponse
-	err := r.client.
-		DB.From(r.entity).
-		Insert(model.ToProjectDBInput(p)).
-		ExecuteWithContext(ctx, &resp)
-	if err != nil {
+	if err := r.client.
+		DB.Rpc(r.insertFunc, model.ToProjectInsertInput(p, userID)).
+		ExecuteWithContext(ctx, &resp); err != nil {
 		return svcmodel.Project{}, utils.WrapSupabaseDBErr(err)
 	}
 
-	if err := utils.ValidateSingleRecordFetch(resp); err != nil {
+	if err := utils.ValidateSingleRecordFetchAfterWriteOperation(resp); err != nil {
 		return svcmodel.Project{}, err
 	}
 
@@ -86,14 +86,14 @@ func (r *ProjectRepository) Update(ctx context.Context, p svcmodel.Project) (svc
 	var resp []model.ProjectResponse
 	err := r.client.
 		DB.From(r.entity).
-		Update(model.ToProjectDBInput(p)).
+		Update(model.ToProjectInput(p)).
 		Eq("id", (p.ID).String()).
 		ExecuteWithContext(ctx, &resp)
 	if err != nil {
 		return svcmodel.Project{}, utils.WrapSupabaseDBErr(err)
 	}
 
-	if err := utils.ValidateSingleRecordFetch(resp); err != nil {
+	if err := utils.ValidateSingleRecordFetchAfterWriteOperation(resp); err != nil {
 		return svcmodel.Project{}, err
 	}
 

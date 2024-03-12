@@ -8,5 +8,5 @@ var (
 	ErrUserAuthenticationFailed                       = errors.New("supabase: user authentication by bearer token unsuccessful")
 	ErrAccessToResourceDenied                         = errors.New("supabsse: access to resource denied")
 	ErrMultipleOrNoRecordsReturnedAfterWriteOperation = errors.New("supabase: one record expected after insert/update operation, multiple (or no) rows returned")
-	ErrResourceNotFound                               = errors.New("supabase: resource not found ")
+	ErrResourceNotFound                               = errors.New("supabase: resource not found or multiple records found for single record select")
 )

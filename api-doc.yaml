@@ -7,6 +7,7 @@ tags:
   - name: Organization settings
   - name: Users
   - name: Projects
+  - name: Project membership management
   - name: Project invitations
   - name: Project members
   - name: Project applications
@@ -238,7 +239,7 @@ paths:
               $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /projects/{project-id}/invitations:
+  /projects/{project-id}/memberships:
     post:
       summary: 'Invite user to a project'
       parameters:
@@ -252,14 +253,14 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Project invitations
+        - Project membership management
       responses:
         '202':
-          description: 'Invitation created, email will be sent to user.'
+          description: 'If the user is registered, they are added to the project; if not, an invitation is sent.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectInvitationResponse'
+                $ref: '#/components/schemas/ProjectMembershipResponse'
         '400':
               $ref: '#/components/responses/BadRequestErrorResponse'
         '401':
@@ -276,8 +277,9 @@ paths:
             application/json:
               example:
                 error: "User is already project memeber."
+  /projects/{project-id}/invitations:
     get:
-      summary: "List project's pending invitations"
+      summary: "List project's invitations"
       parameters:
         - $ref: '#/components/parameters/ProjectIdParam'
       security:
@@ -317,24 +319,6 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
-
-  /invitations/{invitation-id}/confirm:
-    get:
-      summary: 'Confirm invitation'
-      parameters:
-        - $ref: '#/components/parameters/InvitationIdParam'
-        - $ref: '#/components/parameters/InvitationToken'
-      tags:
-        - Project invitations
-      responses:
-        '200':
-          description: "Invitation confirmed. Signed up user is added to a project, unregistered user has to sign up first."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvitationConfirmationResponse'
-        '404':
-            $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/members:
     get:
       summary: "List project's members"
@@ -357,15 +341,16 @@ paths:
               $ref: '#/components/responses/UnauthorizedErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /members/{member-id}:
+  /projects/{project-id}/members/{user-id}:
     get:
-      summary: 'Get member by ID'
+      summary: 'Get project member'
       security:
         - bearerAuth: []
       tags:
         - Project members
       parameters:
-        - $ref: '#/components/parameters/MemberIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/UserIdParam'
       responses:
         '200':
           description: 'Member fetched'
@@ -1205,14 +1190,26 @@ components:
             - viewer
       required:
         - role
+    ProjectMembershipResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - invited
+            - created
+        resource:
+          oneOf:
+            - $ref: '#/components/schemas/ProjectInvitationResponse'
+            - $ref: '#/components/schemas/ProjectMemberResponse'
+      required:
+        - status
+        - resource
     ProjectMemberResponse:
         allOf:
           - $ref: '#/components/schemas/ProjectMemberRole'
           - type: object
             properties:
-              id:
-                type: string
-                format: uuid
               user:
                 $ref: '#/components/schemas/UserResponse'
               invited_by_user_id:
@@ -1251,11 +1248,6 @@ components:
             invited_by_user_id:
               type: string
               format: uuid
-            status:
-              type: string
-              enum:
-                - pending
-                - confirmed_pending_signup
             created_at:
               type: string
               format: date-time

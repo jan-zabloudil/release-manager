@@ -10,9 +10,17 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
-func ValidateSingleRecordFetch[T any](s []T) error {
+func ValidateSingleRecordFetchAfterWriteOperation[T any](s []T) error {
 	if len(s) != 1 {
 		return reperr.ErrMultipleOrNoRecordsReturnedAfterWriteOperation
+	}
+
+	return nil
+}
+
+func ValidateSingleRecordFetchAfterReadOperation[T any](s []T) error {
+	if len(s) != 1 {
+		return reperr.ErrResourceNotFound
 	}
 
 	return nil
