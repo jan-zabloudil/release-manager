@@ -31,7 +31,7 @@ func ToProjectInvitationInput(projectID uuid.UUID, email string, role svcmodel.P
 	return map[string]interface{}{
 		"p_project_id":         projectID,
 		"p_email":              email,
-		"p_role":               role.Role(),
+		"p_role":               role.String(),
 		"p_invited_by_user_id": invitedByUserID,
 	}
 }

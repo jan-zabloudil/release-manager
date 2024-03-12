@@ -56,7 +56,7 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
-	p, err := h.ProjectSvc.ListAll(r.Context())
+	p, err := h.ProjectSvc.ListAll(r.Context(), model.ToSvcUser(*ContextUser(r)))
 	if err != nil {
 		WriteServerErrorResponse(w, err)
 		return

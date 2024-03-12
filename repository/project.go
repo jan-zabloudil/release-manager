@@ -12,16 +12,18 @@ import (
 )
 
 type ProjectRepository struct {
-	client     *supabase.Client
-	entity     string
-	insertFunc string
+	client         *supabase.Client
+	entity         string
+	insertFunc     string
+	getForUserFunc string
 }
 
 func NewProjectRepository(c *supabase.Client) *ProjectRepository {
 	return &ProjectRepository{
-		client:     c,
-		entity:     "projects",
-		insertFunc: "create_project_and_assign_member",
+		client:         c,
+		entity:         "projects",
+		insertFunc:     "create_project_and_assign_member",
+		getForUserFunc: "get_projects_for_user",
 	}
 }
 
@@ -62,6 +64,22 @@ func (r *ProjectRepository) ReadAll(ctx context.Context) ([]svcmodel.Project, er
 	err := r.client.
 		DB.From(r.entity).
 		Select("*").
+		ExecuteWithContext(ctx, &resp)
+	if err != nil {
+		return nil, utils.WrapSupabaseDBErr(err)
+	}
+
+	return model.ToSvcProjects(resp), nil
+}
+
+func (r *ProjectRepository) ReadForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.Project, error) {
+	input := map[string]interface{}{
+		"user_id": userID,
+	}
+
+	var resp []model.ProjectResponse
+	err := r.client.
+		DB.Rpc(r.getForUserFunc, input).
 		ExecuteWithContext(ctx, &resp)
 	if err != nil {
 		return nil, utils.WrapSupabaseDBErr(err)

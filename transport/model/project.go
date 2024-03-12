@@ -12,7 +12,7 @@ import (
 type ProjectService interface {
 	Create(ctx context.Context, p svcmodel.Project, userId uuid.UUID) (svcmodel.Project, error)
 	Get(ctx context.Context, id uuid.UUID) (svcmodel.Project, error)
-	ListAll(ctx context.Context) ([]svcmodel.Project, error)
+	ListAll(ctx context.Context, u svcmodel.User) ([]svcmodel.Project, error)
 	Update(ctx context.Context, project svcmodel.Project) (svcmodel.Project, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }

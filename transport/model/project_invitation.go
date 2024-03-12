@@ -11,8 +11,8 @@ import (
 
 type ProjectInvitationService interface {
 	ListAll(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error)
-	Get(ctx context.Context, invitationID uuid.UUID) (svcmodel.ProjectInvitation, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Get(ctx context.Context, projectID, invitationID uuid.UUID) (svcmodel.ProjectInvitation, error)
+	Delete(ctx context.Context, projectID, invitationID uuid.UUID) error
 }
 
 type ProjectInvitation struct {
@@ -27,7 +27,7 @@ func ToNetProjectInvitation(i svcmodel.ProjectInvitation) ProjectInvitation {
 	return ProjectInvitation{
 		ID:              i.ID,
 		Email:           i.Email,
-		Role:            i.Role.Role(),
+		Role:            i.Role.String(),
 		InvitedByUserID: i.InvitedByUserID,
 		CreatedAt:       i.CreatedAt,
 	}

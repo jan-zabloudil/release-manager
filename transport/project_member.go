@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	reperr "release-manager/repository/errors"
+	svcerr "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 	"release-manager/transport/model"
 	"release-manager/transport/utils"
@@ -23,7 +24,7 @@ func (h *Handler) listProjectMembers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleProjectMember(w http.ResponseWriter, r *http.Request) {
-	userID, err := GetUUIDParamFrom(r, "userID")
+	userID, err := GetUUIDParamFrom(r, "userId")
 	if err != nil {
 		WriteNotFoundResponse(w, err)
 		return
@@ -66,7 +67,7 @@ func (h *Handler) deleteProjectMember(w http.ResponseWriter, r *http.Request, us
 }
 
 func (h *Handler) updateProjectMember(w http.ResponseWriter, r *http.Request, m svcmodel.ProjectMember) {
-	var input model.PatchProjectMember
+	var input model.UpdateProjectRole
 
 	if err := UnmarshalRequest(r, &input); err != nil {
 		WriteBadRequestResponse(w, err)
@@ -78,16 +79,22 @@ func (h *Handler) updateProjectMember(w http.ResponseWriter, r *http.Request, m 
 		return
 	}
 
-	m, err := model.PatchToSvcProjectMember(input, m)
+	role, err := svcmodel.NewProjectRole(input.Role)
 	if err != nil {
 		WriteUnprocessableEntityResponse(w, err)
 		return
 	}
 
-	m, err = h.ProjectMemberSvc.Update(r.Context(), m)
+	m, err = h.ProjectMemberSvc.UpdateRole(r.Context(), m, ContextProjectMember(r), role)
 	if err != nil {
-		WriteServerErrorResponse(w, err)
-		return
+		switch {
+		case errors.Is(err, svcerr.ErrProjectMemberRoleCannotBeGranted), errors.Is(err, svcerr.ErrProjectMemberUpdateNotAllowed):
+			WriteForbiddenErrorResponse(w, err)
+			return
+		default:
+			WriteServerErrorResponse(w, err)
+			return
+		}
 	}
 
 	WriteJSONResponse(w, http.StatusOK, model.ToNetProjectMember(m))

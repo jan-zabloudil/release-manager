@@ -10,4 +10,5 @@ var (
 	ErrAccessDeniedToNonAdminUser = errors.New("access denied for non admin user")
 	ErrHttpMethodNotAllowed       = errors.New("http method not allowed")
 	ErrHttpNotFound               = errors.New("no route matched for requested uri")
+	ErrInsufficientProjectRole    = errors.New("user does not have required role")
 )

@@ -95,7 +95,7 @@ func (r *ProjectMemberRepository) Update(ctx context.Context, m svcmodel.Project
 
 	err := r.client.
 		DB.From(r.entity).
-		Update(model.ProjectInvitationPatch{Role: m.Role.Role()}).
+		Update(model.ProjectInvitationPatch{Role: m.Role.String()}).
 		Eq("project_id", m.ProjectID.String()).
 		Eq("user_id", m.User.ID.String()).
 		ExecuteWithContext(ctx, nil)

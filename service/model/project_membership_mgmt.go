@@ -13,6 +13,7 @@ const (
 
 type UserService interface {
 	GetByEmail(ctx context.Context, email string) (User, error)
+	Get(ctx context.Context, id uuid.UUID) (User, error)
 }
 
 type ProjectInvitationService interface {

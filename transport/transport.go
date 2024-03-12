@@ -3,6 +3,7 @@ package transport
 import (
 	"net/http"
 
+	svcmodel "release-manager/service/model"
 	neterrs "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/utils"
@@ -39,31 +40,28 @@ func NewHandler(us model.UserService, ps model.ProjectService, pms model.Project
 		r.Post("/", h.requireAdminUser(h.createProject))
 		r.Get("/", h.requireAuthUser(h.listProjects))
 		r.Route("/{id}", func(r chi.Router) {
-			// TODO implement requireProjectMembership logic
-			r.Use(h.requireProjectMembership)
 			r.Use(h.handleProject)
 
-			r.Get("/", h.getProject)
-			r.Patch("/", h.updateProject)
-			r.Delete("/", h.deleteProject)
+			r.Get("/", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleViewer(), h.getProject))
+			r.Patch("/", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleEditor(), h.updateProject))
+			r.Delete("/", h.requireAdminUser(h.deleteProject))
 
-			r.Post("/memberships", h.createProjectMembershipRequest) // TODO better route url
-			r.Get("/invitations", h.listProjectInvitations)
+			r.Post("/memberships", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleEditor(), h.createProjectMembershipRequest)) // TODO better route url
+
+			r.Route("/invitations", func(r chi.Router) {
+				r.Get("/", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleViewer(), h.listProjectInvitations))
+				r.Delete("/{invitationId}", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleEditor(), h.deleteProjectInvitation))
+			})
+
 			r.Route("/members", func(r chi.Router) {
-				r.Get("/", h.listProjectMembers)
-				r.Route("/{userID}", func(r chi.Router) {
-					r.Get("/", h.handleProjectMember)
-					r.Patch("/", h.handleProjectMember)
-					r.Delete("/", h.handleProjectMember)
+				r.Get("/", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleViewer(), h.listProjectMembers))
+				r.Route("/{userId}", func(r chi.Router) {
+					r.Get("/", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleViewer(), h.handleProjectMember))
+					r.Patch("/", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleEditor(), h.handleProjectMember))
+					r.Delete("/", h.requireProjectMemberRole(ContextProjectID, svcmodel.ProjectRoleEditor(), h.handleProjectMember))
 				})
 			})
 		})
-	})
-
-	h.Mux.Route("/invitations/{id}", func(r chi.Router) {
-		// TODO implement requireProjectMembership logic
-		r.Use(h.requireProjectMembership)
-		r.Delete("/", h.deleteProjectInvitation)
 	})
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {

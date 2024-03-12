@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	reperr "release-manager/repository/errors"
+	svcerr "release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -16,7 +17,11 @@ type ProjectMembershipManagementService struct {
 	invitationSvc model.ProjectInvitationService
 }
 
-func (s *ProjectMembershipManagementService) Create(ctx context.Context, r model.ProjectMembershipRequest) (model.ProjectMembershipResponse, error) {
+func (s *ProjectMembershipManagementService) Create(ctx context.Context, r model.ProjectMembershipRequest, requestedBy model.ProjectMember) (model.ProjectMembershipResponse, error) {
+
+	if !requestedBy.CanGrantRole(r.Role) {
+		return model.ProjectMembershipResponse{}, svcerr.ErrProjectMemberRoleCannotBeGranted
+	}
 
 	user, err := s.userSvc.GetByEmail(ctx, r.Email)
 

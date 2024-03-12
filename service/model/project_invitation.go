@@ -10,9 +10,9 @@ import (
 type ProjectInvitationRepository interface {
 	Insert(ctx context.Context, projectID uuid.UUID, email string, role ProjectRole, invitedByUserID uuid.UUID) (ProjectInvitation, error)
 	ReadByEmail(ctx context.Context, projectID uuid.UUID, email string) (ProjectInvitation, error)
-	Read(ctx context.Context, invitationID uuid.UUID) (ProjectInvitation, error)
+	Read(ctx context.Context, projectID, invitationID uuid.UUID) (ProjectInvitation, error)
 	ReadAll(ctx context.Context, projectID uuid.UUID) ([]ProjectInvitation, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, projectID, invitationID uuid.UUID) error
 }
 
 type ProjectInvitation struct {

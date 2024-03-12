@@ -18,3 +18,13 @@ TO service_role;
 
 create extension if not exists "moddatetime" with schema "extensions";
 CREATE TRIGGER projects_handle_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION moddatetime('updated_at');
+
+CREATE OR REPLACE FUNCTION get_projects_for_user(user_id uuid)
+RETURNS SETOF projects AS $$
+BEGIN
+RETURN QUERY SELECT p.*
+    FROM projects p
+    INNER JOIN projects_members pm ON p.id = pm.project_id
+    WHERE pm.user_id = get_projects_for_user.user_id;
+END;
+$$ LANGUAGE plpgsql STABLE;

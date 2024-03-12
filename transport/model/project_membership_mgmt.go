@@ -9,7 +9,7 @@ import (
 )
 
 type ProjectMembershipManagementService interface {
-	Create(ctx context.Context, r svcmodel.ProjectMembershipRequest) (svcmodel.ProjectMembershipResponse, error)
+	Create(ctx context.Context, r svcmodel.ProjectMembershipRequest, requestedBy svcmodel.ProjectMember) (svcmodel.ProjectMembershipResponse, error)
 }
 
 type ProjectMembershipRequest struct {

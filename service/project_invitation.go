@@ -32,14 +32,14 @@ func (s *ProjectInvitationService) GetByEmail(ctx context.Context, projectID uui
 	return s.repository.ReadByEmail(ctx, projectID, email)
 }
 
-func (s *ProjectInvitationService) Get(ctx context.Context, invitationID uuid.UUID) (model.ProjectInvitation, error) {
-	return s.repository.Read(ctx, invitationID)
+func (s *ProjectInvitationService) Get(ctx context.Context, projectID, invitationID uuid.UUID) (model.ProjectInvitation, error) {
+	return s.repository.Read(ctx, projectID, invitationID)
 }
 
 func (s *ProjectInvitationService) ListAll(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error) {
 	return s.repository.ReadAll(ctx, projectID)
 }
 
-func (s *ProjectInvitationService) Delete(ctx context.Context, id uuid.UUID) error {
-	return s.repository.Delete(ctx, id)
+func (s *ProjectInvitationService) Delete(ctx context.Context, projectID, invitationID uuid.UUID) error {
+	return s.repository.Delete(ctx, projectID, invitationID)
 }

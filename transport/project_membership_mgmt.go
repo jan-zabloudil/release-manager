@@ -26,11 +26,14 @@ func (h *Handler) createProjectMembershipRequest(w http.ResponseWriter, r *http.
 		WriteUnprocessableEntityResponse(w, err)
 	}
 
-	resp, err := h.ProjectMembershipMgmtSvc.Create(r.Context(), svcRequest)
+	resp, err := h.ProjectMembershipMgmtSvc.Create(r.Context(), svcRequest, ContextProjectMember(r))
 	if err != nil {
 		switch {
 		case errors.Is(err, svcerr.ErrInvitationAlreadyExists), errors.Is(err, svcerr.ErrUserIsAlreadyMember):
 			WriteUnprocessableEntityResponse(w, err)
+			return
+		case errors.Is(err, svcerr.ErrProjectMemberRoleCannotBeGranted):
+			WriteForbiddenErrorResponse(w, err)
 			return
 		}
 

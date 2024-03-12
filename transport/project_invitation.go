@@ -19,13 +19,14 @@ func (h *Handler) listProjectInvitations(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handler) deleteProjectInvitation(w http.ResponseWriter, r *http.Request) {
-	id, err := GetUUIDParamFrom(r, "id")
+	invitationID, err := GetUUIDParamFrom(r, "invitationId")
 	if err != nil {
 		WriteNotFoundResponse(w, err)
 		return
 	}
 
-	if _, err = h.ProjectInvitationSvc.Get(r.Context(), id); err != nil {
+	projectID := ContextProject(r).ID
+	if _, err = h.ProjectInvitationSvc.Get(r.Context(), projectID, invitationID); err != nil {
 		switch {
 		case errors.Is(err, reperr.ErrResourceNotFound):
 			WriteNotFoundResponse(w, err)
@@ -36,7 +37,7 @@ func (h *Handler) deleteProjectInvitation(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	if err := h.ProjectInvitationSvc.Delete(r.Context(), id); err != nil {
+	if err := h.ProjectInvitationSvc.Delete(r.Context(), projectID, invitationID); err != nil {
 		WriteServerErrorResponse(w, err)
 		return
 	}

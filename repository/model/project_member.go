@@ -30,7 +30,7 @@ func ToProjectMemberInput(projectID, userID uuid.UUID, role svcmodel.ProjectRole
 	return ProjectMemberInput{
 		ProjectID:       projectID,
 		UserID:          userID,
-		Role:            role.Role(),
+		Role:            role.String(),
 		InvitedByUserID: invitedByUserID,
 	}
 }

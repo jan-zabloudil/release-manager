@@ -6,11 +6,15 @@ import (
 	"strings"
 
 	reperr "release-manager/repository/errors"
+	svcmodel "release-manager/service/model"
 	neterr "release-manager/transport/errors"
 	"release-manager/transport/model"
 
+	"github.com/google/uuid"
 	httpx "go.strv.io/net/http"
 )
+
+type ProjectIDFunc func(r *http.Request) uuid.UUID
 
 func (h *Handler) auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -43,8 +47,16 @@ func (h *Handler) auth(next http.Handler) http.Handler {
 			}
 		}
 
-		authUser := model.ToAuthUser(user.ID, user.IsAdmin)
-		r = ContextSetUser(r, &authUser)
+		u := model.ToNetUser(
+			user.ID,
+			user.IsAdmin,
+			user.Email,
+			user.Name,
+			user.AvatarUrl,
+			user.CreatedAt,
+			user.UpdatedAt,
+		)
+		r = ContextSetUser(r, &u)
 
 		next.ServeHTTP(w, r)
 	})
@@ -78,13 +90,35 @@ func (h *Handler) requireAdminUser(next http.HandlerFunc) http.HandlerFunc {
 	return h.requireAuthUser(fn)
 }
 
-func (h *Handler) requireProjectMembership(next http.Handler) http.Handler {
-	return h.requireAuthUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) requireProjectMemberRole(f ProjectIDFunc, role svcmodel.ProjectRole, next http.HandlerFunc) http.HandlerFunc {
+	fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		u := ContextUser(r)
 
-		// TODO implement Project Membership check logic
+		projectID := f(r)
+		m, err := h.ProjectMemberSvc.Get(r.Context(), projectID, u.ID)
+		if err != nil {
+			switch {
+			case errors.Is(err, reperr.ErrResourceNotFound):
+				// User is not a member, do not expose resource and return 404 (instead of 403)
+				WriteNotFoundResponse(w, err)
+				return
+			default:
+				WriteServerErrorResponse(w, err)
+				return
+			}
+		}
+
+		if !m.HasAtLeastRole(role) {
+			WriteForbiddenErrorResponse(w, neterr.ErrInsufficientProjectRole)
+			return
+		}
+
+		r = ContextSetProjectMember(r, m)
 
 		next.ServeHTTP(w, r)
-	}))
+	})
+
+	return h.requireAuthUser(fn)
 }
 
 func (h *Handler) handleProject(next http.Handler) http.Handler {

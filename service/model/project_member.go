@@ -23,3 +23,27 @@ type ProjectMember struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
+
+func (m ProjectMember) HasAtLeastRole(other ProjectRole) bool {
+	if m.User.IsAdmin {
+		return true
+	}
+
+	return m.Role.IsEqualOrSuperiorTo(other)
+}
+
+func (m ProjectMember) CanGrantRole(role ProjectRole) bool {
+	if m.User.IsAdmin {
+		return true
+	}
+
+	return m.Role.IsSuperiorTo(role)
+}
+
+func (m ProjectMember) CanUpdateMember(other ProjectMember) bool {
+	if m.User.IsAdmin {
+		return true
+	}
+
+	return m.Role.IsSuperiorTo(other.Role)
+}

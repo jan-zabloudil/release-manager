@@ -46,7 +46,7 @@ func ToProjectInsertInput(p svcmodel.Project, userID uuid.UUID) map[string]inter
 		"description":      p.Description,
 		"slack_channel_id": p.Notifications.SlackChannelID,
 		"user_id":          userID,
-		"role":             svcmodel.AdminProjectRole,
+		"role":             svcmodel.ProjectRoleAdmin().String(),
 	}
 }
 

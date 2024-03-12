@@ -20,8 +20,12 @@ func (s *ProjectService) Get(ctx context.Context, id uuid.UUID) (model.Project, 
 	return s.repository.Read(ctx, id)
 }
 
-func (s *ProjectService) ListAll(ctx context.Context) ([]model.Project, error) {
-	return s.repository.ReadAll(ctx)
+func (s *ProjectService) ListAll(ctx context.Context, u model.User) ([]model.Project, error) {
+	if u.IsAdmin {
+		return s.repository.ReadAll(ctx)
+	}
+
+	return s.repository.ReadForUser(ctx, u.ID)
 }
 
 func (s *ProjectService) Delete(ctx context.Context, id uuid.UUID) error {

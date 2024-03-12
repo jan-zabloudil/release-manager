@@ -13,14 +13,9 @@ type UserService interface {
 	GetForToken(ctx context.Context, token string) (svcmodel.User, error)
 }
 
-var AnonUser = &AuthUser{}
+var AnonUser = &User{}
 
-type AuthUser struct {
-	ID      uuid.UUID
-	IsAdmin bool
-}
-
-func (u *AuthUser) IsAnon() bool {
+func (u *User) IsAnon() bool {
 	return u == AnonUser
 }
 
@@ -32,13 +27,6 @@ type User struct {
 	IsAdmin   bool      `json:"is_admin"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-}
-
-func ToAuthUser(id uuid.UUID, isAdmin bool) AuthUser {
-	return AuthUser{
-		ID:      id,
-		IsAdmin: isAdmin,
-	}
 }
 
 func ToNetUser(
@@ -56,4 +44,8 @@ func ToNetUser(
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
+}
+
+func ToSvcUser(u User) svcmodel.User {
+	return svcmodel.User(u)
 }

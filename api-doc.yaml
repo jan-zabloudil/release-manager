@@ -301,11 +301,12 @@ paths:
               $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /invitations/{invitation-id}:
+  /projects/{project-id}/invitations/{invitation-id}:
     delete:
       summary: 'Delete invitation'
       parameters:
         - $ref: '#/components/parameters/InvitationIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
       security:
         - bearerAuth: []
       tags:

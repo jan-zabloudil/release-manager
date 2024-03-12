@@ -58,13 +58,14 @@ func (r *ProjectInvitationRepository) ReadByEmail(ctx context.Context, projectID
 	return model.ToSvcProjectInvitation(resp)
 }
 
-func (r *ProjectInvitationRepository) Read(ctx context.Context, invitationID uuid.UUID) (svcmodel.ProjectInvitation, error) {
+func (r *ProjectInvitationRepository) Read(ctx context.Context, projectID, invitationID uuid.UUID) (svcmodel.ProjectInvitation, error) {
 
 	var resp model.ProjectInvitationResponse
 	err := r.client.DB.
 		From(r.entity).
 		Select("*").Single().
 		Eq("id", invitationID.String()).
+		Eq("project_id", projectID.String()).
 		ExecuteWithContext(ctx, &resp)
 	if err != nil {
 		return svcmodel.ProjectInvitation{}, utils.WrapSupabaseDBErr(err)
@@ -88,12 +89,13 @@ func (r *ProjectInvitationRepository) ReadAll(ctx context.Context, projectID uui
 	return model.ToSvcProjectInvitations(resp)
 }
 
-func (r *ProjectInvitationRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *ProjectInvitationRepository) Delete(ctx context.Context, projectID, invitationID uuid.UUID) error {
 
 	err := r.client.DB.
 		From(r.entity).
 		Delete().
-		Eq("id", id.String()).
+		Eq("id", invitationID.String()).
+		Eq("project_id", projectID.String()).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
 		return utils.WrapSupabaseDBErr(err)

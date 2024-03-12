@@ -32,7 +32,16 @@ func (s *ProjectMemberService) Get(ctx context.Context, projectID, userID uuid.U
 	return s.repository.Read(ctx, projectID, userID)
 }
 
-func (s *ProjectMemberService) Update(ctx context.Context, member model.ProjectMember) (model.ProjectMember, error) {
+func (s *ProjectMemberService) UpdateRole(ctx context.Context, member, updatedBy model.ProjectMember, newRole model.ProjectRole) (model.ProjectMember, error) {
+	if !updatedBy.CanUpdateMember(member) {
+		return model.ProjectMember{}, svcerr.ErrProjectMemberUpdateNotAllowed
+	}
+
+	if !updatedBy.CanGrantRole(newRole) {
+		return model.ProjectMember{}, svcerr.ErrProjectMemberRoleCannotBeGranted
+	}
+
+	member.Role = newRole
 	return s.repository.Update(ctx, member)
 }
 
