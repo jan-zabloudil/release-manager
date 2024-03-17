@@ -1,4 +1,4 @@
-package transport
+package handler
 
 import (
 	"errors"
@@ -14,30 +14,30 @@ import (
 )
 
 func (h *Handler) listProjectMembers(w http.ResponseWriter, r *http.Request) {
-	m, err := h.ProjectMemberSvc.ListAll(r.Context(), ContextProject(r).ID)
+	m, err := h.ProjectMemberSvc.ListAll(r.Context(), utils.ContextProject(r).ID)
 	if err != nil {
-		WriteServerErrorResponse(w, err)
+		utils.WriteServerErrorResponse(w, err)
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToNetProjectMembers(m))
+	utils.WriteJSONResponse(w, http.StatusOK, model.ToNetProjectMembers(m))
 }
 
 func (h *Handler) handleProjectMember(w http.ResponseWriter, r *http.Request) {
-	userID, err := GetUUIDParamFrom(r, "userId")
+	userID, err := utils.GetUUIDParamFrom(r, "userId")
 	if err != nil {
-		WriteNotFoundResponse(w, err)
+		utils.WriteNotFoundResponse(w, err)
 		return
 	}
 
-	m, err := h.ProjectMemberSvc.Get(r.Context(), ContextProject(r).ID, userID)
+	m, err := h.ProjectMemberSvc.Get(r.Context(), utils.ContextProject(r).ID, userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, reperr.ErrResourceNotFound):
-			WriteNotFoundResponse(w, err)
+			utils.WriteNotFoundResponse(w, err)
 			return
 		default:
-			WriteServerErrorResponse(w, err)
+			utils.WriteServerErrorResponse(w, err)
 			return
 		}
 	}
@@ -54,12 +54,12 @@ func (h *Handler) handleProjectMember(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getProjectMember(w http.ResponseWriter, member model.ProjectMember) {
-	WriteJSONResponse(w, http.StatusOK, member)
+	utils.WriteJSONResponse(w, http.StatusOK, member)
 }
 
 func (h *Handler) deleteProjectMember(w http.ResponseWriter, r *http.Request, userID uuid.UUID) {
-	if err := h.ProjectMemberSvc.Delete(r.Context(), ContextProject(r).ID, userID); err != nil {
-		WriteServerErrorResponse(w, err)
+	if err := h.ProjectMemberSvc.Delete(r.Context(), utils.ContextProject(r).ID, userID); err != nil {
+		utils.WriteServerErrorResponse(w, err)
 		return
 	}
 
@@ -69,33 +69,33 @@ func (h *Handler) deleteProjectMember(w http.ResponseWriter, r *http.Request, us
 func (h *Handler) updateProjectMember(w http.ResponseWriter, r *http.Request, m svcmodel.ProjectMember) {
 	var input model.UpdateProjectRole
 
-	if err := UnmarshalRequest(r, &input); err != nil {
-		WriteBadRequestResponse(w, err)
+	if err := utils.UnmarshalRequest(r, &input); err != nil {
+		utils.WriteBadRequestResponse(w, err)
 		return
 	}
 
 	if err := utils.Validate.Struct(input); err != nil {
-		WriteUnprocessableEntityResponse(w, err)
+		utils.WriteUnprocessableEntityResponse(w, err)
 		return
 	}
 
 	role, err := svcmodel.NewProjectRole(input.Role)
 	if err != nil {
-		WriteUnprocessableEntityResponse(w, err)
+		utils.WriteUnprocessableEntityResponse(w, err)
 		return
 	}
 
-	m, err = h.ProjectMemberSvc.UpdateRole(r.Context(), m, ContextProjectMember(r), role)
+	m, err = h.ProjectMemberSvc.UpdateRole(r.Context(), m, utils.ContextProjectMember(r), role)
 	if err != nil {
 		switch {
 		case errors.Is(err, svcerr.ErrProjectMemberRoleCannotBeGranted), errors.Is(err, svcerr.ErrProjectMemberUpdateNotAllowed):
-			WriteForbiddenErrorResponse(w, err)
+			utils.WriteForbiddenErrorResponse(w, err)
 			return
 		default:
-			WriteServerErrorResponse(w, err)
+			utils.WriteServerErrorResponse(w, err)
 			return
 		}
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToNetProjectMember(m))
+	utils.WriteJSONResponse(w, http.StatusOK, model.ToNetProjectMember(m))
 }

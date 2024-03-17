@@ -1,12 +1,10 @@
-package transport
+package utils
 
 import (
 	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
-
-	"release-manager/transport/utils"
 
 	"github.com/go-playground/validator/v10"
 	httpx "go.strv.io/net/http"
@@ -94,7 +92,7 @@ func WriteUnprocessableEntityResponse(w http.ResponseWriter, err error) {
 	var verrs validator.ValidationErrors
 	if errors.As(err, &verrs) {
 		msg := "validation errors"
-		te := utils.TranslateValidationErrs(verrs)
+		te := TranslateValidationErrs(verrs)
 		WriteErrorResponse(
 			w,
 			http.StatusUnprocessableEntity,

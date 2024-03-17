@@ -1,4 +1,4 @@
-package transport
+package handler
 
 import (
 	"errors"
@@ -6,39 +6,40 @@ import (
 
 	reperr "release-manager/repository/errors"
 	"release-manager/transport/model"
+	"release-manager/transport/utils"
 )
 
 func (h *Handler) listProjectInvitations(w http.ResponseWriter, r *http.Request) {
-	i, err := h.ProjectInvitationSvc.ListAll(r.Context(), ContextProject(r).ID)
+	i, err := h.ProjectInvitationSvc.ListAll(r.Context(), utils.ContextProject(r).ID)
 	if err != nil {
-		WriteServerErrorResponse(w, err)
+		utils.WriteServerErrorResponse(w, err)
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToNetProjectInvitations(i))
+	utils.WriteJSONResponse(w, http.StatusOK, model.ToNetProjectInvitations(i))
 }
 
 func (h *Handler) deleteProjectInvitation(w http.ResponseWriter, r *http.Request) {
-	invitationID, err := GetUUIDParamFrom(r, "invitationId")
+	invitationID, err := utils.GetUUIDParamFrom(r, "invitationId")
 	if err != nil {
-		WriteNotFoundResponse(w, err)
+		utils.WriteNotFoundResponse(w, err)
 		return
 	}
 
-	projectID := ContextProject(r).ID
+	projectID := utils.ContextProject(r).ID
 	if _, err = h.ProjectInvitationSvc.Get(r.Context(), projectID, invitationID); err != nil {
 		switch {
 		case errors.Is(err, reperr.ErrResourceNotFound):
-			WriteNotFoundResponse(w, err)
+			utils.WriteNotFoundResponse(w, err)
 			return
 		default:
-			WriteServerErrorResponse(w, err)
+			utils.WriteServerErrorResponse(w, err)
 			return
 		}
 	}
 
 	if err := h.ProjectInvitationSvc.Delete(r.Context(), projectID, invitationID); err != nil {
-		WriteServerErrorResponse(w, err)
+		utils.WriteServerErrorResponse(w, err)
 		return
 	}
 

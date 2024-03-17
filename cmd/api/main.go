@@ -9,7 +9,7 @@ import (
 
 	"release-manager/repository"
 	"release-manager/service"
-	"release-manager/transport"
+	"release-manager/transport/handler"
 	"release-manager/transport/utils"
 
 	"github.com/nedpals/supabase-go"
@@ -28,7 +28,7 @@ func main() {
 
 	repo := repository.NewRepository(supaClient)
 	svc := service.NewService(repo.User, repo.Project, repo.ProjectInvitation, repo.ProjectMember)
-	h := transport.NewHandler(svc.User, svc.Project, svc.ProjectMembership, svc.ProjectInvitation, svc.ProjectMember)
+	h := handler.NewHandler(svc.User, svc.Project, svc.ProjectMembership, svc.ProjectInvitation, svc.ProjectMember)
 
 	serverConfig := httpx.ServerConfig{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
