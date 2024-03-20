@@ -8,9 +8,16 @@ type Service struct {
 	ProjectInvitation *ProjectInvitationService
 	ProjectMember     *ProjectMemberService
 	ProjectMembership *ProjectMembershipManagementService
+	App               *AppService
 }
 
-func NewService(ur model.UserRepository, pr model.ProjectRepository, pir model.ProjectInvitationRepository, pmr model.ProjectMemberRepository) *Service {
+func NewService(
+	ur model.UserRepository,
+	pr model.ProjectRepository,
+	pir model.ProjectInvitationRepository,
+	pmr model.ProjectMemberRepository,
+	as model.AppRepository,
+) *Service {
 	userSvc := &UserService{ur}
 	projectInvitationSvc := &ProjectInvitationService{pir}
 	projectMemberSvc := &ProjectMemberService{pmr}
@@ -25,5 +32,6 @@ func NewService(ur model.UserRepository, pr model.ProjectRepository, pir model.P
 			memberSvc:     projectMemberSvc,
 			invitationSvc: projectInvitationSvc,
 		},
+		App: &AppService{as},
 	}
 }

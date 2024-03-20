@@ -20,6 +20,8 @@ func init() {
 	uni := ut.New(english, english)
 	translator, _ = uni.GetTranslator("en")
 	_ = entrans.RegisterDefaultTranslations(Validate, translator)
+
+	registerCustomValidations()
 }
 
 func TranslateValidationErrs(errs validator.ValidationErrors) map[string]string {
@@ -30,4 +32,15 @@ func TranslateValidationErrs(errs validator.ValidationErrors) map[string]string 
 		m[field] = err.Translate(translator)
 	}
 	return m
+}
+
+func registerTranslation(tag, msg string) {
+	if err := Validate.RegisterTranslation(tag, translator, func(ut ut.Translator) error {
+		return ut.Add(tag, msg, true)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		t, _ := ut.T(tag, fe.Field())
+		return t
+	}); err != nil {
+		panic(err)
+	}
 }

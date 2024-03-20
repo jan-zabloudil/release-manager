@@ -44,7 +44,19 @@ func (h *Handler) setupRoutes() {
 					r.Delete("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectID, svcmodel.ProjectRoleEditor(), h.handleProjectMember))
 				})
 			})
+
+			r.Route("/apps", func(r chi.Router) {
+				r.Post("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectID, svcmodel.ProjectRoleEditor(), h.createApp))
+				r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectID, svcmodel.ProjectRoleViewer(), h.listApps))
+			})
 		})
+	})
+
+	h.Mux.Route("/apps/{appId}", func(r chi.Router) {
+		r.Use(middleware.HandleApp(h.AppSvc))
+		r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.getApp))
+		r.Patch("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.updateApp))
+		r.Delete("/", middleware.RequireAdminUser(h.deleteApp))
 	})
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {

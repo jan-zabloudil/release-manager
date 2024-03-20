@@ -13,6 +13,7 @@ type Handler struct {
 	ProjectMembershipMgmtSvc model.ProjectMembershipManagementService
 	ProjectInvitationSvc     model.ProjectInvitationService
 	ProjectMemberSvc         model.ProjectMemberService
+	AppSvc                   model.AppService
 }
 
 func NewHandler(
@@ -21,6 +22,7 @@ func NewHandler(
 	pms model.ProjectMembershipManagementService,
 	pis model.ProjectInvitationService,
 	pmrs model.ProjectMemberService,
+	as model.AppService,
 ) *Handler {
 	h := Handler{
 		Mux:                      chi.NewRouter(),
@@ -29,6 +31,7 @@ func NewHandler(
 		ProjectMembershipMgmtSvc: pms,
 		ProjectInvitationSvc:     pis,
 		ProjectMemberSvc:         pmrs,
+		AppSvc:                   as,
 	}
 
 	h.setupRoutes()
