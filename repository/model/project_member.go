@@ -1,8 +1,6 @@
 package model
 
 import (
-	"fmt"
-
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -46,13 +44,11 @@ func ToSvcProjectMember(m ProjectMember) (svcmodel.ProjectMember, error) {
 		m.User.UpdatedAt,
 	)
 	if err != nil {
-		fmt.Println("to model part 1", err)
 		return svcmodel.ProjectMember{}, err
 	}
 
 	role, err := svcmodel.NewProjectRole(m.Role)
 	if err != nil {
-		fmt.Println("to model part 2", err)
 		return svcmodel.ProjectMember{}, err
 	}
 

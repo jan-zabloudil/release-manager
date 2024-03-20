@@ -59,7 +59,7 @@ func TestProjectRole_IsEqualOrSuperiorTo(t *testing.T) {
 	}
 }
 
-func TestRole_IsSuperiorTo(t *testing.T) {
+func TestProjectRole_IsSuperiorTo(t *testing.T) {
 	admin, _ := NewProjectRole(adminProjectRole)
 	editor, _ := NewProjectRole(editorProjectRole)
 	viewer, _ := NewProjectRole(viewerProjectRole)
