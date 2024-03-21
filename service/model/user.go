@@ -7,6 +7,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserRepository interface {
+	ReadForToken(ctx context.Context, token string) (User, error)
+	Read(ctx context.Context, id uuid.UUID) (User, error)
+	ReadAll(ctx context.Context) ([]User, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
 var AnonUser = &User{}
 
 type User struct {
@@ -17,10 +24,6 @@ type User struct {
 	Role      UserRole
 	CreatedAt time.Time
 	UpdatedAt time.Time
-}
-
-type UserRepository interface {
-	ReadForToken(ctx context.Context, token string) (User, error)
 }
 
 func (s *User) IsAdmin() bool {

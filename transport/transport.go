@@ -27,6 +27,12 @@ func NewHandler(us model.UserService) *Handler {
 	h.Mux.Use(httpx.RecoverMiddleware(utils.NewServerLogger("recover")))
 	h.Mux.Use(h.auth)
 
+	h.Mux.Get("/admin/users", h.requireAdminUser(h.getUsers))
+	h.Mux.Route("/admin/users/{id}", func(r chi.Router) {
+		r.Get("/", h.requireAdminUser(h.handleUser))
+		r.Delete("/", h.requireAdminUser(h.handleUser))
+	})
+
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
