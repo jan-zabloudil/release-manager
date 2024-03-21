@@ -1,7 +1,13 @@
 package service
 
-type Service struct{}
+import "release-manager/service/model"
 
-func NewService() *Service {
-	return &Service{}
+type Service struct {
+	User *UserService
+}
+
+func NewService(ur model.UserRepository) *Service {
+	return &Service{
+		User: &UserService{ur},
+	}
 }

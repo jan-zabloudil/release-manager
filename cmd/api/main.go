@@ -2,85 +2,51 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 	"time"
 
-	"github.com/jan-zabloudil/release-manager/transport"
+	"release-manager/repository"
+	"release-manager/service"
+	"release-manager/transport"
+	"release-manager/transport/utils"
+
+	"github.com/nedpals/supabase-go"
+	httpx "go.strv.io/net/http"
+	timex "go.strv.io/time"
 )
 
-type server struct {
-	server *http.Server
-	wg     sync.WaitGroup
-}
-
 func main() {
-	cfg := loadConfig()
+	ctx := context.Background()
+	cfg := loadConfig(ctx)
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.LogLevel}))
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: cfg.LogLevel}))
 	slog.SetDefault(logger)
 
-	h := transport.NewHandler()
+	supaClient := supabase.CreateClient(cfg.Supabase.ApiURL, cfg.Supabase.SecretKey)
 
-	srv := &server{
-		server: &http.Server{
-			Addr:         fmt.Sprintf(":%d", cfg.Port),
-			Handler:      h.Mux,
-			IdleTimeout:  time.Minute,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
+	repo := repository.NewRepository(supaClient)
+	svc := service.NewService(repo.User)
+	h := transport.NewHandler(svc.User)
+
+	serverConfig := httpx.ServerConfig{
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		Handler: h.Mux,
+		Limits: &httpx.Limits{
+			Timeouts: &httpx.Timeouts{
+				IdleTimeout:  timex.Duration(time.Minute),
+				ReadTimeout:  timex.Duration(5 * time.Second),
+				WriteTimeout: timex.Duration(10 * time.Second),
+			},
 		},
+		Logger: utils.NewServerLogger("server"),
 	}
 
-	if err := srv.run(); err != nil {
-		slog.Error(err.Error())
+	server := httpx.NewServer(&serverConfig)
+	slog.Info("starting server", "addr", serverConfig.Addr)
+	if err := server.Run(ctx); err != nil {
+		slog.Error("running server", "error", err)
 		os.Exit(1)
 	}
-}
-
-func (srv *server) run() error {
-	shutdownError := make(chan error)
-
-	go func() {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		s := <-quit
-
-		slog.Info("caught signal", "signal", s.String())
-
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
-		err := srv.server.Shutdown(ctx)
-		if err != nil {
-			shutdownError <- err
-		}
-
-		slog.Info("completing background tasks", "addr", srv.server.Addr)
-
-		srv.wg.Wait()
-		shutdownError <- nil
-	}()
-
-	slog.Info("starting srv", "addr", srv.server.Addr)
-
-	err := srv.server.ListenAndServe()
-	if !errors.Is(err, http.ErrServerClosed) {
-		return err
-	}
-
-	err = <-shutdownError
-	if err != nil {
-		return err
-	}
-
-	slog.Info("stopped srv", "addr", srv.server.Addr)
-
-	return nil
 }
