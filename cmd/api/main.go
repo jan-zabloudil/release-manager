@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"release-manager/github"
 	"release-manager/repository"
 	"release-manager/service"
 	"release-manager/transport/handler"
@@ -26,9 +27,12 @@ func main() {
 
 	supaClient := supabase.CreateClient(cfg.Supabase.ApiURL, cfg.Supabase.SecretKey)
 
+	// todo load from organization settings
+	githubClient := github.New(cfg.GitHubAccessToken)
+
 	repo := repository.NewRepository(supaClient)
-	svc := service.NewService(repo.User, repo.Project, repo.ProjectInvitation, repo.ProjectMember, repo.App)
-	h := handler.NewHandler(svc.User, svc.Project, svc.ProjectMembership, svc.ProjectInvitation, svc.ProjectMember, svc.App)
+	svc := service.NewService(repo.User, repo.Project, repo.ProjectInvitation, repo.ProjectMember, repo.App, repo.App, githubClient)
+	h := handler.NewHandler(svc.User, svc.Project, svc.ProjectMembership, svc.ProjectInvitation, svc.ProjectMember, svc.App, svc.SCMRepo)
 
 	serverConfig := httpx.ServerConfig{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

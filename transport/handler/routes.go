@@ -46,8 +46,8 @@ func (h *Handler) setupRoutes() {
 			})
 
 			r.Route("/apps", func(r chi.Router) {
-				r.Post("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.createApp))
-				r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.listApps))
+				r.Post("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectID, svcmodel.ProjectRoleEditor(), h.createApp))
+				r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectID, svcmodel.ProjectRoleViewer(), h.listApps))
 			})
 		})
 	})
@@ -57,6 +57,13 @@ func (h *Handler) setupRoutes() {
 		r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.getApp))
 		r.Patch("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.updateApp))
 		r.Delete("/", middleware.RequireAdminUser(h.deleteApp))
+
+		r.Route("/repository", func(r chi.Router) {
+			r.Put("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.setSCMRepo))
+			r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.getSCMRepo))
+			r.Delete("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.deleteSCMRepo))
+			r.Get("/tags", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.getSCMRepoTags))
+		})
 	})
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {

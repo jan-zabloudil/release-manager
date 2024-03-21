@@ -143,3 +143,47 @@ func (r *AppRepository) Update(ctx context.Context, app svcmodel.App) (svcmodel.
 		resp[0].UpdatedAt,
 	)
 }
+
+func (r *AppRepository) InsertRepo(ctx context.Context, repo svcmodel.SCMRepo) (svcmodel.SCMRepo, error) {
+	
+	err := r.client.
+		DB.From(r.entity).
+		Update(model.ToDBSCMRepo(repo.Platform(), repo.RepoAbsURL(), repo.RepoOwnerIdentifier(), repo.RepoIdentifier())).
+		Eq("id", repo.AppID().String()).
+		ExecuteWithContext(ctx, nil)
+	if err != nil {
+		return nil, utils.WrapSupabaseDBErr(err)
+	}
+
+	return r.ReadRepo(ctx, repo.AppID())
+}
+
+func (r *AppRepository) ReadRepo(ctx context.Context, appID uuid.UUID) (svcmodel.SCMRepo, error) {
+	var resp model.SCMRepo
+	err := r.client.
+		DB.From(r.entity).
+		Select("scm_repo").
+		Single().
+		Eq("id", appID.String()).
+		ExecuteWithContext(ctx, &resp)
+	if err != nil {
+		return nil, utils.WrapSupabaseDBErr(err)
+	}
+
+	return model.ToSvcSCMRepo(appID, resp.Data.Platform, resp.Data.RepoURL)
+}
+
+func (r *AppRepository) DeleteRepo(ctx context.Context, appID uuid.UUID) error {
+
+	emptyRepo := svcmodel.NewEmptySCMRepo()
+	err := r.client.
+		DB.From(r.entity).
+		Update(model.ToDBSCMRepo(emptyRepo.RepoIdentifier(), emptyRepo.RepoAbsURL(), emptyRepo.RepoOwnerIdentifier(), emptyRepo.Platform())).
+		Eq("id", appID.String()).
+		ExecuteWithContext(ctx, nil)
+	if err != nil {
+		return utils.WrapSupabaseDBErr(err)
+	}
+
+	return nil
+}

@@ -14,9 +14,10 @@ type supabaseConfig struct {
 }
 
 type serviceConfig struct {
-	Port     uint           `env:"PORT, default=8080"`
-	LogLevel slog.Level     `env:"LOG_LEVEL, default=INFO"`
-	Supabase supabaseConfig `env:", prefix=SUPABASE_"`
+	Port              uint           `env:"PORT, default=8080"`
+	LogLevel          slog.Level     `env:"LOG_LEVEL, default=INFO"`
+	Supabase          supabaseConfig `env:", prefix=SUPABASE_"`
+	GitHubAccessToken string         `env:"GITHUB_ACCESS_TOKEN, required"`
 }
 
 func loadConfig(ctx context.Context) serviceConfig {

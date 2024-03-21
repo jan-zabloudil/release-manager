@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	svcmodel "release-manager/service/model"
@@ -33,6 +34,7 @@ func ContextUser(r *http.Request) *model.User {
 }
 
 func ContextSetProject(r *http.Request, p *model.Project) *http.Request {
+	fmt.Println("heeere")
 	ctx := context.WithValue(r.Context(), projectContextKey, p)
 	return r.WithContext(ctx)
 }
