@@ -8,6 +8,7 @@ type Repository struct {
 	ProjectInvitation *ProjectInvitationRepository
 	ProjectMember     *ProjectMemberRepository
 	App               *AppRepository
+	Release           *ReleaseRepository
 }
 
 func NewRepository(client *supabase.Client) *Repository {
@@ -17,5 +18,6 @@ func NewRepository(client *supabase.Client) *Repository {
 		ProjectInvitation: NewProjectInvitationRepository(client),
 		ProjectMember:     NewProjectMemberRepository(client),
 		App:               NewAppRepository(client),
+		Release:           NewReleaseRepository(client),
 	}
 }

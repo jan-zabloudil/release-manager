@@ -14,4 +14,5 @@ var (
 	ErrInvalidGithubHostUrl             = errors.New("repo url must have github.com as host")
 	ErrInvalidGithubRepoUrl             = errors.New("invalid github repository url")
 	ErrSCMRepoNotSet                    = errors.New("SCM repo is not set")
+	ErrInvalidTag                       = errors.New("invalid tag name")
 )

@@ -15,6 +15,7 @@ type Handler struct {
 	ProjectMemberSvc         model.ProjectMemberService
 	AppSvc                   model.AppService
 	SCMRepoSvc               model.SCMRepoService
+	ReleaseSvc               model.ReleaseService
 }
 
 func NewHandler(
@@ -24,7 +25,8 @@ func NewHandler(
 	pis model.ProjectInvitationService,
 	pmrs model.ProjectMemberService,
 	as model.AppService,
-	sr model.SCMRepoService,
+	srs model.SCMRepoService,
+	rs model.ReleaseService,
 ) *Handler {
 	h := Handler{
 		Mux:                      chi.NewRouter(),
@@ -34,7 +36,8 @@ func NewHandler(
 		ProjectInvitationSvc:     pis,
 		ProjectMemberSvc:         pmrs,
 		AppSvc:                   as,
-		SCMRepoSvc:               sr,
+		SCMRepoSvc:               srs,
+		ReleaseSvc:               rs,
 	}
 
 	h.setupRoutes()

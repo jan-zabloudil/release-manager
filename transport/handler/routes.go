@@ -64,6 +64,18 @@ func (h *Handler) setupRoutes() {
 			r.Delete("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.deleteSCMRepo))
 			r.Get("/tags", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.getSCMRepoTags))
 		})
+
+		r.Route("/releases", func(r chi.Router) {
+			r.Post("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.createRelease))
+			r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.listReleases))
+		})
+	})
+
+	h.Mux.Route("/releases/{id}", func(r chi.Router) {
+		r.Use(middleware.HandleRelease(h.ReleaseSvc, h.AppSvc))
+		r.Get("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleViewer(), h.getRelease))
+		r.Patch("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.updateRelease))
+		r.Delete("/", middleware.RequireProjectMemberRole(h.ProjectMemberSvc, utils.ContextProjectIDFromApp, svcmodel.ProjectRoleEditor(), h.deleteRelease))
 	})
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {

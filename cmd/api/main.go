@@ -31,8 +31,26 @@ func main() {
 	githubClient := github.New(cfg.GitHubAccessToken)
 
 	repo := repository.NewRepository(supaClient)
-	svc := service.NewService(repo.User, repo.Project, repo.ProjectInvitation, repo.ProjectMember, repo.App, repo.App, githubClient)
-	h := handler.NewHandler(svc.User, svc.Project, svc.ProjectMembership, svc.ProjectInvitation, svc.ProjectMember, svc.App, svc.SCMRepo)
+	svc := service.NewService(
+		repo.User,
+		repo.Project,
+		repo.ProjectInvitation,
+		repo.ProjectMember,
+		repo.App,
+		repo.App,
+		githubClient,
+		repo.Release,
+	)
+	h := handler.NewHandler(
+		svc.User,
+		svc.Project,
+		svc.ProjectMembership,
+		svc.ProjectInvitation,
+		svc.ProjectMember,
+		svc.App,
+		svc.SCMRepo,
+		svc.Release,
+	)
 
 	serverConfig := httpx.ServerConfig{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

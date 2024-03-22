@@ -10,6 +10,7 @@ type Service struct {
 	ProjectMembership *ProjectMembershipManagementService
 	App               *AppService
 	SCMRepo           *SCMRepoService
+	Release           *ReleaseService
 }
 
 func NewService(
@@ -20,6 +21,7 @@ func NewService(
 	ar model.AppRepository,
 	sr model.SCMRepoRepository,
 	github model.GitHub,
+	rr model.ReleaseRepository,
 ) *Service {
 	userSvc := &UserService{ur}
 	projectInvitationSvc := &ProjectInvitationService{pir}
@@ -37,5 +39,6 @@ func NewService(
 		},
 		App:     &AppService{ar},
 		SCMRepo: &SCMRepoService{sr, github},
+		Release: &ReleaseService{rr},
 	}
 }
