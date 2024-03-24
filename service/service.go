@@ -22,6 +22,7 @@ func NewService(
 	sr model.SCMRepoRepository,
 	github model.GitHub,
 	rr model.ReleaseRepository,
+	slack model.Slack,
 ) *Service {
 	userSvc := &UserService{ur}
 	projectInvitationSvc := &ProjectInvitationService{pir}
@@ -39,6 +40,6 @@ func NewService(
 		},
 		App:     &AppService{ar},
 		SCMRepo: &SCMRepoService{sr, github},
-		Release: &ReleaseService{rr},
+		Release: &ReleaseService{rr, slack},
 	}
 }

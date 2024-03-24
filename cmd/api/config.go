@@ -18,6 +18,7 @@ type serviceConfig struct {
 	LogLevel          slog.Level     `env:"LOG_LEVEL, default=INFO"`
 	Supabase          supabaseConfig `env:", prefix=SUPABASE_"`
 	GitHubAccessToken string         `env:"GITHUB_ACCESS_TOKEN, required"`
+	SlackApiKey       string         `env:"SLACK_API_KEY, required"`
 }
 
 func loadConfig(ctx context.Context) serviceConfig {

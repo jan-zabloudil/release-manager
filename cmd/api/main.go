@@ -10,6 +10,7 @@ import (
 	"release-manager/github"
 	"release-manager/repository"
 	"release-manager/service"
+	"release-manager/slack"
 	"release-manager/transport/handler"
 	"release-manager/transport/utils"
 
@@ -29,6 +30,7 @@ func main() {
 
 	// todo load from organization settings
 	githubClient := github.New(cfg.GitHubAccessToken)
+	slackClient := slack.New(cfg.SlackApiKey)
 
 	repo := repository.NewRepository(supaClient)
 	svc := service.NewService(
@@ -40,6 +42,7 @@ func main() {
 		repo.App,
 		githubClient,
 		repo.Release,
+		slackClient,
 	)
 	h := handler.NewHandler(
 		svc.User,

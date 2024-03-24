@@ -17,6 +17,19 @@ type ReleaseRepository interface {
 	Update(ctx context.Context, r Release) (Release, error)
 }
 
+type Slack interface {
+	PostTestMessage(ctx context.Context, channelID string) error
+	PostReleaseMessage(ctx context.Context, channelID string) error
+}
+
+type AppService interface {
+	Get(ctx context.Context, id uuid.UUID) (App, error)
+}
+
+type ProjectService interface {
+	Get(ctx context.Context, id uuid.UUID) (Project, error)
+}
+
 type Release struct {
 	ID              uuid.UUID
 	AppID           uuid.UUID
