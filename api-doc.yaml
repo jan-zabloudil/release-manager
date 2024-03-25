@@ -800,7 +800,7 @@ paths:
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
   /templates/{template-id}:
-    put:
+    patch:
       summary: 'Update template'
       security:
         - bearerAuth: []
@@ -813,7 +813,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TemplateRequest'
+              $ref: '#/components/schemas/TemplatePatchRequest'
       responses:
         '200':
           description: 'Template updated'
@@ -1294,20 +1294,37 @@ components:
     TemplateRequest:
       type: object
       properties:
-        name:
-          type: string
-          example: 'Production release'
         type:
           type: string
           enum:
-            - 'release-message'
-        content:
-          type: string
-          example: '<p>Hey!<br />We have just released new version of our backend app - {{release.version}}!</>'
+            - 'release_message'
+        template_data:
+          type: object
+          properties:
+            title:
+              type: string
+            text:
+              type: string
+            includes:
+              type: array
+              items:
+                type: string
+                example: ["project_name", "app_name", "changelog"]
       required:
-        - name
         - type
-        - content
+        - template_data
+    TemplatePatchRequest:
+        type: object
+        properties:
+          title:
+            type: string
+          text:
+            type: string
+          includes:
+            type: array
+            items:
+              type: string
+              example: ["project_name", "app_name", "changelog"]
     TemplateResponse:
       allOf:
         - $ref: '#/components/schemas/TemplateRequest'
@@ -1316,16 +1333,8 @@ components:
             id:
               type: string
               format: uuid
-            created_at:
-              type: string
-              format: date-time
-            updated_at:
-              type: string
-              format: date-time
           required:
             - id
-            - created_at
-            - updated_at
     AppRequest:
       type: object
       properties:

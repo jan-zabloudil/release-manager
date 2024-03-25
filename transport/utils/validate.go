@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/go-playground/locales/en"
@@ -20,6 +21,16 @@ func init() {
 	uni := ut.New(english, english)
 	translator, _ = uni.GetTranslator("en")
 	_ = entrans.RegisterDefaultTranslations(Validate, translator)
+
+	Validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+
+		if name == "-" {
+			return ""
+		}
+
+		return name
+	})
 }
 
 func TranslateValidationErrs(errs validator.ValidationErrors) map[string]string {
