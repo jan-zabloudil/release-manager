@@ -2,9 +2,8 @@ package slack
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
-
-	"release-manager/slack/model"
 
 	"github.com/slack-go/slack"
 )
@@ -28,15 +27,14 @@ func NewSilent() *SilentSlack {
 	return &SilentSlack{}
 }
 
-func (s *Slack) sendMessageWithAttachments(ctx context.Context, channelID string, msg *model.Message) error {
-
-	a := msg.Attachments
+func (s *Slack) sendMessage(ctx context.Context, channelID string, options []slack.MsgOption) error {
 	_, _, err := s.client.PostMessageContext(
 		ctx,
 		channelID,
-		slack.MsgOptionAttachments(*a),
+		options...,
 	)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 

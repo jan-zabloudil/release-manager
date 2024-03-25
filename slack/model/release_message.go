@@ -11,12 +11,12 @@ const (
 	footerText   = "Release Manager"
 )
 
-type Message struct {
+type ReleaseMessage struct {
 	Attachments *slack.Attachment
 }
 
-func NewMessage(title, text string) *Message {
-	return &Message{
+func NewReleaseMessage(title, text string) *ReleaseMessage {
+	return &ReleaseMessage{
 		Attachments: &slack.Attachment{
 			Color:   messageColor,
 			Pretext: fmt.Sprintf("*%s*\n\n%s", title, text),
@@ -25,12 +25,18 @@ func NewMessage(title, text string) *Message {
 	}
 }
 
-func (m *Message) WithField(title, value string) *Message {
+func (m *ReleaseMessage) WithField(title, value string) *ReleaseMessage {
 	m.Attachments.Fields = append(m.Attachments.Fields, slack.AttachmentField{
 		Title: title,
 		Value: value,
-		Short: true,
+		Short: false,
 	})
 
 	return m
+}
+
+func (m *ReleaseMessage) Options() []slack.MsgOption {
+	return []slack.MsgOption{
+		slack.MsgOptionAttachments(*m.Attachments),
+	}
 }

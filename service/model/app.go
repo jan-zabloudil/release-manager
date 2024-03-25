@@ -44,6 +44,10 @@ type EnvURL interface {
 }
 
 func (u *envURL) String() string {
+	if u.url == nil {
+		return "n/a"
+	}
+
 	return u.url.String()
 }
 

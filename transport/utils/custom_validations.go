@@ -58,10 +58,10 @@ func registerCustomValidations() {
 	if err := Validate.RegisterValidation(sourceCodeRequired, ValidateSourceCodeRequired); err != nil {
 		panic(err)
 	}
-	registerTranslation(sourceCodeRequired, "{0} is required field and must have 'tag' and 'created_from' fields")
+	registerTranslation(sourceCodeRequired, "{0} is required field and must have 'tag' and 'target_commitish' fields")
 
 	if err := Validate.RegisterValidation(sourceCodeIfPresent, ValidateSourceCodeIfPresent); err != nil {
 		panic(err)
 	}
-	registerTranslation(sourceCodeIfPresent, "{0} is required field and must have 'tag' and 'created_from' fields")
+	registerTranslation(sourceCodeIfPresent, "{0} is required field and must have 'tag' and 'target_commitish' fields")
 }
