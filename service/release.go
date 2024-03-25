@@ -17,7 +17,10 @@ type ReleaseService struct {
 
 func (s *ReleaseService) Create(ctx context.Context, r model.Release) (model.Release, error) {
 
-	s.slack.PostReleaseMessage(ctx, "C065E66TZ36")
+	p, _ := s.projectSvc.Get(ctx, r.AppID)
+	a, _ := s.appSvc.Get(ctx, r.AppID)
+
+	s.slack.PostReleaseMessage(ctx, p, a, r)
 
 	return s.repository.Insert(ctx, r)
 }

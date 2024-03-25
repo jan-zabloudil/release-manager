@@ -18,8 +18,7 @@ type ReleaseRepository interface {
 }
 
 type Slack interface {
-	PostTestMessage(ctx context.Context, channelID string) error
-	PostReleaseMessage(ctx context.Context, channelID string) error
+	PostReleaseMessage(ctx context.Context, p Project, app App, rls Release) error
 }
 
 type AppService interface {

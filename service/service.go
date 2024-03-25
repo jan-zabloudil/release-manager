@@ -25,12 +25,15 @@ func NewService(
 	slack model.Slack,
 ) *Service {
 	userSvc := &UserService{ur}
+	projectSvc := &ProjectService{pr}
+	appSvc := &AppService{ar}
+
 	projectInvitationSvc := &ProjectInvitationService{pir}
 	projectMemberSvc := &ProjectMemberService{pmr}
 
 	return &Service{
 		User:              userSvc,
-		Project:           &ProjectService{pr},
+		Project:           projectSvc,
 		ProjectInvitation: projectInvitationSvc,
 		ProjectMember:     projectMemberSvc,
 		ProjectMembership: &ProjectMembershipManagementService{
@@ -38,8 +41,8 @@ func NewService(
 			memberSvc:     projectMemberSvc,
 			invitationSvc: projectInvitationSvc,
 		},
-		App:     &AppService{ar},
+		App:     appSvc,
 		SCMRepo: &SCMRepoService{sr, github},
-		Release: &ReleaseService{rr, slack},
+		Release: &ReleaseService{appSvc, projectSvc, rr, slack},
 	}
 }

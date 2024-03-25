@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 
+	"release-manager/slack/model"
+
 	"github.com/slack-go/slack"
 )
 
@@ -26,11 +28,15 @@ func NewSilent() *SilentSlack {
 	return &SilentSlack{}
 }
 
-func (s *Slack) sendTextMessage(ctx context.Context, channelID string, text string) error {
-	msg := slack.MsgOptionText(text, false)
-	params := slack.MsgOptionPostMessageParameters(slack.PostMessageParameters{Markdown: true})
+func (s *Slack) sendMessageWithAttachments(ctx context.Context, channelID string, msg *model.Message) error {
 
-	if _, _, err := s.client.PostMessageContext(ctx, channelID, msg, params); err != nil {
+	a := msg.Attachments
+	_, _, err := s.client.PostMessageContext(
+		ctx,
+		channelID,
+		slack.MsgOptionAttachments(*a),
+	)
+	if err != nil {
 		return err
 	}
 
