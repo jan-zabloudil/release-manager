@@ -8,11 +8,10 @@ import (
 )
 
 func (s *Slack) PostReleaseMessage(ctx context.Context, p svcmodel.Project, app svcmodel.App, rls svcmodel.Release) error {
-	// Project will hold information about message template
+	// Project will hold information about release message
 	// Project will also hold information about channelID
 	// MessageTemplate could provide a method that would return map of :
 	// If information should be included
-	// Title
 
 	title := ":rocket: *New release* :rocket:"
 	text := "Hi everyone,\\nI’m thrilled to announce new release!"
