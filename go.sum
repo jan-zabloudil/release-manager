@@ -40,8 +40,11 @@ github.com/sethvargo/go-envconfig v1.0.1 h1:9wglip/5fUfaH0lQecLM8AyOClMw0gT0A9K2
 github.com/sethvargo/go-envconfig v1.0.1/go.mod h1:OKZ02xFaD3MvWBBmEW45fQr08sJEsonGrrOdicvQmQA=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 go.strv.io/net v0.6.2 h1:xGAhXVtWdmQYg+5mwpailLOPasYssuq+V9+zr7ZBLHE=
 go.strv.io/net v0.6.2/go.mod h1:fI3s/bJhjENty64x9Z2f9gflZO3xX/h1/ID2qDPV/Hk=
+go.strv.io/net v0.7.0 h1:1ByNwiR6NHBCMAbbZfbljPnp6PaTRyTphNaQzSFjXeg=
+go.strv.io/net v0.7.0/go.mod h1:OcvhL1UJ0szy8Seh4r7GHyZ6Y3navoDpVX+a7jxpcO0=
 go.strv.io/time v0.2.0 h1:RgCpABq+temfp8+DLM2zqsdimnKpktOSPduUghM8ZIk=
 go.strv.io/time v0.2.0/go.mod h1:B/lByAO3oACN3uLOXQaB64cKhkVIMoZjnZBhADFNbFY=
 golang.org/x/crypto v0.19.0 h1:ENy+Az/9Y1vSrlrvBSyna3PITt4tiZLf7sgCjZBX7Wo=

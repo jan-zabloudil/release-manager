@@ -10,7 +10,6 @@ import (
 	"release-manager/repository"
 	"release-manager/service"
 	"release-manager/transport"
-	"release-manager/transport/utils"
 
 	"github.com/nedpals/supabase-go"
 	httpx "go.strv.io/net/http"
@@ -40,7 +39,7 @@ func main() {
 				WriteTimeout: timex.Duration(10 * time.Second),
 			},
 		},
-		Logger: utils.NewServerLogger("server"),
+		Logger: logger.WithGroup("server"),
 	}
 
 	server := httpx.NewServer(&serverConfig)
