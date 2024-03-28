@@ -12,7 +12,6 @@ tags:
   - name: Project applications
   - name: Application git repository
   - name: Application releases
-  - name: Release message templates
 
 paths:
   /ping:
@@ -750,123 +749,6 @@ paths:
           $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
-  /templates:
-    post:
-      summary: 'Create template'
-      security:
-        - bearerAuth: []
-      tags:
-        - Release message templates
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TemplateRequest'
-      responses:
-        '201':
-          description: 'Template created'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TemplateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequestErrorResponse'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-              $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
-        '422':
-              $ref: '#/components/responses/UnprocesssableEntityResponse'
-    get:
-      summary: 'List templates'
-      security:
-        - bearerAuth: []
-      tags:
-        - Release message templates
-      responses:
-        '200':
-          description: 'Templates fetched'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TemplateResponse'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
-  /templates/{template-id}:
-    put:
-      summary: 'Update template'
-      security:
-        - bearerAuth: []
-      tags:
-        - Release message templates
-      parameters:
-        - $ref: '#/components/parameters/TemplateIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TemplateRequest'
-      responses:
-        '200':
-          description: 'Template updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TemplateResponse'
-        '400':
-              $ref: '#/components/responses/BadRequestErrorResponse'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-              $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
-        '422':
-              $ref: '#/components/responses/UnprocesssableEntityResponse'
-    get:
-      summary: 'Get template By ID'
-      security:
-        - bearerAuth: []
-      tags:
-        - Release message templates
-      parameters:
-        - $ref: '#/components/parameters/TemplateIdParam'
-      responses:
-        '200':
-          description: 'Template fetched'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TemplateResponse'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
-    delete:
-      summary: 'Delete template'
-      security:
-        - bearerAuth: []
-      tags:
-        - Release message templates
-      parameters:
-        - $ref: '#/components/parameters/TemplateIdParam'
-      responses:
-        '204':
-          description: 'Template deleted'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-              $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
   /app/{app-id}/repository:
     put:
       summary: 'Connect GitHub repository'
@@ -1015,14 +897,6 @@ components:
       name: member-id
       in: path
       description: Member ID
-      required: true
-      schema:
-        type: string
-        format: uuid
-    TemplateIdParam:
-      name: template-id
-      in: path
-      description: Template ID
       required: true
       schema:
         type: string
@@ -1291,41 +1165,6 @@ components:
         - message
         - project_name
         - project_id
-    TemplateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          example: 'Production release'
-        type:
-          type: string
-          enum:
-            - 'release-message'
-        content:
-          type: string
-          example: '<p>Hey!<br />We have just released new version of our backend app - {{release.version}}!</>'
-      required:
-        - name
-        - type
-        - content
-    TemplateResponse:
-      allOf:
-        - $ref: '#/components/schemas/TemplateRequest'
-        - type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-            created_at:
-              type: string
-              format: date-time
-            updated_at:
-              type: string
-              format: date-time
-          required:
-            - id
-            - created_at
-            - updated_at
     AppRequest:
       type: object
       properties:
