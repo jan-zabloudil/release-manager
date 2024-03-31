@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"release-manager/repository/mocks"
+	repomock "release-manager/repository/mock"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -13,8 +13,8 @@ import (
 )
 
 func TestAuth_AuthorizeRole(t *testing.T) {
-	mockAuthRepo := new(mocks.MockAuthRepository)
-	mockUserRepo := new(mocks.MockUserRepository)
+	mockAuthRepo := new(repomock.AuthRepository)
+	mockUserRepo := new(repomock.UserRepository)
 	authService := NewAuthService(mockAuthRepo, mockUserRepo)
 
 	adminRole := model.UserRoleAdmin
@@ -69,12 +69,9 @@ func TestAuth_AuthorizeRole(t *testing.T) {
 }
 
 func TestAuth_AuthorizeAdminRole(t *testing.T) {
-	mockAuthRepo := new(mocks.MockAuthRepository)
-	mockUserRepo := new(mocks.MockUserRepository)
+	mockAuthRepo := new(repomock.AuthRepository)
+	mockUserRepo := new(repomock.UserRepository)
 	authService := NewAuthService(mockAuthRepo, mockUserRepo)
-
-	adminRole := model.UserRoleAdmin
-	userRole := model.UserRoleUser
 
 	testCases := []struct {
 		name      string
@@ -85,13 +82,13 @@ func TestAuth_AuthorizeAdminRole(t *testing.T) {
 		{
 			name:      "Admin role success",
 			userID:    uuid.New(),
-			userRole:  adminRole,
+			userRole:  model.UserRoleAdmin,
 			expectErr: false,
 		},
 		{
 			name:      "User role denied",
 			userID:    uuid.New(),
-			userRole:  userRole,
+			userRole:  model.UserRoleUser,
 			expectErr: true,
 		},
 	}

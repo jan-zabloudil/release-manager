@@ -41,8 +41,8 @@ func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.U
 		resp.Name,
 		resp.AvatarURL,
 		resp.Role,
-		resp.CreatedAt.Time,
-		resp.UpdatedAt.Time,
+		resp.CreatedAt,
+		resp.UpdatedAt,
 	)
 	if err != nil {
 		return svcmodel.User{}, dberrors.NewToSvcModelError().Wrap(err)

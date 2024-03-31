@@ -1,19 +1,12 @@
 package model
 
 import (
-	"context"
 	"time"
 
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
 )
-
-type UserService interface {
-	Get(ctx context.Context, id, authUserID uuid.UUID) (svcmodel.User, error)
-	GetAll(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.User, error)
-	Delete(ctx context.Context, id, authUserID uuid.UUID) error
-}
 
 type User struct {
 	ID        uuid.UUID `json:"id"`
@@ -32,8 +25,8 @@ func ToUser(id uuid.UUID, role svcmodel.UserRole, email, name, avatarURL string,
 		Email:     email,
 		Name:      name,
 		AvatarURL: avatarURL,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		CreatedAt: createdAt.Local(),
+		UpdatedAt: updatedAt.Local(),
 	}
 }
 

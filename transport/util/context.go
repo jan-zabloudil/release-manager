@@ -11,11 +11,21 @@ import (
 type contextKey string
 
 const (
-	authUserIDContextKey contextKey = "auth_user_id"
-	userIDContextKey     contextKey = "user_id"
+	authUserIDContextKey    contextKey = "auth_user_id"
+	userIDContextKey        contextKey = "user_id"
+	projectIDContextKey     contextKey = "project_id"
+	environmentIDContextKey contextKey = "environment_id"
 )
 
 type ContextSetUUIDFunc func(r *http.Request, id uuid.UUID) *http.Request
+
+func ContextProjectID(r *http.Request) uuid.UUID {
+	return contextUUID(r, projectIDContextKey)
+}
+
+func ContextSetProjectID(r *http.Request, id uuid.UUID) *http.Request {
+	return contextSetUUID(r, id, projectIDContextKey)
+}
 
 func ContextAuthUserID(r *http.Request) uuid.UUID {
 	return contextUUID(r, authUserIDContextKey)
@@ -31,6 +41,14 @@ func ContextUserID(r *http.Request) uuid.UUID {
 
 func ContextSetUserID(r *http.Request, id uuid.UUID) *http.Request {
 	return contextSetUUID(r, id, userIDContextKey)
+}
+
+func ContextEnvironmentID(r *http.Request) uuid.UUID {
+	return contextUUID(r, environmentIDContextKey)
+}
+
+func ContextSetEnvironmentID(r *http.Request, id uuid.UUID) *http.Request {
+	return contextSetUUID(r, id, environmentIDContextKey)
 }
 
 func contextSetUUID(r *http.Request, id uuid.UUID, key contextKey) *http.Request {

@@ -9,14 +9,17 @@ import (
 
 var (
 	// #nosec G101 This is a constant error code, no security risk.
-	notBearerTokenFormatErrorCode = "ERR_TOKEN_NOT_BEARER_FORMAT"
-	missingBearerTokenErrCode     = "ERR_MISSING_BEARER_TOKEN"
-	defaultNotFoundErrCode        = "ERR_NOT_FOUND"
-	defaultForbiddenErrCode       = "ERR_FORBIDDEN"
-	defaultUnauthorizedErrCode    = "ERR_UNAUTHORIZED"
-	methodNotAllowedErrCode       = "ERR_METHOD_NOT_ALLOWED"
-	invalidResourceIDErrCode      = "ERR_INVALID_RESOURCE_ID"
-	unknownErrCode                = "ERR_UNKNOWN"
+	errCodeNotBearerTokenFormat       = "ERR_TOKEN_NOT_BEARER_FORMAT"
+	errCodeMissingBearerToken         = "ERR_MISSING_BEARER_TOKEN"
+	errCodeDefaultNotFound            = "ERR_NOT_FOUND"
+	errCodeDefaultForbidden           = "ERR_FORBIDDEN"
+	errCodeDefaultUnauthorized        = "ERR_UNAUTHORIZED"
+	errCodeMethodNotAllowed           = "ERR_METHOD_NOT_ALLOWED"
+	errCodeInvalidResourceID          = "ERR_INVALID_RESOURCE_ID"
+	errCodeDefaultBadRequest          = "ERR_BAD_REQUEST"
+	errCodeDefaultUnprocessableEntity = "ERR_UNPROCESSABLE_ENTITY"
+	errCodeDefaultConflict            = "ERR_CONFLICT"
+	errCodeUnknown                    = "ERR_UNKNOWN"
 )
 
 type ResponseError struct {
@@ -45,58 +48,84 @@ func (r *ResponseError) Wrap(err error) *ResponseError {
 	}
 }
 
+func (r *ResponseError) WithMessage(msg string) *ResponseError {
+	r.Message = msg
+	return r
+}
+
 func NewNotFoundError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusNotFound,
-		Code:       defaultNotFoundErrCode,
+		Code:       errCodeDefaultNotFound,
 	}
 }
 
 func NewNotBearerTokenFormatError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusUnauthorized,
-		Code:       notBearerTokenFormatErrorCode,
+		Code:       errCodeNotBearerTokenFormat,
 	}
 }
 
 func NewMissingBearerTokenError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusUnauthorized,
-		Code:       missingBearerTokenErrCode,
+		Code:       errCodeMissingBearerToken,
 	}
 }
 
 func NewServerError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusInternalServerError,
-		Code:       unknownErrCode,
+		Code:       errCodeUnknown,
 	}
 }
 
 func NewMethodNotAllowedError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusMethodNotAllowed,
-		Code:       methodNotAllowedErrCode,
+		Code:       errCodeMethodNotAllowed,
 	}
 }
 
 func NewForbiddenError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusForbidden,
-		Code:       defaultForbiddenErrCode,
+		Code:       errCodeDefaultForbidden,
 	}
 }
 
 func NewUnauthorizedError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusUnauthorized,
-		Code:       defaultUnauthorizedErrCode,
+		Code:       errCodeDefaultUnauthorized,
 	}
 }
 
 func NewInvalidResourceIDError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusNotFound,
-		Code:       invalidResourceIDErrCode,
+		Code:       errCodeInvalidResourceID,
+	}
+}
+
+func NewBadRequestError() *ResponseError {
+	return &ResponseError{
+		StatusCode: http.StatusBadRequest,
+		Code:       errCodeDefaultBadRequest,
+	}
+}
+
+func NewUnprocessableEntityError() *ResponseError {
+	return &ResponseError{
+		StatusCode: http.StatusUnprocessableEntity,
+		Code:       errCodeDefaultUnprocessableEntity,
+	}
+}
+
+func NewConflictError() *ResponseError {
+	return &ResponseError{
+		StatusCode: http.StatusConflict,
+		Code:       errCodeDefaultConflict,
 	}
 }

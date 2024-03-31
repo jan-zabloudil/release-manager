@@ -6,9 +6,14 @@ import (
 )
 
 var (
-	unauthorizedInvalidTokenErrCode      = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
-	forbiddenInsufficientUserRoleErrCode = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
-	userNotFoundErrCode                  = "ERR_USER_NOT_FOUND"
+	errCodeUnauthorizedInvalidToken      = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
+	errCodeForbiddenInsufficientUserRole = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
+	errCodeUserNotFound                  = "ERR_USER_NOT_FOUND"
+	errCodeProjectNotFound               = "ERR_PROJECT_NOT_FOUND"
+	errCodeEnvironmentNotFound           = "ERR_ENVIRONMENT_NOT_FOUND"
+	errCodeProjectUnprocessable          = "ERR_PROJECT_UNPROCESSABLE"
+	errCodeEnvironmentUnprocessable      = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	errCodeEnvironmentDuplicateName      = "ERR_ENVIRONMENT_DUPLICATE_NAME"
 )
 
 type APIError struct {
@@ -29,55 +34,94 @@ func (e *APIError) Wrap(err error) *APIError {
 	}
 }
 
+func (e *APIError) WithMessage(msg string) *APIError {
+	e.Message = msg
+	return e
+}
+
 func NewUserNotFoundError() *APIError {
 	return &APIError{
-		Code:    userNotFoundErrCode,
+		Code:    errCodeUserNotFound,
 		Message: "User not found",
+	}
+}
+
+func NewProjectNotFoundError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectNotFound,
+		Message: "Project not found",
+	}
+}
+
+func NewEnvironmentNotFoundError() *APIError {
+	return &APIError{
+		Code:    errCodeEnvironmentNotFound,
+		Message: "Environment not found",
+	}
+}
+
+func NewEnvironmentDuplicateNameError() *APIError {
+	return &APIError{
+		Code:    errCodeEnvironmentDuplicateName,
+		Message: "environment name is already in use",
+	}
+}
+
+func NewProjectUnprocessableError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectUnprocessable,
+		Message: "Project unprocessable",
+	}
+}
+
+func NewEnvironmentUnprocessableError() *APIError {
+	return &APIError{
+		Code:    errCodeEnvironmentUnprocessable,
+		Message: "Environment unprocessable",
 	}
 }
 
 func NewUnauthorizedError() *APIError {
 	return &APIError{
-		Code:    unauthorizedInvalidTokenErrCode,
+		Code:    errCodeUnauthorizedInvalidToken,
 		Message: "Unauthorized access, invalid or expired token provided.",
 	}
 }
 
 func NewForbiddenInsufficientUserRoleError() *APIError {
 	return &APIError{
-		Code:    forbiddenInsufficientUserRoleErrCode,
+		Code:    errCodeForbiddenInsufficientUserRole,
 		Message: "Forbidden access, insufficient user role.",
 	}
 }
 
-func IsNotFoundError(err error) bool {
+func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
-		switch apiErr.Code {
-		case userNotFoundErrCode:
-			return true
-		default:
-			return false
-		}
+		return apiErr.Code == code
 	}
 
 	return false
+}
+
+func IsNotFoundError(err error) bool {
+	return IsErrorWithCode(err, errCodeUserNotFound) ||
+		IsErrorWithCode(err, errCodeProjectNotFound) ||
+		IsErrorWithCode(err, errCodeEnvironmentNotFound)
+}
+
+func IsUnprocessableModelError(err error) bool {
+	return IsErrorWithCode(err, errCodeProjectUnprocessable) || IsErrorWithCode(err, errCodeEnvironmentUnprocessable)
 }
 
 func IsUnauthorizedError(err error) bool {
-	var apiErr *APIError
-	if errors.As(err, &apiErr) {
-		return apiErr.Code == unauthorizedInvalidTokenErrCode
-	}
-
-	return false
+	return IsErrorWithCode(err, errCodeUnauthorizedInvalidToken)
 }
 
 func IsForbiddenError(err error) bool {
-	var apiErr *APIError
-	if errors.As(err, &apiErr) {
-		return apiErr.Code == forbiddenInsufficientUserRoleErrCode
-	}
+	return IsErrorWithCode(err, errCodeForbiddenInsufficientUserRole)
+}
 
-	return false
+func IsConflictError(err error) bool {
+	return IsErrorWithCode(err, errCodeEnvironmentDuplicateName)
 }

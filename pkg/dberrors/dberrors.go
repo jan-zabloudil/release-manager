@@ -6,10 +6,9 @@ import (
 )
 
 var (
-	notFoundErrCode            = "ERR_DB_RESOURCE_NOT_FOUND"
-	cannotMapToSvcModelErrCode = "ERR_DB_CANNOT_MAP_TO_SVC_MODEL"
-	multipleOrNoRecordsErrCode = "ERR_DB_MULTIPLE_OR_NO_RECORDS_RETURNED"
-	unknownErrCode             = "ERR_DB_UNKNOWN"
+	errCodeNotFound            = "ERR_DB_RESOURCE_NOT_FOUND"
+	errCodeCannotMapToSvcModel = "ERR_DB_CANNOT_MAP_TO_SVC_MODEL"
+	errCodeUnknown             = "ERR_DB_UNKNOWN"
 )
 
 type DBError struct {
@@ -30,33 +29,26 @@ func (e *DBError) Wrap(err error) *DBError {
 
 func NewNotFoundError() *DBError {
 	return &DBError{
-		Code: notFoundErrCode,
+		Code: errCodeNotFound,
 	}
 }
 
 func NewToSvcModelError() *DBError {
 	return &DBError{
-		Code: cannotMapToSvcModelErrCode,
+		Code: errCodeCannotMapToSvcModel,
 	}
 }
 
-func NewMultipleOrNoRecordsReturnedError() *DBError {
+func NewUnknownError() *DBError {
 	return &DBError{
-		Code: multipleOrNoRecordsErrCode,
-	}
-}
-
-func NewUnknownError(err error) *DBError {
-	return &DBError{
-		Code: unknownErrCode,
-		Err:  err,
+		Code: errCodeUnknown,
 	}
 }
 
 func IsNotFoundError(err error) bool {
 	var dbErr *DBError
 	if errors.As(err, &dbErr) {
-		return dbErr.Code == notFoundErrCode
+		return dbErr.Code == errCodeNotFound
 	}
 
 	return false

@@ -1,20 +1,21 @@
 package model
 
 import (
+	"time"
+
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
-	"github.com/relvacode/iso8601"
 )
 
 type User struct {
-	ID        uuid.UUID    `json:"id"`
-	Email     string       `json:"email"`
-	Name      string       `json:"name"`
-	AvatarURL string       `json:"avatar_url"`
-	Role      string       `json:"role"`
-	CreatedAt iso8601.Time `json:"created_at"`
-	UpdatedAt iso8601.Time `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	Name      string    `json:"name"`
+	AvatarURL string    `json:"avatar_url"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func ToSvcUsers(users []User) ([]svcmodel.User, error) {
@@ -27,8 +28,8 @@ func ToSvcUsers(users []User) ([]svcmodel.User, error) {
 			dbUser.Name,
 			dbUser.AvatarURL,
 			dbUser.Role,
-			dbUser.CreatedAt.Time,
-			dbUser.UpdatedAt.Time,
+			dbUser.CreatedAt,
+			dbUser.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err

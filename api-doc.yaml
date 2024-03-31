@@ -7,11 +7,11 @@ tags:
   - name: Organization settings
   - name: Users
   - name: Projects
+  - name: Environments
   - name: Project invitations
   - name: Project members
-  - name: Project applications
-  - name: Application git repository
-  - name: Application releases
+  - name: SCM repository
+  - name: Releases
 
 paths:
   /ping:
@@ -237,6 +237,124 @@ paths:
               $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/environments:
+    post:
+      tags:
+        - Environments
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      summary: 'Create environment'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentRequest'
+      responses:
+        '201':
+          description: 'Environment created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+    get:
+      summary: "List environments for project"
+      security:
+        - bearerAuth: []
+      tags:
+        - Environments
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      responses:
+        '200':
+          description: 'Environments fetched'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnvironmentResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+  /projects/{project-id}/environments/{environment-id}:
+    get:
+      security:
+        - bearerAuth: []
+      summary: 'Get project by ID'
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/EnvIdParam'
+      responses:
+        '200':
+          description: 'Environment fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+    patch:
+      security:
+        - bearerAuth: []
+      summary: 'Update environment'
+      tags:
+        - Environments
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/EnvIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentRequest'
+      responses:
+        '200':
+          description: 'Environment updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Environments
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/EnvIdParam'
+      summary: 'Delete environment'
+      responses:
+        '204':
+          description: 'Environment deleted'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/invitations:
     post:
       summary: 'Invite user to a project'
@@ -424,140 +542,15 @@ paths:
               $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /projects/{project-id}/apps:
-    post:
-      summary: 'Create app in project'
-      security:
-        - bearerAuth: []
-      tags:
-        - Project applications
-      parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AppRequest'
-      responses:
-        '201':
-          description: 'App created'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AppResponse'
-        '400':
-            $ref: '#/components/responses/BadRequestErrorResponse'
-        '401':
-            $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-            $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-          description: 'Invalid uuid provided, resource do not exists or resource exists but user does not have access to a project at all.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/responses/NotFoundErrorResponse'
-        '422':
-            $ref: '#/components/responses/UnprocesssableEntityResponse'
-    get:
-      summary: 'List apps'
-      security:
-        - bearerAuth: []
-      tags:
-        - Project applications
-      parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
-      responses:
-        '200':
-          description: 'Apps fetched'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AppResponse'
-        '401':
-            $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '404':
-            $ref: '#/components/responses/NotFoundErrorResponse'
-  /apps/{app-id}:
-    get:
-      summary: 'Get app by ID'
-      security:
-        - bearerAuth: []
-      tags:
-        - Project applications
-      parameters:
-        - $ref: '#/components/parameters/AppIdParam'
-      responses:
-        '200':
-          description: 'App fetched'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AppResponse'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
-    patch:
-      summary: 'Update app'
-      security:
-        - bearerAuth: []
-      tags:
-        - Project applications
-      parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AppRequest'
-      responses:
-        '200':
-          description: 'App updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AppResponse'
-        '400':
-            $ref: '#/components/responses/BadRequestErrorResponse'
-        '401':
-            $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-            $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-            $ref: '#/components/responses/NotFoundErrorResponse'
-        '422':
-            $ref: '#/components/responses/UnprocesssableEntityResponse'
-    delete:
-      summary: 'Delete app'
-      security:
-        - bearerAuth: []
-      tags:
-        - Project applications
-      parameters:
-        - $ref: '#/components/parameters/AppIdParam'
-      responses:
-        '204':
-          description: 'App deleted'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-              $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
-  /apps/{app-id}/releases:
+  /project/{project-id}/releases:
     post:
       summary: 'Create release'
       security:
         - bearerAuth: []
       tags:
-        - Application releases
+        - Releases
       parameters:
-        - $ref: '#/components/parameters/AppIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
       requestBody:
         required: true
         content:
@@ -586,9 +579,9 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Application releases
+        - Releases
       parameters:
-        - $ref: '#/components/parameters/AppIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
       responses:
         '200':
           description: 'Releases fetched'
@@ -608,7 +601,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Application releases
+        - Releases
       parameters:
         - $ref: '#/components/parameters/ReleaseIdParam'
       responses:
@@ -627,7 +620,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Application releases
+        - Releases
       parameters:
         - $ref: '#/components/parameters/ReleaseIdParam'
       requestBody:
@@ -656,7 +649,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Application releases
+        - Releases
       parameters:
         - $ref: '#/components/parameters/ReleaseIdParam'
       responses:
@@ -674,7 +667,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Application releases
+        - Releases
       parameters:
         - $ref: '#/components/parameters/ReleaseIdParam'
       requestBody:
@@ -700,7 +693,7 @@ paths:
       security:
         - bearerAuth: [ ]
       tags:
-        - Application releases
+        - Releases
       parameters:
         - $ref: '#/components/parameters/ReleaseIdParam'
       requestBody:
@@ -736,7 +729,7 @@ paths:
       security:
         - bearerAuth: [ ]
       tags:
-        - Application releases
+        - Releases
       parameters:
         - $ref: '#/components/parameters/ReleaseIdParam'
         - $ref: '#/components/parameters/AttachmentIdParam'
@@ -749,15 +742,15 @@ paths:
           $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
-  /app/{app-id}/repository:
+  /projects/{project-id}/repository:
     put:
-      summary: 'Connect GitHub repository'
+      summary: 'Connect SCM repository'
       security:
         - bearerAuth: [ ]
       tags:
-        - Application git repository
+        - SCM repository
       parameters:
-        - $ref: '#/components/parameters/AppIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
       requestBody:
         required: true
         content:
@@ -784,9 +777,9 @@ paths:
       security:
         - bearerAuth: [ ]
       tags:
-        - Application git repository
+        - SCM repository
       parameters:
-        - $ref: '#/components/parameters/AppIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
       responses:
         '200':
           description: 'Repository fetched'
@@ -798,15 +791,15 @@ paths:
           $ref: '#/components/responses/GitRepositoryUnauthorizedErrorResponse'
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
-  /app/{app-id}/repository/tags:
+  /projects/{project-id}/repository/tags:
     get:
       summary: 'List repository tags'
       security:
         - bearerAuth: []
       tags:
-        - Application git repository
+        - SCM repository
       parameters:
-        - $ref: '#/components/parameters/AppIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
       responses:
         '200':
           description: 'Retrieves 20 newest tags in git repository'
@@ -885,6 +878,14 @@ components:
       schema:
         type: string
         format: uuid
+    EnvIdParam:
+      name: project-id
+      in: path
+      description: Project ID
+      required: true
+      schema:
+        type: string
+        format: uuid
     UserIdParam:
       name: user-id
       in: path
@@ -897,14 +898,6 @@ components:
       name: member-id
       in: path
       description: Member ID
-      required: true
-      schema:
-        type: string
-        format: uuid
-    AppIdParam:
-      name: app-id
-      in: path
-      description: App ID
       required: true
       schema:
         type: string
@@ -1034,20 +1027,31 @@ components:
         name:
           type: string
           example: 'Awesome project'
-        description:
+        slack_channel_id:
           type: string
-          example: 'This project is about...'
-        notifications:
+          example: 'C01B2PZQX1H'
+        release_notification_config:
           type: object
           properties:
-            slack_channel_id:
+            message:
               type: string
-              example: "C065E66TZ36"
-            message_template:
-              type: string
-          required:
-            - slack_channel_id
-            - message_template_id
+              default: ""
+              example: "Hey, we have just released new version of our backend app!"
+            show_project_name:
+              type: boolean
+              default: false
+            show_release_name:
+              type: boolean
+              default: false
+            show_changelog:
+              type: boolean
+              default: false
+            show_deployments:
+              type: boolean
+              default: false
+            show_source_code:
+              type: boolean
+              default: false
       required:
         - name
     ProjectResponse:
@@ -1165,37 +1169,6 @@ components:
         - message
         - project_name
         - project_id
-    AppRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          example: 'Awesome app backend'
-        description:
-          type: string
-          description: 'Backend API for...'
-        environments:
-          $ref : '#/components/schemas/Environments'
-      required:
-        - name
-    AppResponse:
-      allOf:
-        - $ref: '#/components/schemas/AppRequest'
-        - type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-            created_at:
-              type: string
-              format: date-time
-            updated_at:
-              type: string
-              format: date-time
-          required:
-            - id
-            - created_at
-            - updated_at
     GitRepositoryRequest:
       type: object
       properties:
@@ -1233,15 +1206,42 @@ components:
           required:
             - url
             - name
-    Environments:
+    EnvironmentRequest:
       type: object
       properties:
-        dev_url:
+        name:
           type: string
-        staging_url:
+        service_url:
           type: string
-        prod_url:
+        deployed_release_id:
           type: string
+          format: uuid
+      required:
+        - name
+    EnvironmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        service_url:
+          type: string
+        deployed_release_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - created_at
+        - updated_at
     ReleasePatchRequest:
       type: object
       properties:
@@ -1251,15 +1251,11 @@ components:
         changelog:
           type: string
           example: "Logging improved"
-        deployed_to:
-            type: array
-            items:
-              type: string
-              enum:
-                - dev 
-                - staging 
-                - prod 
-              example: [ "dev", "staging" ]
+        deployed_to_environment_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
         git_tag_sha:
           type: string 
         github_release_url:
@@ -1341,15 +1337,11 @@ components:
         github_release_url:
           type: string
           format: url
-        deployed_to:
-            type: array
-            items:
-              type: string
-              enum:
-                - dev 
-                - staging 
-                - prod 
-              example: [ "dev", "staging" ]
+        deployed_to_environment_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
         created_by_user_id:
           type: string
           format: uuid
@@ -1389,15 +1381,11 @@ components:
         github_release_url:
           type: string
           format: url
-        deployed_to:
+        deployed_to_environment_ids:
           type: array
           items:
             type: string
-            enum:
-              - dev
-              - staging
-              - prod
-            example: [ "dev", "staging" ]
+            format: uuid
         created_by_user_id:
           type: string
           format: uuid
