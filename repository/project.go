@@ -25,16 +25,18 @@ func NewProjectRepository(c *supabase.Client) *ProjectRepository {
 }
 
 func (r *ProjectRepository) Create(ctx context.Context, p svcmodel.Project) error {
+	data := model.ToProject(
+		p.ID,
+		p.Name,
+		p.SlackChannelID,
+		p.ReleaseNotificationConfig,
+		p.CreatedAt,
+		p.UpdatedAt,
+	)
+
 	err := r.client.
 		DB.From(r.entity).
-		Insert(model.ToProject(
-			p.ID,
-			p.Name,
-			p.SlackChannelID,
-			p.ReleaseNotificationConfig,
-			p.CreatedAt,
-			p.UpdatedAt,
-		)).
+		Insert(&data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
 		return util.ToDBError(err)
@@ -100,14 +102,16 @@ func (r *ProjectRepository) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (r *ProjectRepository) Update(ctx context.Context, p svcmodel.Project) error {
+	data := model.ToProjectUpdate(
+		p.Name,
+		p.SlackChannelID,
+		p.ReleaseNotificationConfig,
+		p.UpdatedAt,
+	)
+
 	err := r.client.
 		DB.From(r.entity).
-		Update(model.ToProjectUpdate(
-			p.Name,
-			p.SlackChannelID,
-			p.ReleaseNotificationConfig,
-			p.UpdatedAt,
-		)).
+		Update(&data).
 		Eq("id", (p.ID).String()).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {

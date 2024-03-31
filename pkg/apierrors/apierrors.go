@@ -14,6 +14,7 @@ var (
 	errCodeProjectUnprocessable          = "ERR_PROJECT_UNPROCESSABLE"
 	errCodeEnvironmentUnprocessable      = "ERR_ENVIRONMENT_UNPROCESSABLE"
 	errCodeEnvironmentDuplicateName      = "ERR_ENVIRONMENT_DUPLICATE_NAME"
+	errCodeSettingsUnprocessable         = "ERR_SETTINGS_UNPROCESSABLE"
 )
 
 type APIError struct {
@@ -81,6 +82,13 @@ func NewEnvironmentUnprocessableError() *APIError {
 	}
 }
 
+func NewSettingsUnprocessableError() *APIError {
+	return &APIError{
+		Code:    errCodeSettingsUnprocessable,
+		Message: "Settings unprocessable",
+	}
+}
+
 func NewUnauthorizedError() *APIError {
 	return &APIError{
 		Code:    errCodeUnauthorizedInvalidToken,
@@ -111,7 +119,9 @@ func IsNotFoundError(err error) bool {
 }
 
 func IsUnprocessableModelError(err error) bool {
-	return IsErrorWithCode(err, errCodeProjectUnprocessable) || IsErrorWithCode(err, errCodeEnvironmentUnprocessable)
+	return IsErrorWithCode(err, errCodeProjectUnprocessable) ||
+		IsErrorWithCode(err, errCodeEnvironmentUnprocessable) ||
+		IsErrorWithCode(err, errCodeSettingsUnprocessable)
 }
 
 func IsUnauthorizedError(err error) bool {

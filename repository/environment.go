@@ -25,16 +25,18 @@ func NewEnvironmentRepository(c *supabase.Client) *EnvironmentRepository {
 }
 
 func (r *EnvironmentRepository) Create(ctx context.Context, e svcmodel.Environment) error {
+	data := model.ToEnvironment(
+		e.ID,
+		e.ProjectID,
+		e.Name,
+		e.ServiceURL,
+		e.CreatedAt,
+		e.UpdatedAt,
+	)
+
 	err := r.client.
 		DB.From(r.entity).
-		Insert(model.ToEnvironment(
-			e.ID,
-			e.ProjectID,
-			e.Name,
-			e.ServiceURL,
-			e.CreatedAt,
-			e.UpdatedAt,
-		)).
+		Insert(&data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
 		return util.ToDBError(err)
@@ -129,13 +131,15 @@ func (r *EnvironmentRepository) Delete(ctx context.Context, envID uuid.UUID) err
 }
 
 func (r *EnvironmentRepository) Update(ctx context.Context, e svcmodel.Environment) error {
+	data := model.ToEnvironmentUpdate(
+		e.Name,
+		e.ServiceURL,
+		e.UpdatedAt,
+	)
+
 	err := r.client.
 		DB.From(r.entity).
-		Update(model.ToEnvironmentUpdate(
-			e.Name,
-			e.ServiceURL,
-			e.UpdatedAt,
-		)).
+		Update(&data).
 		Eq("id", e.ID.String()).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
