@@ -43,7 +43,7 @@ Supabase is used for authentication with Google OAuth and storing data in Postgr
 2. Navigate to Supabase Studio.
 3. Run the following query to add the `is_admin` flag to the user.
 ```
-select set_claim('user_id', 'role', '"admin"');
+select set_admin_user('user_id');
 ```
 _User ID can be found in `auth.users`._
 

@@ -3,50 +3,47 @@ package model
 import (
 	"testing"
 
-	svcerr "release-manager/service/errors"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestNewUserRole(t *testing.T) {
-	tests := []struct {
-		name        string
-		role        string
-		expectedErr error
+func TestUserRole_IsRoleAtLeast(t *testing.T) {
+	testCases := []struct {
+		name     string
+		userRole UserRole
+		testRole UserRole
+		expected bool
 	}{
-		{
-			name:        "valid user role",
-			role:        basicUserRole,
-			expectedErr: nil,
-		},
-		{
-			name:        "valid admin role",
-			role:        adminUserRole,
-			expectedErr: nil,
-		},
-		{
-			name:        "invalid role",
-			role:        "invalidRole",
-			expectedErr: svcerr.ErrInvalidUserRole,
-		},
+		{"Admin has at least User role", UserRoleAdmin, UserRoleUser, true},
+		{"Admin has at least Admin role", UserRoleAdmin, UserRoleAdmin, true},
+		{"User does not have at least Admin role", UserRoleUser, UserRoleAdmin, false},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := NewUserRole(tt.role)
-
-			if tt.expectedErr != nil {
-				assert.Equal(t, tt.expectedErr, err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tt.role, result.Role())
-			}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.userRole.IsRoleAtLeast(tc.testRole))
 		})
 	}
 }
 
-func TestNewBasicUserRole(t *testing.T) {
-	result := NewBasicUserRole()
-	assert.Equal(t, basicUserRole, result.Role())
+func TestUserRole_NewUserRole(t *testing.T) {
+	testCases := []struct {
+		name    string
+		roleStr string
+		wantErr bool
+	}{
+		{"Valid role - admin", "admin", false},
+		{"Valid role - user", "user", false},
+		{"Invalid role", "invalid", true},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := NewUserRole(tc.roleStr)
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

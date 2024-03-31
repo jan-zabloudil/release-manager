@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 
+	"release-manager/pkg/dberrors"
 	"release-manager/repository/model"
-	"release-manager/repository/utils"
+	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -13,54 +14,64 @@ import (
 
 type UserRepository struct {
 	client *supabase.Client
+	entity string
 }
 
-func (r *UserRepository) ReadForToken(ctx context.Context, token string) (svcmodel.User, error) {
-	res, err := r.client.Auth.User(ctx, token)
-	if err != nil {
-		return svcmodel.User{}, utils.WrapSupabaseAuthErr(err)
+func NewUserRepository(client *supabase.Client) *UserRepository {
+	return &UserRepository{
+		client: client,
+		entity: "users",
 	}
-
-	return model.ToSvcUser(
-		res.ID,
-		res.Email,
-		res.AppMetadata["role"],
-		res.UserMetadata["name"],
-		res.UserMetadata["picture"],
-		res.CreatedAt,
-		res.UpdatedAt,
-	)
 }
 
-func (r *UserRepository) Read(ctx context.Context, id uuid.UUID) (svcmodel.User, error) {
-	res, err := r.client.Admin.GetUser(ctx, id.String())
+func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.User, error) {
+	var resp model.User
+	err := r.client.
+		DB.From(r.entity).
+		Select("*").Single().
+		Eq("id", userID.String()).
+		ExecuteWithContext(ctx, &resp)
 	if err != nil {
-		return svcmodel.User{}, utils.WrapSupabaseAdminErr(err)
+		return svcmodel.User{}, util.ToDBError(err)
 	}
 
-	return model.ToSvcUser(
-		res.ID,
-		res.Email,
-		res.AppMetaData["role"],
-		res.UserMetaData["name"],
-		res.UserMetaData["picture"],
-		res.CreatedAt,
-		res.UpdatedAt,
+	u, err := svcmodel.ToUser(
+		resp.ID,
+		resp.Email,
+		resp.Name,
+		resp.AvatarURL,
+		resp.Role,
+		resp.CreatedAt.Time,
+		resp.UpdatedAt.Time,
 	)
+	if err != nil {
+		return svcmodel.User{}, dberrors.NewToSvcModelError().Wrap(err)
+	}
+
+	return u, nil
 }
 
 func (r *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
-	res, err := r.client.Admin.GetUsers(ctx)
+	var resp []model.User
+	err := r.client.
+		DB.From(r.entity).
+		Select("*").
+		ExecuteWithContext(ctx, &resp)
 	if err != nil {
-		return nil, utils.WrapSupabaseAdminErr(err)
+		return nil, util.ToDBError(err)
 	}
 
-	return model.ToSvcUsers(res)
+	u, err := model.ToSvcUsers(resp)
+	if err != nil {
+		return nil, dberrors.NewToSvcModelError().Wrap(err)
+	}
+
+	return u, nil
 }
 
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	if err := r.client.Admin.DeleteUser(ctx, id.String()); err != nil {
-		return utils.WrapSupabaseAdminErr(err)
+		return util.ToDBError(err)
 	}
 
 	return nil

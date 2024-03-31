@@ -3,11 +3,15 @@ package service
 import "release-manager/service/model"
 
 type Service struct {
+	Auth *AuthService
 	User *UserService
 }
 
-func NewService(ur model.UserRepository) *Service {
+func NewService(ar model.AuthRepository, ur model.UserRepository) *Service {
+	authSvc := NewAuthService(ar, ur)
+
 	return &Service{
-		User: &UserService{ur},
+		Auth: authSvc,
+		User: NewUserService(authSvc, ur),
 	}
 }

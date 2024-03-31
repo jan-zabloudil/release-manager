@@ -34,10 +34,14 @@ github.com/nedpals/postgrest-go v0.1.3 h1:ZC3aPPx9rDTWQWzvnWI60lJWjAqgCCD/U6hcHp
 github.com/nedpals/postgrest-go v0.1.3/go.mod h1:RGinB2OXsnGLcZMu5avS0U+b9npyZmk+ecK74UDi/xY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/relvacode/iso8601 v1.4.0 h1:GsInVSEJfkYuirYFxa80nMLbH2aydgZpIf52gYZXUJs=
+github.com/relvacode/iso8601 v1.4.0/go.mod h1:FlNp+jz+TXpyRqgmM7tnzHHzBnz776kmAH2h3sZCn0I=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/sethvargo/go-envconfig v1.0.1 h1:9wglip/5fUfaH0lQecLM8AyOClMw0gT0A9K2c2wozao=
 github.com/sethvargo/go-envconfig v1.0.1/go.mod h1:OKZ02xFaD3MvWBBmEW45fQr08sJEsonGrrOdicvQmQA=
+github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=
+github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 go.strv.io/net v0.7.0 h1:1ByNwiR6NHBCMAbbZfbljPnp6PaTRyTphNaQzSFjXeg=

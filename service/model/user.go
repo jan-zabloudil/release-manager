@@ -8,13 +8,10 @@ import (
 )
 
 type UserRepository interface {
-	ReadForToken(ctx context.Context, token string) (User, error)
 	Read(ctx context.Context, id uuid.UUID) (User, error)
 	ReadAll(ctx context.Context) ([]User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
-
-var AnonUser = &User{}
 
 type User struct {
 	ID        uuid.UUID
@@ -26,10 +23,23 @@ type User struct {
 	UpdatedAt time.Time
 }
 
-func (s *User) IsAdmin() bool {
-	return s.Role.Role() == adminUserRole
+func ToUser(id uuid.UUID, email, name, avatarURL, roleStr string, createdAt, updatedAt time.Time) (User, error) {
+	role, err := NewUserRole(roleStr)
+	if err != nil {
+		return User{}, err
+	}
+
+	return User{
+		ID:        id,
+		Email:     email,
+		Name:      name,
+		AvatarURL: avatarURL,
+		Role:      role,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}, nil
 }
 
-func (s *User) IsAnon() bool {
-	return s == AnonUser
+func (s User) HasAtLeastRole(role UserRole) bool {
+	return s.Role.IsRoleAtLeast(role)
 }

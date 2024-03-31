@@ -1,15 +1,13 @@
 package transport
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 
-	reperr "release-manager/repository/errors"
-	svcmodel "release-manager/service/model"
-	neterr "release-manager/transport/errors"
-	"release-manager/transport/utils"
+	"release-manager/pkg/responseerrors"
+	"release-manager/transport/util"
 
+	"github.com/google/uuid"
 	httpx "go.strv.io/net/http"
 )
 
@@ -18,32 +16,26 @@ func (h *Handler) auth(next http.Handler) http.Handler {
 		authorizationHeader := r.Header.Get(httpx.Header.Authorization)
 
 		if authorizationHeader == "" {
-			r = utils.ContextSetUser(r, svcmodel.AnonUser)
+			r = util.ContextSetAuthUserID(r, uuid.Nil)
 			next.ServeHTTP(w, r)
 			return
 		}
 
 		headerParts := strings.Split(authorizationHeader, " ")
 		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-			WriteInvalidAuthenticationResponse(w, neterr.ErrInvalidBearer)
+			WriteResponseError(w, responseerrors.NewNotBearerTokenFormatError())
 			return
 		}
 
 		tokenString := headerParts[1]
 
-		user, err := h.UserSvc.GetForToken(r.Context(), tokenString)
+		id, err := h.AuthSvc.Authenticate(r.Context(), tokenString)
 		if err != nil {
-			switch {
-			case errors.Is(err, reperr.ErrUserAuthenticationFailed):
-				WriteInvalidAuthenticationResponse(w, err)
-				return
-			default:
-				WriteServerErrorResponse(w, err)
-				return
-			}
+			WriteResponseError(w, responseerrors.NewUnauthorizedError().Wrap(err))
+			return
 		}
 
-		r = utils.ContextSetUser(r, &user)
+		r = util.ContextSetAuthUserID(r, id)
 
 		next.ServeHTTP(w, r)
 	})
@@ -51,10 +43,8 @@ func (h *Handler) auth(next http.Handler) http.Handler {
 
 func (h *Handler) requireAuthUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := utils.ContextUser(r)
-
-		if user.IsAnon() {
-			WriteInvalidAuthenticationResponse(w, neterr.ErrAccessDeniedToAnonUser)
+		if id := util.ContextAuthUserID(r); id == uuid.Nil {
+			WriteResponseError(w, responseerrors.NewMissingBearerTokenError())
 			return
 		}
 
@@ -62,17 +52,18 @@ func (h *Handler) requireAuthUser(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-func (h *Handler) requireAdminUser(next http.HandlerFunc) http.HandlerFunc {
-	fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := utils.ContextUser(r)
+func (h *Handler) handleResourceID(idKey string, f util.ContextSetUUIDFunc) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			id, err := GetUUIDFromURL(r, idKey)
+			if err != nil {
+				WriteResponseError(w, responseerrors.NewInvalidResourceIDError().Wrap(err))
+				return
+			}
 
-		if !user.IsAdmin() {
-			WriteForbiddenErrorResponse(w, neterr.ErrAccessDeniedToNonAdminUser)
-			return
-		}
+			r = f(r, id)
 
-		next.ServeHTTP(w, r)
-	})
-
-	return h.requireAuthUser(fn)
+			next.ServeHTTP(w, r)
+		})
+	}
 }

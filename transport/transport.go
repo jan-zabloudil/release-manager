@@ -4,8 +4,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	neterrs "release-manager/transport/errors"
+	"release-manager/pkg/responseerrors"
 	"release-manager/transport/model"
+	"release-manager/transport/util"
 
 	"github.com/go-chi/chi/v5"
 	httpx "go.strv.io/net/http"
@@ -13,12 +14,14 @@ import (
 
 type Handler struct {
 	Mux     *chi.Mux
+	AuthSvc model.AuthService
 	UserSvc model.UserService
 }
 
-func NewHandler(us model.UserService) *Handler {
+func NewHandler(as model.AuthService, us model.UserService) *Handler {
 	h := Handler{
 		Mux:     chi.NewRouter(),
+		AuthSvc: as,
 		UserSvc: us,
 	}
 
@@ -27,20 +30,21 @@ func NewHandler(us model.UserService) *Handler {
 	h.Mux.Use(httpx.RecoverMiddleware(slog.Default().WithGroup("recover")))
 	h.Mux.Use(h.auth)
 
-	h.Mux.Get("/admin/users", h.requireAdminUser(h.getUsers))
+	h.Mux.Get("/admin/users", h.requireAuthUser(h.getUsers))
 	h.Mux.Route("/admin/users/{id}", func(r chi.Router) {
-		r.Get("/", h.requireAdminUser(h.handleUser))
-		r.Delete("/", h.requireAdminUser(h.handleUser))
+		r.Use(h.handleResourceID("id", util.ContextSetUserID))
+		r.Get("/", h.requireAuthUser(h.getUser))
+		r.Delete("/", h.requireAuthUser(h.deleteUser))
 	})
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 	h.Mux.NotFound(func(w http.ResponseWriter, _ *http.Request) {
-		WriteNotFoundResponse(w, neterrs.ErrHttpNotFound)
+		WriteResponseError(w, responseerrors.NewNotFoundError())
 	})
 	h.Mux.MethodNotAllowed(func(w http.ResponseWriter, _ *http.Request) {
-		WriteMethodNotAllowedResponse(w, neterrs.ErrHttpMethodNotAllowed)
+		WriteResponseError(w, responseerrors.NewMethodNotAllowedError())
 	})
 
 	return &h
