@@ -1,11 +1,11 @@
 package transport
 
 import (
+	"log/slog"
 	"net/http"
 
 	neterrs "release-manager/transport/errors"
 	"release-manager/transport/model"
-	"release-manager/transport/utils"
 
 	"github.com/go-chi/chi/v5"
 	httpx "go.strv.io/net/http"
@@ -23,8 +23,8 @@ func NewHandler(us model.UserService) *Handler {
 	}
 
 	h.Mux.Use(httpx.RequestIDMiddleware(RequestID))
-	h.Mux.Use(httpx.LoggingMiddleware(utils.NewServerLogger("logging")))
-	h.Mux.Use(httpx.RecoverMiddleware(utils.NewServerLogger("recover")))
+	h.Mux.Use(httpx.LoggingMiddleware(slog.Default().WithGroup("logger")))
+	h.Mux.Use(httpx.RecoverMiddleware(slog.Default().WithGroup("recover")))
 	h.Mux.Use(h.auth)
 
 	h.Mux.Get("/admin/users", h.requireAdminUser(h.getUsers))

@@ -12,8 +12,8 @@ require (
 	github.com/nedpals/postgrest-go v0.1.3
 	github.com/nedpals/supabase-go v0.4.0
 	github.com/sethvargo/go-envconfig v1.0.1
-	github.com/stretchr/testify v1.8.4
-	go.strv.io/net v0.6.2
+	github.com/stretchr/testify v1.9.0
+	go.strv.io/net v0.7.0
 	go.strv.io/time v0.2.0
 )
 
