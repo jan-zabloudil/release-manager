@@ -32,8 +32,8 @@ func (r *UserRepository) ReadForToken(ctx context.Context, token string) (svcmod
 	)
 }
 
-func (r *UserRepository) Read(ctx context.Context, ID uuid.UUID) (svcmodel.User, error) {
-	res, err := r.client.Admin.GetUser(ctx, ID.String())
+func (r *UserRepository) Read(ctx context.Context, id uuid.UUID) (svcmodel.User, error) {
+	res, err := r.client.Admin.GetUser(ctx, id.String())
 	if err != nil {
 		return svcmodel.User{}, utils.WrapSupabaseAdminErr(err)
 	}
@@ -58,8 +58,8 @@ func (r *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
 	return model.ToSvcUsers(res)
 }
 
-func (r *UserRepository) Delete(ctx context.Context, ID uuid.UUID) error {
-	if err := r.client.Admin.DeleteUser(ctx, ID.String()); err != nil {
+func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	if err := r.client.Admin.DeleteUser(ctx, id.String()); err != nil {
 		return utils.WrapSupabaseAdminErr(err)
 	}
 

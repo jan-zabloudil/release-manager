@@ -11,7 +11,7 @@ import (
 )
 
 func (h *Handler) handleUser(w http.ResponseWriter, r *http.Request) {
-	id, err := GetIdFromURL(r)
+	id, err := GetIDFromURL(r)
 	if err != nil {
 		WriteNotFoundResponse(w, err)
 		return
@@ -43,7 +43,7 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request, id uuid.UUID) 
 		u.Role.Role(),
 		u.Email,
 		u.Name,
-		u.AvatarUrl,
+		u.AvatarURL,
 		u.CreatedAt,
 		u.UpdatedAt,
 	))

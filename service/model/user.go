@@ -20,7 +20,7 @@ type User struct {
 	ID        uuid.UUID
 	Email     string
 	Name      string
-	AvatarUrl string
+	AvatarURL string
 	Role      UserRole
 	CreatedAt time.Time
 	UpdatedAt time.Time

@@ -9,14 +9,15 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
-func ToSvcUser(id, email string, roleString, name, picture any, createdAt, updatedAt time.Time) (svcmodel.User, error) {
+func ToSvcUser(idStr, email string, roleString, name, picture any, createdAt, updatedAt time.Time) (svcmodel.User, error) {
 	var u svcmodel.User
 
-	if id, err := uuid.Parse(id); err != nil {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
 		return svcmodel.User{}, err
-	} else {
-		u.ID = id
 	}
+	u.ID = id
+
 	if roleString, ok := roleString.(string); ok {
 		role, err := svcmodel.NewUserRole(roleString)
 		if err != nil {
@@ -30,8 +31,8 @@ func ToSvcUser(id, email string, roleString, name, picture any, createdAt, updat
 	if name, ok := name.(string); ok {
 		u.Name = name
 	}
-	if avatarUrl, ok := picture.(string); ok {
-		u.AvatarUrl = avatarUrl
+	if avatarURL, ok := picture.(string); ok {
+		u.AvatarURL = avatarURL
 	}
 
 	u.Email, u.CreatedAt, u.UpdatedAt = email, createdAt, updatedAt

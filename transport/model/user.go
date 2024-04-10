@@ -20,19 +20,19 @@ type User struct {
 	ID        uuid.UUID `json:"id"`
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`
-	AvatarUrl string    `json:"avatar_url"`
+	AvatarURL string    `json:"avatar_url"`
 	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func ToNetUser(id uuid.UUID, role, email, name, avatarUrl string, createdAt, updatedAt time.Time) User {
+func ToNetUser(id uuid.UUID, role, email, name, avatarURL string, createdAt, updatedAt time.Time) User {
 	return User{
 		ID:        id,
 		Role:      role,
 		Email:     email,
 		Name:      name,
-		AvatarUrl: avatarUrl,
+		AvatarURL: avatarURL,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
@@ -46,7 +46,7 @@ func ToNetUsers(users []svcmodel.User) []User {
 			user.Role.Role(),
 			user.Email,
 			user.Name,
-			user.AvatarUrl,
+			user.AvatarURL,
 			user.CreatedAt,
 			user.UpdatedAt,
 		))

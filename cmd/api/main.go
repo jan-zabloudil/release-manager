@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"time"
 
 	"release-manager/repository"
 	"release-manager/service"
@@ -24,7 +23,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: cfg.LogLevel}))
 	slog.SetDefault(logger)
 
-	supaClient := supabase.CreateClient(cfg.Supabase.ApiURL, cfg.Supabase.SecretKey)
+	supaClient := supabase.CreateClient(cfg.Supabase.APIURL, cfg.Supabase.SecretKey)
 
 	repo := repository.NewRepository(supaClient)
 	svc := service.NewService(repo.User)
@@ -35,9 +34,9 @@ func main() {
 		Handler: h.Mux,
 		Limits: &httpx.Limits{
 			Timeouts: &httpx.Timeouts{
-				IdleTimeout:  timex.Duration(time.Minute),
-				ReadTimeout:  timex.Duration(5 * time.Second),
-				WriteTimeout: timex.Duration(10 * time.Second),
+				IdleTimeout:  timex.Duration(cfg.Server.IdleTimeout),
+				ReadTimeout:  timex.Duration(cfg.Server.ReadTimeout),
+				WriteTimeout: timex.Duration(cfg.Server.WriteTimeout),
 			},
 		},
 		Logger: utils.NewServerLogger("server"),
