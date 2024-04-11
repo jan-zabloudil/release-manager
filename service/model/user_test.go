@@ -45,7 +45,7 @@ func TestIsAnon(t *testing.T) {
 		ID:        uuid.New(),
 		Email:     "test@example.com",
 		Name:      "Test User",
-		AvatarUrl: "https://example.com/avatar.jpg",
+		AvatarURL: "https://example.com/avatar.jpg",
 		Role:      NewBasicUserRole(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
