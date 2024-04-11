@@ -1,33 +1,41 @@
 package model
 
-import svcerr "release-manager/service/errors"
-
-const (
-	basicUserRole = "user"
-	adminUserRole = "admin"
+import (
+	"errors"
 )
 
-type userRole struct {
-	role string
+type UserRole string
+
+const (
+	UserRoleAdmin UserRole = "admin"
+	UserRoleUser  UserRole = "user"
+)
+
+const (
+	userRoleAdminPriority int = 1
+	userRoleUserPriority  int = 2
+)
+
+var (
+	errUserInvalidRole = errors.New("invalid user role")
+)
+
+var userRolePriority = map[UserRole]int{
+	UserRoleAdmin: userRoleAdminPriority,
+	UserRoleUser:  userRoleUserPriority,
 }
 
-type UserRole interface {
-	Role() string
-}
-
-func (r *userRole) Role() string {
-	return r.role
+func (r UserRole) IsRoleAtLeast(role UserRole) bool {
+	return userRolePriority[r] <= userRolePriority[role]
 }
 
 func NewUserRole(role string) (UserRole, error) {
 	switch role {
-	case basicUserRole, adminUserRole:
-		return &userRole{role}, nil
+	case string(UserRoleAdmin):
+		return UserRoleAdmin, nil
+	case string(UserRoleUser):
+		return UserRoleUser, nil
 	default:
-		return nil, svcerr.ErrInvalidUserRole
+		return "", errUserInvalidRole
 	}
-}
-
-func NewBasicUserRole() UserRole {
-	return &userRole{role: basicUserRole}
 }

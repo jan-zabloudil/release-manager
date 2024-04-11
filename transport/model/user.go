@@ -10,10 +10,9 @@ import (
 )
 
 type UserService interface {
-	GetForToken(ctx context.Context, token string) (svcmodel.User, error)
-	Get(ctx context.Context, id uuid.UUID) (svcmodel.User, error)
-	GetAll(ctx context.Context) ([]svcmodel.User, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Get(ctx context.Context, id, authUserID uuid.UUID) (svcmodel.User, error)
+	GetAll(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.User, error)
+	Delete(ctx context.Context, id, authUserID uuid.UUID) error
 }
 
 type User struct {
@@ -26,10 +25,10 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func ToNetUser(id uuid.UUID, role, email, name, avatarURL string, createdAt, updatedAt time.Time) User {
+func ToUser(id uuid.UUID, role svcmodel.UserRole, email, name, avatarURL string, createdAt, updatedAt time.Time) User {
 	return User{
 		ID:        id,
-		Role:      role,
+		Role:      string(role),
 		Email:     email,
 		Name:      name,
 		AvatarURL: avatarURL,
@@ -38,12 +37,12 @@ func ToNetUser(id uuid.UUID, role, email, name, avatarURL string, createdAt, upd
 	}
 }
 
-func ToNetUsers(users []svcmodel.User) []User {
+func ToUsers(users []svcmodel.User) []User {
 	u := make([]User, 0, len(users))
 	for _, user := range users {
-		u = append(u, ToNetUser(
+		u = append(u, ToUser(
 			user.ID,
-			user.Role.Role(),
+			user.Role,
 			user.Email,
 			user.Name,
 			user.AvatarURL,

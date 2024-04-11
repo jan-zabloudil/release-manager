@@ -10,8 +10,8 @@ import (
 	httpx "go.strv.io/net/http"
 )
 
-func GetIDFromURL(r *http.Request) (uuid.UUID, error) {
-	idFromURL := chi.URLParam(r, "id")
+func GetUUIDFromURL(r *http.Request, key string) (uuid.UUID, error) {
+	idFromURL := chi.URLParam(r, key)
 
 	id, err := uuid.Parse(idFromURL)
 	if err != nil {

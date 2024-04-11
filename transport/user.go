@@ -1,46 +1,26 @@
 package transport
 
 import (
-	"errors"
 	"net/http"
 
-	reperr "release-manager/repository/errors"
 	"release-manager/transport/model"
-
-	"github.com/google/uuid"
+	"release-manager/transport/util"
 )
 
-func (h *Handler) handleUser(w http.ResponseWriter, r *http.Request) {
-	id, err := GetIDFromURL(r)
+func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
+	u, err := h.UserSvc.Get(
+		r.Context(),
+		util.ContextUserID(r),
+		util.ContextAuthUserID(r),
+	)
 	if err != nil {
-		WriteNotFoundResponse(w, err)
+		WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-		h.getUser(w, r, id)
-	case http.MethodDelete:
-		h.deleteUser(w, r, id)
-	}
-}
-
-func (h *Handler) getUser(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-	u, err := h.UserSvc.Get(r.Context(), id)
-	if err != nil {
-		switch {
-		case errors.Is(err, reperr.ErrResourceNotFound):
-			WriteNotFoundResponse(w, err)
-			return
-		default:
-			WriteServerErrorResponse(w, err)
-			return
-		}
-	}
-
-	WriteJSONResponse(w, http.StatusOK, model.ToNetUser(
+	WriteJSONResponse(w, http.StatusOK, model.ToUser(
 		u.ID,
-		u.Role.Role(),
+		u.Role,
 		u.Email,
 		u.Name,
 		u.AvatarURL,
@@ -50,25 +30,23 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request, id uuid.UUID) 
 }
 
 func (h *Handler) getUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.UserSvc.GetAll(r.Context())
+	users, err := h.UserSvc.GetAll(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		WriteServerErrorResponse(w, err)
+		WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToNetUsers(users))
+	WriteJSONResponse(w, http.StatusOK, model.ToUsers(users))
 }
 
-func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-	if err := h.UserSvc.Delete(r.Context(), id); err != nil {
-		switch {
-		case errors.Is(err, reperr.ErrResourceNotFound):
-			WriteNotFoundResponse(w, err)
-			return
-		default:
-			WriteServerErrorResponse(w, err)
-			return
-		}
+func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
+	if err := h.UserSvc.Delete(
+		r.Context(),
+		util.ContextUserID(r),
+		util.ContextAuthUserID(r),
+	); err != nil {
+		WriteResponseError(w, util.ToResponseError(err))
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)

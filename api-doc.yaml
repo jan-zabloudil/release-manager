@@ -849,7 +849,7 @@ components:
           schema:
             $ref: '#/components/schemas/ForbiddenError'
     UnprocesssableEntityResponse:
-      description: 'Validation errors'
+      description: 'Validation error'
       content:
         application/json:
           schema:
@@ -927,7 +927,7 @@ components:
         format: uuid
   schemas:
     UnprocesssableEntityError:
-      description: 'Validation errors'
+      description: 'Validation error'
       type: object
       properties:
         errorCode:
@@ -935,7 +935,7 @@ components:
           example: '422'
         errorMessage:
           type: string
-          example: 'validation errors'
+          example: 'validation error'
         errorData:
           type: object
           properties:

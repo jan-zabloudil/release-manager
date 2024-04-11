@@ -8,69 +8,52 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIsAdmin(t *testing.T) {
-	adminRole, _ := NewUserRole(adminUserRole)
-	basicRole := NewBasicUserRole()
-
-	tests := []struct {
-		name string
-		user User
-		want bool
+func TestUser_HasAtLeastRole(t *testing.T) {
+	testCases := []struct {
+		name     string
+		userRole UserRole
+		testRole UserRole
+		expected bool
 	}{
-		{
-			name: "admin user",
-			user: User{
-				Role: adminRole,
-			},
-			want: true,
-		},
-		{
-			name: "basic user",
-			user: User{
-				Role: basicRole,
-			},
-			want: false,
-		},
+		{"Admin has at least User role", UserRoleAdmin, UserRoleUser, true},
+		{"Admin has at least Admin role", UserRoleAdmin, UserRoleAdmin, true},
+		{"User does not have at least Admin role", UserRoleUser, UserRoleAdmin, false},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.user.IsAdmin(), "User.IsAdmin() did not return the expected value")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			user := User{
+				ID:        uuid.New(),
+				Email:     "test@example.com",
+				Name:      "Test User",
+				AvatarURL: "https://example.com/avatar.jpg",
+				Role:      tc.userRole,
+			}
+
+			assert.Equal(t, tc.expected, user.HasAtLeastRole(tc.testRole))
 		})
 	}
 }
 
-func TestIsAnon(t *testing.T) {
-	user := User{
-		ID:        uuid.New(),
-		Email:     "test@example.com",
-		Name:      "Test User",
-		AvatarURL: "https://example.com/avatar.jpg",
-		Role:      NewBasicUserRole(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	tests := []struct {
-		name string
-		user *User
-		want bool
+func TestUser_ToUser(t *testing.T) {
+	testCases := []struct {
+		name    string
+		roleStr string
+		wantErr bool
 	}{
-		{
-			name: "anonymous user",
-			user: AnonUser,
-			want: true,
-		},
-		{
-			name: "authenticated user",
-			user: &user,
-			want: false,
-		},
+		{"Valid role - admin", "admin", false},
+		{"Valid role - user", "user", false},
+		{"Invalid role", "invalid", true},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.user.IsAnon(), "User.IsAnon() did not return the expected value")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := ToUser(uuid.New(), "test@example.com", "Test User", "https://example.com/avatar.jpg", tc.roleStr, time.Now(), time.Now())
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }

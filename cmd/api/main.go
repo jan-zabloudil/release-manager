@@ -25,8 +25,8 @@ func main() {
 	supaClient := supabase.CreateClient(cfg.Supabase.APIURL, cfg.Supabase.SecretKey)
 
 	repo := repository.NewRepository(supaClient)
-	svc := service.NewService(repo.User)
-	h := transport.NewHandler(svc.User)
+	svc := service.NewService(repo.Auth, repo.User)
+	h := transport.NewHandler(svc.Auth, svc.User)
 
 	serverConfig := httpx.ServerConfig{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
