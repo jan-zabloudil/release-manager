@@ -19,14 +19,6 @@ const (
 	supabaseUnauthorizedErrorCode = 401
 )
 
-func ValidateSingleRecordFetch[T any](s []T) error {
-	if len(s) != 1 {
-		return dberrors.NewMultipleOrNoRecordsReturnedError()
-	}
-
-	return nil
-}
-
 func ToDBError(err error) *dberrors.DBError {
 	var postgreErr *postgrestgo.RequestError
 	if errors.As(err, &postgreErr) {
@@ -42,7 +34,7 @@ func ToDBError(err error) *dberrors.DBError {
 		}
 	}
 
-	return dberrors.NewUnknownError(err)
+	return dberrors.NewUnknownError().Wrap(err)
 }
 
 func ToAuthError(err error) *autherrors.AuthError {
@@ -54,5 +46,5 @@ func ToAuthError(err error) *autherrors.AuthError {
 		}
 	}
 
-	return autherrors.NewUnknownError(err)
+	return autherrors.NewUnknownError().Wrap(err)
 }

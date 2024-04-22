@@ -1,4 +1,4 @@
-package mocks
+package mock
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockAuthRepository struct {
+type AuthRepository struct {
 	mock.Mock
 }
 
-func (m *MockAuthRepository) ReadUserIDForToken(ctx context.Context, token string) (uuid.UUID, error) {
+func (m *AuthRepository) ReadUserIDForToken(ctx context.Context, token string) (uuid.UUID, error) {
 	args := m.Called(ctx, token)
 	return args.Get(0).(uuid.UUID), args.Error(1)
 }

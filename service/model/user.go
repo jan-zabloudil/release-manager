@@ -1,17 +1,10 @@
 package model
 
 import (
-	"context"
 	"time"
 
 	"github.com/google/uuid"
 )
-
-type UserRepository interface {
-	Read(ctx context.Context, id uuid.UUID) (User, error)
-	ReadAll(ctx context.Context) ([]User, error)
-	Delete(ctx context.Context, id uuid.UUID) error
-}
 
 type User struct {
 	ID        uuid.UUID

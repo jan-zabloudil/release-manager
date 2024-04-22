@@ -13,16 +13,18 @@ import (
 )
 
 type Handler struct {
-	Mux     *chi.Mux
-	AuthSvc model.AuthService
-	UserSvc model.UserService
+	Mux        *chi.Mux
+	AuthSvc    model.AuthService
+	UserSvc    model.UserService
+	ProjectSvc model.ProjectService
 }
 
-func NewHandler(as model.AuthService, us model.UserService) *Handler {
+func NewHandler(as model.AuthService, us model.UserService, ps model.ProjectService) *Handler {
 	h := Handler{
-		Mux:     chi.NewRouter(),
-		AuthSvc: as,
-		UserSvc: us,
+		Mux:        chi.NewRouter(),
+		AuthSvc:    as,
+		UserSvc:    us,
+		ProjectSvc: ps,
 	}
 
 	h.Mux.Use(httpx.RequestIDMiddleware(RequestID))
@@ -35,6 +37,27 @@ func NewHandler(as model.AuthService, us model.UserService) *Handler {
 		r.Use(h.handleResourceID("id", util.ContextSetUserID))
 		r.Get("/", h.requireAuthUser(h.getUser))
 		r.Delete("/", h.requireAuthUser(h.deleteUser))
+	})
+
+	h.Mux.Route("/projects", func(r chi.Router) {
+		r.Post("/", h.requireAuthUser(h.createProject))
+		r.Get("/", h.requireAuthUser(h.getProjects))
+		r.Route("/{id}", func(r chi.Router) {
+			r.Use(h.handleResourceID("id", util.ContextSetProjectID))
+			r.Get("/", h.requireAuthUser(h.getProject))
+			r.Patch("/", h.requireAuthUser(h.updateProject))
+			r.Delete("/", h.requireAuthUser(h.deleteProject))
+			r.Route("/environments", func(r chi.Router) {
+				r.Post("/", h.requireAuthUser(h.createEnvironment))
+				r.Get("/", h.requireAuthUser(h.getEnvironments))
+				r.Route("/{environment_id}", func(r chi.Router) {
+					r.Use(h.handleResourceID("environment_id", util.ContextSetEnvironmentID))
+					r.Get("/", h.requireAuthUser(h.getEnvironment))
+					r.Patch("/", h.requireAuthUser(h.updateEnvironment))
+					r.Delete("/", h.requireAuthUser(h.deleteEnvironment))
+				})
+			})
+		})
 	})
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {

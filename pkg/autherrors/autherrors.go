@@ -7,9 +7,9 @@ import (
 
 var (
 	// #nosec G101 This is a constant error code, no security risk.
-	invalidTokenErrCode  = "ERR_AUTH_INVALID_TOKEN"
-	unknownErrCode       = "ERR_AUTH_UNKNOWN"
-	invalidUserIDErrCode = "ERR_AUTH_INVALID_USER_ID"
+	errCodeInvalidToken  = "ERR_AUTH_INVALID_TOKEN"
+	errCodeUnknown       = "ERR_AUTH_UNKNOWN"
+	errCodeInvalidUserID = "ERR_AUTH_INVALID_USER_ID"
 )
 
 type AuthError struct {
@@ -30,27 +30,26 @@ func (e *AuthError) Wrap(err error) *AuthError {
 
 func NewInvalidTokenError() *AuthError {
 	return &AuthError{
-		Code: invalidTokenErrCode,
+		Code: errCodeInvalidToken,
 	}
 }
 
-func NewUnknownError(err error) *AuthError {
+func NewUnknownError() *AuthError {
 	return &AuthError{
-		Code: unknownErrCode,
-		Err:  err,
+		Code: errCodeUnknown,
 	}
 }
 
 func NewInvalidUserIDError() *AuthError {
 	return &AuthError{
-		Code: invalidUserIDErrCode,
+		Code: errCodeInvalidUserID,
 	}
 }
 
 func IsInvalidTokenError(err error) bool {
 	var authErr *AuthError
 	if errors.As(err, &authErr) {
-		return authErr.Code == invalidTokenErrCode
+		return authErr.Code == errCodeInvalidToken
 	}
 
 	return false

@@ -13,6 +13,10 @@ func ToResponseError(err error) *responseerrors.ResponseError {
 		return responseerrors.NewForbiddenError().Wrap(err)
 	case apierrors.IsNotFoundError(err):
 		return responseerrors.NewNotFoundError().Wrap(err)
+	case apierrors.IsUnprocessableModelError(err):
+		return responseerrors.NewUnprocessableEntityError().Wrap(err)
+	case apierrors.IsConflictError(err):
+		return responseerrors.NewConflictError().Wrap(err)
 	default:
 		return responseerrors.NewServerError().Wrap(err)
 	}

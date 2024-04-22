@@ -11,7 +11,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/nedpals/postgrest-go v0.1.3
 	github.com/nedpals/supabase-go v0.4.0
-	github.com/relvacode/iso8601 v1.4.0
 	github.com/sethvargo/go-envconfig v1.0.1
 	github.com/stretchr/testify v1.9.0
 	go.strv.io/net v0.7.0
@@ -34,3 +33,5 @@ require (
 )
 
 replace github.com/nedpals/supabase-go => github.com/jan-zabloudil/supabase-go v0.0.0-20240229160758-916b4e4b1b63
+
+replace github.com/nedpals/postgrest-go => github.com/jan-zabloudil/postgrest-go v0.1.4-0.20240313092915-4ca6efcd60a7
