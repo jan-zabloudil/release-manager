@@ -17,7 +17,7 @@ func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 
 	s, err := h.SettingsSvc.Update(
 		r.Context(),
-		model.ToSvcSettingsUpdate(req),
+		model.ToSvcUpdateSettingsInput(req),
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {

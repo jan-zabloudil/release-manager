@@ -1,8 +1,6 @@
-package util
+package validator
 
 import (
-	"strings"
-
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -22,12 +20,7 @@ func init() {
 	_ = entrans.RegisterDefaultTranslations(Validate, translator)
 }
 
-func TranslateValidationErrs(errs validator.ValidationErrors) map[string]string {
-	m := make(map[string]string)
-
-	for _, err := range errs {
-		field := strings.ToLower(err.Field())
-		m[field] = err.Translate(translator)
-	}
-	return m
+func IsValidEmail(email string) bool {
+	err := Validate.Var(email, "email")
+	return err == nil
 }

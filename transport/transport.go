@@ -13,11 +13,12 @@ import (
 )
 
 type Handler struct {
-	Mux         *chi.Mux
-	AuthSvc     model.AuthService
-	UserSvc     model.UserService
-	ProjectSvc  model.ProjectService
-	SettingsSvc model.SettingsService
+	Mux                  *chi.Mux
+	AuthSvc              model.AuthService
+	UserSvc              model.UserService
+	ProjectSvc           model.ProjectService
+	SettingsSvc          model.SettingsService
+	ProjectMembershipSvc model.ProjectMembershipService
 }
 
 func NewHandler(
@@ -25,13 +26,15 @@ func NewHandler(
 	us model.UserService,
 	ps model.ProjectService,
 	ss model.SettingsService,
+	pms model.ProjectMembershipService,
 ) *Handler {
 	h := Handler{
-		Mux:         chi.NewRouter(),
-		AuthSvc:     as,
-		UserSvc:     us,
-		ProjectSvc:  ps,
-		SettingsSvc: ss,
+		Mux:                  chi.NewRouter(),
+		AuthSvc:              as,
+		UserSvc:              us,
+		ProjectSvc:           ps,
+		SettingsSvc:          ss,
+		ProjectMembershipSvc: pms,
 	}
 
 	h.Mux.Use(httpx.RequestIDMiddleware(RequestID))
@@ -64,7 +67,21 @@ func NewHandler(
 					r.Delete("/", h.requireAuthUser(h.deleteEnvironment))
 				})
 			})
+			r.Route("/invitations", func(r chi.Router) {
+				r.Post("/", h.requireAuthUser(h.createInvitation))
+				r.Get("/", h.requireAuthUser(h.listInvitations))
+				r.Route("/{invitation_id}", func(r chi.Router) {
+					r.Use(h.handleResourceID("invitation_id", util.ContextSetProjectInvitationID))
+					r.Delete("/", h.requireAuthUser(h.deleteInvitation))
+				})
+			})
 		})
+	})
+
+	h.Mux.Route("/projects/invitations", func(r chi.Router) {
+		r.Use(h.handleInvitationToken)
+		r.Get("/accept", h.acceptInvitation)
+		r.Get("/reject", h.rejectInvitation)
 	})
 
 	h.Mux.Route("/organization/settings", func(r chi.Router) {

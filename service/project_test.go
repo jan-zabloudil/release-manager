@@ -51,10 +51,11 @@ func TestProjectService_Create(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -100,10 +101,11 @@ func TestProjectService_Get(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -152,10 +154,11 @@ func TestProjectService_Delete(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -227,10 +230,11 @@ func TestProjectService_Update(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -315,10 +319,11 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -378,10 +383,11 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -467,10 +473,11 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -517,10 +524,11 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -584,10 +592,11 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
@@ -644,10 +653,11 @@ func TestProjectService_validateEnvironmentNameUnique(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			invitationRepo := new(repo.ProjectInvitationRepository)
 			projectRepo := new(repo.ProjectRepository)
 			envRepo := new(repo.EnvironmentRepository)
 			auth := new(svc.AuthService)
-			service := NewProjectService(auth, projectRepo, envRepo)
+			service := NewProjectService(auth, projectRepo, envRepo, invitationRepo)
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 

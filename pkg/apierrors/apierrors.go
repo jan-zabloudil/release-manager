@@ -6,15 +6,18 @@ import (
 )
 
 var (
-	errCodeUnauthorizedInvalidToken      = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
-	errCodeForbiddenInsufficientUserRole = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
-	errCodeUserNotFound                  = "ERR_USER_NOT_FOUND"
-	errCodeProjectNotFound               = "ERR_PROJECT_NOT_FOUND"
-	errCodeEnvironmentNotFound           = "ERR_ENVIRONMENT_NOT_FOUND"
-	errCodeProjectUnprocessable          = "ERR_PROJECT_UNPROCESSABLE"
-	errCodeEnvironmentUnprocessable      = "ERR_ENVIRONMENT_UNPROCESSABLE"
-	errCodeEnvironmentDuplicateName      = "ERR_ENVIRONMENT_DUPLICATE_NAME"
-	errCodeSettingsUnprocessable         = "ERR_SETTINGS_UNPROCESSABLE"
+	errCodeUnauthorizedInvalidToken       = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
+	errCodeForbiddenInsufficientUserRole  = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
+	errCodeUserNotFound                   = "ERR_USER_NOT_FOUND"
+	errCodeProjectNotFound                = "ERR_PROJECT_NOT_FOUND"
+	errCodeEnvironmentNotFound            = "ERR_ENVIRONMENT_NOT_FOUND"
+	errCodeProjectUnprocessable           = "ERR_PROJECT_UNPROCESSABLE"
+	errCodeEnvironmentUnprocessable       = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	errCodeEnvironmentDuplicateName       = "ERR_ENVIRONMENT_DUPLICATE_NAME"
+	errCodeSettingsUnprocessable          = "ERR_SETTINGS_UNPROCESSABLE"
+	errCodeProjectInvitationUnprocessable = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
+	errCodeProjectInvitationAlreadyExists = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
+	errCodeProjectInvitationNotFound      = "ERR_PROJECT_INVITATION_NOT_FOUND"
 )
 
 type APIError struct {
@@ -103,6 +106,27 @@ func NewForbiddenInsufficientUserRoleError() *APIError {
 	}
 }
 
+func NewProjectInvitationUnprocessableError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectInvitationUnprocessable,
+		Message: "Project invitation unprocessable",
+	}
+}
+
+func NewProjectInvitationAlreadyExistsError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectInvitationAlreadyExists,
+		Message: "Project invitation already exists",
+	}
+}
+
+func NewProjectInvitationNotFoundError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectInvitationNotFound,
+		Message: "Project invitation not found",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -115,13 +139,15 @@ func IsErrorWithCode(err error, code string) bool {
 func IsNotFoundError(err error) bool {
 	return IsErrorWithCode(err, errCodeUserNotFound) ||
 		IsErrorWithCode(err, errCodeProjectNotFound) ||
-		IsErrorWithCode(err, errCodeEnvironmentNotFound)
+		IsErrorWithCode(err, errCodeEnvironmentNotFound) ||
+		IsErrorWithCode(err, errCodeProjectInvitationNotFound)
 }
 
 func IsUnprocessableModelError(err error) bool {
 	return IsErrorWithCode(err, errCodeProjectUnprocessable) ||
 		IsErrorWithCode(err, errCodeEnvironmentUnprocessable) ||
-		IsErrorWithCode(err, errCodeSettingsUnprocessable)
+		IsErrorWithCode(err, errCodeSettingsUnprocessable) ||
+		IsErrorWithCode(err, errCodeProjectInvitationUnprocessable)
 }
 
 func IsUnauthorizedError(err error) bool {
@@ -133,5 +159,6 @@ func IsForbiddenError(err error) bool {
 }
 
 func IsConflictError(err error) bool {
-	return IsErrorWithCode(err, errCodeEnvironmentDuplicateName)
+	return IsErrorWithCode(err, errCodeEnvironmentDuplicateName) ||
+		IsErrorWithCode(err, errCodeProjectInvitationAlreadyExists)
 }

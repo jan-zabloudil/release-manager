@@ -3,6 +3,8 @@ package model
 import (
 	"context"
 
+	cryptox "release-manager/pkg/crypto"
+
 	"github.com/google/uuid"
 )
 
@@ -41,4 +43,18 @@ type AuthService interface {
 type SettingsRepository interface {
 	Update(ctx context.Context, c Settings) error
 	Read(ctx context.Context) (Settings, error)
+}
+
+type ProjectInvitationRepository interface {
+	Create(ctx context.Context, i ProjectInvitation) error
+	Read(ctx context.Context, id uuid.UUID) (ProjectInvitation, error)
+	ReadByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (ProjectInvitation, error)
+	ReadByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status ProjectInvitationStatus) (ProjectInvitation, error)
+	ReadAllForProject(ctx context.Context, projectID uuid.UUID) ([]ProjectInvitation, error)
+	Update(ctx context.Context, i ProjectInvitation) error
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type ProjectService interface {
+	Get(ctx context.Context, projectID, authUserID uuid.UUID) (Project, error)
 }

@@ -38,7 +38,7 @@ type GithubSettings struct {
 	Token   string `json:"token"`
 }
 
-func ToSvcSettingsUpdate(u UpdateSettingsInput) svcmodel.UpdateSettingsInput {
+func ToSvcUpdateSettingsInput(u UpdateSettingsInput) svcmodel.UpdateSettingsInput {
 	return svcmodel.UpdateSettingsInput{
 		OrganizationName:  u.OrganizationName,
 		DefaultReleaseMsg: u.DefaultReleaseMessage,
