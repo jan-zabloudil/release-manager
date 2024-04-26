@@ -39,7 +39,7 @@ func NewHandler(
 	h.Mux.Use(httpx.RecoverMiddleware(slog.Default().WithGroup("recover")))
 	h.Mux.Use(h.auth)
 
-	h.Mux.Get("/admin/users", h.requireAuthUser(h.getUsers))
+	h.Mux.Get("/admin/users", h.requireAuthUser(h.listUsers))
 	h.Mux.Route("/admin/users/{id}", func(r chi.Router) {
 		r.Use(h.handleResourceID("id", util.ContextSetUserID))
 		r.Get("/", h.requireAuthUser(h.getUser))

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"release-manager/pkg/dberrors"
 	repomock "release-manager/repository/mock"
 	svcmock "release-manager/service/mock"
 	"release-manager/service/model"
@@ -102,7 +103,7 @@ func TestUserService_GetAll(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.GetAll(context.Background(), authUserID)
+			_, err := userService.ListAll(context.Background(), authUserID)
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -130,6 +131,7 @@ func TestUserService_Delete(t *testing.T) {
 				mockAuthSvc := new(svcmock.AuthService)
 				mockUserRepo := new(repomock.UserRepository)
 				mockAuthSvc.On("AuthorizeAdminRole", mock.Anything, authUserID).Return(nil)
+				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
 				mockUserRepo.On("Delete", mock.Anything, testUserID).Return(nil)
 				return mockAuthSvc, mockUserRepo
 			},
@@ -151,7 +153,7 @@ func TestUserService_Delete(t *testing.T) {
 				mockAuthSvc := new(svcmock.AuthService)
 				mockUserRepo := new(repomock.UserRepository)
 				mockAuthSvc.On("AuthorizeAdminRole", mock.Anything, authUserID).Return(nil)
-				mockUserRepo.On("Delete", mock.Anything, testUserID).Return(errors.New("test error"))
+				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, dberrors.NewNotFoundError())
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: true,

@@ -18,30 +18,22 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func ToUser(id uuid.UUID, role svcmodel.UserRole, email, name, avatarURL string, createdAt, updatedAt time.Time) User {
+func ToUser(u svcmodel.User) User {
 	return User{
-		ID:        id,
-		Role:      string(role),
-		Email:     email,
-		Name:      name,
-		AvatarURL: avatarURL,
-		CreatedAt: createdAt.Local(),
-		UpdatedAt: updatedAt.Local(),
+		ID:        u.ID,
+		Email:     u.Email,
+		Name:      u.Name,
+		AvatarURL: u.AvatarURL,
+		Role:      string(u.Role),
+		CreatedAt: u.CreatedAt.Local(),
+		UpdatedAt: u.UpdatedAt.Local(),
 	}
 }
 
 func ToUsers(users []svcmodel.User) []User {
 	u := make([]User, 0, len(users))
 	for _, user := range users {
-		u = append(u, ToUser(
-			user.ID,
-			user.Role,
-			user.Email,
-			user.Name,
-			user.AvatarURL,
-			user.CreatedAt,
-			user.UpdatedAt,
-		))
+		u = append(u, ToUser(user))
 	}
 
 	return u

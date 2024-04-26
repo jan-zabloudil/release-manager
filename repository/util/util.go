@@ -27,13 +27,6 @@ func ToDBError(err error) *dberrors.DBError {
 		}
 	}
 
-	var supabaseErr *supabase.ErrorResponse
-	if errors.As(err, &supabaseErr) {
-		if supabaseErr.Code == supabaseNotFoundErrorCode {
-			return dberrors.NewNotFoundError().Wrap(err)
-		}
-	}
-
 	return dberrors.NewUnknownError().Wrap(err)
 }
 

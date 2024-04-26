@@ -24,7 +24,7 @@ type ProjectService interface {
 
 type UserService interface {
 	Get(ctx context.Context, id, authUserID uuid.UUID) (svcmodel.User, error)
-	GetAll(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.User, error)
+	ListAll(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.User, error)
 	Delete(ctx context.Context, id, authUserID uuid.UUID) error
 }
 

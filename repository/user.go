@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	"release-manager/pkg/dberrors"
 	"release-manager/repository/model"
 	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
@@ -35,20 +34,7 @@ func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.U
 		return svcmodel.User{}, util.ToDBError(err)
 	}
 
-	u, err := svcmodel.ToUser(
-		resp.ID,
-		resp.Email,
-		resp.Name,
-		resp.AvatarURL,
-		resp.Role,
-		resp.CreatedAt,
-		resp.UpdatedAt,
-	)
-	if err != nil {
-		return svcmodel.User{}, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return u, nil
+	return model.ToSvcUser(resp), nil
 }
 
 func (r *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
@@ -61,12 +47,7 @@ func (r *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
 		return nil, util.ToDBError(err)
 	}
 
-	u, err := model.ToSvcUsers(resp)
-	if err != nil {
-		return nil, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return u, nil
+	return model.ToSvcUsers(resp), nil
 }
 
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
