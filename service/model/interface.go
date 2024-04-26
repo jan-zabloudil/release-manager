@@ -37,3 +37,8 @@ type AuthService interface {
 	AuthorizeAdminRole(ctx context.Context, userID uuid.UUID) error
 	AuthorizeRole(ctx context.Context, userID uuid.UUID, role UserRole) error
 }
+
+type SettingsRepository interface {
+	Update(ctx context.Context, c Settings) error
+	Read(ctx context.Context) (Settings, error)
+}

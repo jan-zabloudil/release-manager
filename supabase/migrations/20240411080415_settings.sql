@@ -1,0 +1,7 @@
+CREATE TABLE public.settings (
+     key TEXT NOT NULL PRIMARY KEY,
+     value JSON NOT NULL
+);
+
+GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE
+ON TABLE public.settings TO service_role;

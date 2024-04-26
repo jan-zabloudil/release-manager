@@ -4,7 +4,7 @@ info:
   title: STRV ReleaseManager
 tags:
   - name: Ping
-  - name: Organization settings
+  - name: Settings
   - name: Users
   - name: Projects
   - name: Environments
@@ -23,9 +23,9 @@ paths:
           description: 'API is running'
   /organization/settings:
     get:
-      summary: "Get organization's settings"
+      summary: "Get settings values"
       tags:
-        - Organization settings
+        - Settings
       security:
         - bearerAuth: []
       responses:
@@ -34,7 +34,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationSettings'
+                $ref: '#/components/schemas/Settings'
         '400':
             $ref: '#/components/responses/BadRequestErrorResponse'
         '401':
@@ -44,20 +44,20 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Organization settings
+        - Settings
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationSettings'
+              $ref: '#/components/schemas/Settings'
       responses:
         '200':
           description: 'Settings updated'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationSettings'
+                $ref: '#/components/schemas/Settings'
         '400':
           $ref: '#/components/responses/BadRequestErrorResponse'
         '401':
@@ -1460,18 +1460,31 @@ components:
         - name
         - email
         - date
-    OrganizationSettings:
+    Settings:
       type: object
       properties:
         organization_name:
           type: string
           example: 'STRV'
-        slack_token:
+        default_release_message:
           type: string
-          example: 'xoxo-123456789012-1234567890123-AbCdEfGhIjKlMnOpQrStUvWxYz'
-        github_organization_token:
-          type: string
-          example: 'ghp_abcdefgh1234567890ijklmnopqrstuvwx'
+          example: 'Hi everyone,I am thrilled to announce new release!'
+        slack:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            token:
+              type: string
+              example: 'xoxo-123456789012-1234567890123-AbCdEfGhIjKlMnOpQrStUvWxYz'
+        github:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            token:
+              type: string
+              example: 'ghp_abcdefgh1234567890ijklmnopqrstuvwx'
   securitySchemes:
     bearerAuth:
       type: http

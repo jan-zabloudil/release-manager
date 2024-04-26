@@ -31,3 +31,8 @@ type UserService interface {
 type AuthService interface {
 	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
 }
+
+type SettingsService interface {
+	Update(ctx context.Context, u svcmodel.UpdateSettingsInput, authUserID uuid.UUID) (svcmodel.Settings, error)
+	Get(ctx context.Context, authUserID uuid.UUID) (svcmodel.Settings, error)
+}
