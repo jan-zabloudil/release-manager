@@ -24,3 +24,8 @@ func IsValidEmail(email string) bool {
 	err := Validate.Var(email, "email")
 	return err == nil
 }
+
+func IsAbsoluteURL(url string) bool {
+	err := Validate.Var(url, "http_url")
+	return err == nil
+}

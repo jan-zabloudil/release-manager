@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"time"
 
-	urlx "release-manager/pkg/url"
+	"release-manager/pkg/validator"
 
 	"github.com/google/uuid"
 )
@@ -120,7 +120,7 @@ func toServiceURL(rawURL string) (url.URL, error) {
 		return url.URL{}, errEnvironmentInvalidServiceURL
 	}
 
-	if !urlx.IsAbsolute(rawURL) {
+	if !validator.IsAbsoluteURL(rawURL) {
 		return url.URL{}, errEnvironmentServiceURLMustBeAbsolute
 	}
 
