@@ -21,6 +21,10 @@ func GetUUIDFromURL(r *http.Request, key string) (uuid.UUID, error) {
 	return id, nil
 }
 
+func GetQueryParam(r *http.Request, key string) string {
+	return r.URL.Query().Get(key)
+}
+
 func UnmarshalRequest(r *http.Request, b any) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

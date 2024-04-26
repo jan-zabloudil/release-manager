@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 
+	cryptox "release-manager/pkg/crypto"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -20,6 +21,14 @@ type ProjectService interface {
 	GetEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Environment, error)
 	DeleteEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) error
 	UpdateEnvironment(ctx context.Context, u svcmodel.EnvironmentUpdate, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
+}
+
+type ProjectMembershipService interface {
+	CreateInvitation(ctx context.Context, c svcmodel.CreateProjectInvitationInput, authUserID uuid.UUID) (svcmodel.ProjectInvitation, error)
+	ListInvitations(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectInvitation, error)
+	DeleteInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error
+	AcceptInvitation(ctx context.Context, tkn cryptox.Token) error
+	RejectInvitation(ctx context.Context, tkn cryptox.Token) error
 }
 
 type UserService interface {

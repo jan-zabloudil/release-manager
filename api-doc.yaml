@@ -416,10 +416,11 @@ paths:
               $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /invitations/{invitation-id}:
+  /projects/{project-id}/invitations/{invitation-id}:
     delete:
       summary: 'Delete invitation'
       parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/InvitationIdParam'
       security:
         - bearerAuth: []
@@ -435,23 +436,32 @@ paths:
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
 
-  /invitations/{invitation-id}/confirm:
+  /projects/invitations/accept:
     get:
-      summary: 'Confirm invitation'
+      summary: 'accept invitation'
       parameters:
         - $ref: '#/components/parameters/InvitationIdParam'
         - $ref: '#/components/parameters/InvitationToken'
       tags:
         - Project invitations
       responses:
-        '200':
-          description: "Invitation confirmed. Signed up user is added to a project, unregistered user has to sign up first."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvitationConfirmationResponse'
+        '202':
+          description: 'Invitation accepted'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/invitations/reject:
+    get:
+      summary: 'reject invitation'
+      parameters:
+        - $ref: '#/components/parameters/InvitationIdParam'
+        - $ref: '#/components/parameters/InvitationToken'
+      tags:
+        - Project invitations
+      responses:
+        '204':
+          description: 'Invitation rejected'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/members:
     get:
       summary: "List project's members"
@@ -1075,14 +1085,11 @@ components:
     ProjectMemberRole:
       type: object
       properties:
-        role:
+        project_role:
           type: string
           enum:
-            - admin
             - editor
             - viewer
-      required:
-        - role
     ProjectMemberResponse:
         allOf:
           - $ref: '#/components/schemas/ProjectMemberRole'
@@ -1126,49 +1133,22 @@ components:
             id:
               type: string
               format: uuid
-            invited_by_user_id:
-              type: string
-              format: uuid
             status:
               type: string
               enum:
                 - pending
-                - confirmed_pending_signup
+                - accepted_awaiting_registration
             created_at:
               type: string
               format: date-time
-            valid_until:
+            updated_at:
               type: string
               format: date-time
       required:
         - id
-        - invited_by_user_id
         - status
         - created_at
-        - valid_until
-    InvitationConfirmationResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-            - confirmed
-            - confirmed_pending_signup
-          example: "confirmed_pending_signup"
-        message:
-          type: string
-          example: 'Invitation confirmed. User needs to sign up to complete the process.'
-        project_name:
-          type: string
-          example: 'Awesome project'
-        project_id:
-          type: string
-          format: uuid
-      required:
-        - status
-        - message
-        - project_name
-        - project_id
+        - updated_at
     GitRepositoryRequest:
       type: object
       properties:

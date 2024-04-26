@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/responseerrors"
 	"release-manager/transport/util"
 
@@ -66,4 +67,12 @@ func (h *Handler) handleResourceID(idKey string, f util.ContextSetUUIDFunc) func
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (h *Handler) handleInvitationToken(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r = util.ContextSetProjectInvitationToken(r, cryptox.Token(GetQueryParam(r, "token")))
+
+		next.ServeHTTP(w, r)
+	})
 }

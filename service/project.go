@@ -11,16 +11,23 @@ import (
 )
 
 type ProjectService struct {
-	authSvc     model.AuthService
-	projectRepo model.ProjectRepository
-	envRepo     model.EnvironmentRepository
+	authSvc        model.AuthService
+	projectRepo    model.ProjectRepository
+	envRepo        model.EnvironmentRepository
+	invitationRepo model.ProjectInvitationRepository
 }
 
-func NewProjectService(authSvc model.AuthService, projectRepo model.ProjectRepository, envRepo model.EnvironmentRepository) *ProjectService {
+func NewProjectService(
+	authSvc model.AuthService,
+	projectRepo model.ProjectRepository,
+	envRepo model.EnvironmentRepository,
+	invitationRepo model.ProjectInvitationRepository,
+) *ProjectService {
 	return &ProjectService{
-		authSvc:     authSvc,
-		projectRepo: projectRepo,
-		envRepo:     envRepo,
+		authSvc:        authSvc,
+		projectRepo:    projectRepo,
+		envRepo:        envRepo,
+		invitationRepo: invitationRepo,
 	}
 }
 
