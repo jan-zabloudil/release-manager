@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
-	var req model.CreateEnvironmentRequest
+	var req model.CreateEnvironmentInput
 	if err := UnmarshalRequest(r, &req); err != nil {
 		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
@@ -17,7 +17,7 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 
 	env, err := h.ProjectSvc.CreateEnvironment(
 		r.Context(),
-		model.ToSvcEnvironmentCreation(util.ContextProjectID(r), req.Name, req.ServiceURL),
+		model.ToSvcCreateEnvironmentInput(req, util.ContextProjectID(r)),
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -25,15 +25,11 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(
-		w,
-		http.StatusCreated,
-		model.ToEnvironmentResponse(env.ID, env.Name, env.ServiceURL, env.CreatedAt, env.UpdatedAt),
-	)
+	WriteJSONResponse(w, http.StatusCreated, model.ToEnvironment(env))
 }
 
 func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
-	var req model.UpdateEnvironmentRequest
+	var req model.UpdateEnvironmentInput
 	if err := UnmarshalRequest(r, &req); err != nil {
 		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
@@ -41,10 +37,7 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 
 	env, err := h.ProjectSvc.UpdateEnvironment(
 		r.Context(),
-		model.ToSvcEnvironmentUpdate(
-			req.Name,
-			req.ServiceURL,
-		),
+		model.ToSvcUpdateEnvironmentInput(req),
 		util.ContextProjectID(r),
 		util.ContextEnvironmentID(r),
 		util.ContextAuthUserID(r),
@@ -54,11 +47,7 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(
-		w,
-		http.StatusOK,
-		model.ToEnvironmentResponse(env.ID, env.Name, env.ServiceURL, env.CreatedAt, env.UpdatedAt),
-	)
+	WriteJSONResponse(w, http.StatusOK, model.ToEnvironment(env))
 }
 
 func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
@@ -73,15 +62,11 @@ func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(
-		w,
-		http.StatusOK,
-		model.ToEnvironmentResponse(env.ID, env.Name, env.ServiceURL, env.CreatedAt, env.UpdatedAt),
-	)
+	WriteJSONResponse(w, http.StatusOK, model.ToEnvironment(env))
 }
 
-func (h *Handler) getEnvironments(w http.ResponseWriter, r *http.Request) {
-	envs, err := h.ProjectSvc.GetEnvironments(
+func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
+	envs, err := h.ProjectSvc.ListEnvironments(
 		r.Context(),
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),
@@ -91,11 +76,7 @@ func (h *Handler) getEnvironments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(
-		w,
-		http.StatusOK,
-		model.ToEnvironmentsResponse(envs),
-	)
+	WriteJSONResponse(w, http.StatusOK, model.ToEnvironments(envs))
 }
 
 func (h *Handler) deleteEnvironment(w http.ResponseWriter, r *http.Request) {

@@ -10,12 +10,12 @@ import (
 func TestEnvironment_NewEnvironment(t *testing.T) {
 	tests := []struct {
 		name     string
-		creation EnvironmentCreation
+		creation CreateEnvironmentInput
 		wantErr  bool
 	}{
 		{
 			name: "Valid Environment",
-			creation: EnvironmentCreation{
+			creation: CreateEnvironmentInput{
 				ProjectID:     uuid.New(),
 				Name:          "dev",
 				ServiceRawURL: "http://example.com",
@@ -24,7 +24,7 @@ func TestEnvironment_NewEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid Environment - not absolute service url",
-			creation: EnvironmentCreation{
+			creation: CreateEnvironmentInput{
 				ProjectID:     uuid.New(),
 				Name:          "dev",
 				ServiceRawURL: "example.com",
@@ -33,7 +33,7 @@ func TestEnvironment_NewEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid Environment - empty name",
-			creation: EnvironmentCreation{
+			creation: CreateEnvironmentInput{
 				ProjectID:     uuid.New(),
 				Name:          "",
 				ServiceRawURL: "http://example.com",
@@ -86,42 +86,6 @@ func TestEnvironment_Validate(t *testing.T) {
 	}
 }
 
-func TestEnvironment_toServiceURL(t *testing.T) {
-	tests := []struct {
-		name    string
-		rawURL  string
-		wantErr bool
-	}{
-		{
-			name:    "Valid Absolute URL",
-			rawURL:  "http://example.com",
-			wantErr: false,
-		},
-		{
-			name:    "Invalid URL",
-			rawURL:  "invalid",
-			wantErr: true,
-		},
-		{
-			name:    "Relative URL",
-			rawURL:  "/relative/path",
-			wantErr: true,
-		},
-	}
-
-	for i := range tests {
-		tt := tests[i]
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := toServiceURL(tt.rawURL)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
-}
-
 func TestEnvironment_Update(t *testing.T) {
 	validName := "New Name"
 	validURL := "http://new.example.com"
@@ -131,7 +95,7 @@ func TestEnvironment_Update(t *testing.T) {
 	tests := []struct {
 		name    string
 		env     Environment
-		update  EnvironmentUpdate
+		update  UpdateEnvironmentInput
 		wantErr bool
 	}{
 		{
@@ -139,7 +103,7 @@ func TestEnvironment_Update(t *testing.T) {
 			env: Environment{
 				Name: "Old Name",
 			},
-			update: EnvironmentUpdate{
+			update: UpdateEnvironmentInput{
 				Name:          &validName,
 				ServiceRawURL: &validURL,
 			},
@@ -150,7 +114,7 @@ func TestEnvironment_Update(t *testing.T) {
 			env: Environment{
 				Name: "Old Name",
 			},
-			update: EnvironmentUpdate{
+			update: UpdateEnvironmentInput{
 				Name:          &validName,
 				ServiceRawURL: &invalidURL,
 			},
@@ -161,7 +125,7 @@ func TestEnvironment_Update(t *testing.T) {
 			env: Environment{
 				Name: "Old Name",
 			},
-			update: EnvironmentUpdate{
+			update: UpdateEnvironmentInput{
 				Name:          &invalidName,
 				ServiceRawURL: &validURL,
 			},

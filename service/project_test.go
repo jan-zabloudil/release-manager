@@ -18,13 +18,13 @@ import (
 func TestProjectService_Create(t *testing.T) {
 	testCases := []struct {
 		name      string
-		project   model.ProjectCreation
+		project   model.CreateProjectInput
 		mockSetup func(*svc.AuthService, *repo.ProjectRepository, *repo.EnvironmentRepository)
 		wantErr   bool
 	}{
 		{
 			name: "Valid project",
-			project: model.ProjectCreation{
+			project: model.CreateProjectInput{
 				Name:                      "Test Project",
 				SlackChannelID:            "c1234",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
@@ -37,7 +37,7 @@ func TestProjectService_Create(t *testing.T) {
 		},
 		{
 			name: "Invalid project - missing name",
-			project: model.ProjectCreation{
+			project: model.CreateProjectInput{
 				Name:                      "",
 				SlackChannelID:            "",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
@@ -184,16 +184,16 @@ func TestProjectService_Update(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		update    model.ProjectUpdate
+		update    model.UpdateProjectInput
 		mockSetup func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository)
 		wantErr   bool
 	}{
 		{
 			name: "Valid project update",
-			update: model.ProjectUpdate{
+			update: model.UpdateProjectInput{
 				Name:           &validProjectName,
 				SlackChannelID: &slackChannelID,
-				ReleaseNotificationConfigUpdate: model.ReleaseNotificationConfigUpdate{
+				ReleaseNotificationConfigUpdate: model.UpdateReleaseNotificationConfigInput{
 					Message:         new(string),
 					ShowProjectName: new(bool),
 					ShowReleaseName: new(bool),
@@ -210,7 +210,7 @@ func TestProjectService_Update(t *testing.T) {
 		},
 		{
 			name: "Invalid project update - missing name",
-			update: model.ProjectUpdate{
+			update: model.UpdateProjectInput{
 				Name: &invalidProjectName,
 			},
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository) {
@@ -220,7 +220,7 @@ func TestProjectService_Update(t *testing.T) {
 		},
 		{
 			name:   "Non-existing project",
-			update: model.ProjectUpdate{},
+			update: model.UpdateProjectInput{},
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository) {
 				projectRepo.On("Read", mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
 			},
@@ -256,13 +256,13 @@ func TestProjectService_Update(t *testing.T) {
 func TestProjectService_CreateEnvironment(t *testing.T) {
 	testCases := []struct {
 		name      string
-		envCreate model.EnvironmentCreation
+		envCreate model.CreateEnvironmentInput
 		mockSetup func(*svc.AuthService, *repo.ProjectRepository, *repo.EnvironmentRepository)
 		wantErr   bool
 	}{
 		{
 			name: "Valid environment creation",
-			envCreate: model.EnvironmentCreation{
+			envCreate: model.CreateEnvironmentInput{
 				ProjectID:     uuid.New(),
 				Name:          "Test Environment",
 				ServiceRawURL: "http://example.com",
@@ -277,7 +277,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid environment creation - duplicate name",
-			envCreate: model.EnvironmentCreation{
+			envCreate: model.CreateEnvironmentInput{
 				ProjectID:     uuid.New(),
 				Name:          "Test Environment",
 				ServiceRawURL: "http://example.com",
@@ -291,7 +291,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid environment creation - not absolute service url",
-			envCreate: model.EnvironmentCreation{
+			envCreate: model.CreateEnvironmentInput{
 				ProjectID:     uuid.New(),
 				Name:          "Test Environment",
 				ServiceRawURL: "example",
@@ -304,7 +304,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid environment creation - empty name",
-			envCreate: model.EnvironmentCreation{
+			envCreate: model.CreateEnvironmentInput{
 				ProjectID:     uuid.New(),
 				Name:          "",
 				ServiceRawURL: "example",
@@ -414,13 +414,13 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		envUpdate model.EnvironmentUpdate
+		envUpdate model.UpdateEnvironmentInput
 		mockSetup func(*svc.AuthService, *repo.ProjectRepository, *repo.EnvironmentRepository)
 		wantErr   bool
 	}{
 		{
 			name: "Valid Environment Update",
-			envUpdate: model.EnvironmentUpdate{
+			envUpdate: model.UpdateEnvironmentInput{
 				Name:          &validName,
 				ServiceRawURL: &validURL,
 			},
@@ -434,7 +434,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid Environment Update - duplicate name",
-			envUpdate: model.EnvironmentUpdate{
+			envUpdate: model.UpdateEnvironmentInput{
 				Name:          &validName,
 				ServiceRawURL: &validURL,
 			},
@@ -447,7 +447,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid Environment Update - not absolute service url",
-			envUpdate: model.EnvironmentUpdate{
+			envUpdate: model.UpdateEnvironmentInput{
 				Name:          &validName,
 				ServiceRawURL: &invalidURL,
 			},
@@ -459,7 +459,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 		},
 		{
 			name: "Invalid Environment Update - missing name",
-			envUpdate: model.EnvironmentUpdate{
+			envUpdate: model.UpdateEnvironmentInput{
 				Name:          &invalidName,
 				ServiceRawURL: &validURL,
 			},
@@ -532,7 +532,7 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 
 			tc.mockSetup(auth, projectRepo, envRepo)
 
-			_, err := service.GetEnvironments(context.Background(), tc.projectID, uuid.New())
+			_, err := service.ListEnvironments(context.Background(), tc.projectID, uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)

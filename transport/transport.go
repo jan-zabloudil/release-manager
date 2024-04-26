@@ -51,7 +51,7 @@ func NewHandler(
 
 	h.Mux.Route("/projects", func(r chi.Router) {
 		r.Post("/", h.requireAuthUser(h.createProject))
-		r.Get("/", h.requireAuthUser(h.getProjects))
+		r.Get("/", h.requireAuthUser(h.listProjects))
 		r.Route("/{id}", func(r chi.Router) {
 			r.Use(h.handleResourceID("id", util.ContextSetProjectID))
 			r.Get("/", h.requireAuthUser(h.getProject))
@@ -59,7 +59,7 @@ func NewHandler(
 			r.Delete("/", h.requireAuthUser(h.deleteProject))
 			r.Route("/environments", func(r chi.Router) {
 				r.Post("/", h.requireAuthUser(h.createEnvironment))
-				r.Get("/", h.requireAuthUser(h.getEnvironments))
+				r.Get("/", h.requireAuthUser(h.listEnvironments))
 				r.Route("/{environment_id}", func(r chi.Router) {
 					r.Use(h.handleResourceID("environment_id", util.ContextSetEnvironmentID))
 					r.Get("/", h.requireAuthUser(h.getEnvironment))

@@ -27,18 +27,18 @@ type Environment struct {
 	// TODO add release id once releases are implemented
 }
 
-type EnvironmentCreation struct {
+type CreateEnvironmentInput struct {
 	ProjectID     uuid.UUID
 	Name          string
 	ServiceRawURL string
 }
 
-type EnvironmentUpdate struct {
+type UpdateEnvironmentInput struct {
 	Name          *string
 	ServiceRawURL *string
 }
 
-func NewEnvironment(c EnvironmentCreation) (Environment, error) {
+func NewEnvironment(c CreateEnvironmentInput) (Environment, error) {
 	u, err := toServiceURL(c.ServiceRawURL)
 	if err != nil {
 		return Environment{}, err
@@ -66,32 +66,14 @@ func (e *Environment) Validate() error {
 		return errEnvironmentNameRequired
 	}
 
+	if e.ServiceURL.String() != "" && !validator.IsAbsoluteURL(e.ServiceURL.String()) {
+		return errEnvironmentServiceURLMustBeAbsolute
+	}
+
 	return nil
 }
 
-func ToEnvironment(id, projectID uuid.UUID, name, url string, createdAt, updatedAt time.Time) (Environment, error) {
-	u, err := toServiceURL(url)
-	if err != nil {
-		return Environment{}, err
-	}
-
-	env := Environment{
-		ID:         id,
-		ProjectID:  projectID,
-		Name:       name,
-		ServiceURL: u,
-		CreatedAt:  createdAt,
-		UpdatedAt:  updatedAt,
-	}
-
-	if err := env.Validate(); err != nil {
-		return Environment{}, err
-	}
-
-	return env, nil
-}
-
-func (e *Environment) Update(u EnvironmentUpdate) error {
+func (e *Environment) Update(u UpdateEnvironmentInput) error {
 	if u.ServiceRawURL != nil {
 		svcURL, err := toServiceURL(*u.ServiceRawURL)
 		if err != nil {
@@ -118,10 +100,6 @@ func toServiceURL(rawURL string) (url.URL, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return url.URL{}, errEnvironmentInvalidServiceURL
-	}
-
-	if !validator.IsAbsoluteURL(rawURL) {
-		return url.URL{}, errEnvironmentServiceURLMustBeAbsolute
 	}
 
 	return *u, nil

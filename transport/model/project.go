@@ -8,19 +8,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type CreateProjectRequest struct {
+type CreateProjectInput struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
 }
 
-type UpdateProjectRequest struct {
-	Name                      *string                                 `json:"name"`
-	SlackChannelID            *string                                 `json:"slack_channel_id"`
-	ReleaseNotificationConfig *UpdateReleaseNotificationConfigRequest `json:"release_notification_config"`
+type UpdateProjectInput struct {
+	Name                      *string                              `json:"name"`
+	SlackChannelID            *string                              `json:"slack_channel_id"`
+	ReleaseNotificationConfig UpdateReleaseNotificationConfigInput `json:"release_notification_config"`
 }
 
-type ProjectResponse struct {
+type Project struct {
 	ID                        uuid.UUID                 `json:"id"`
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
@@ -38,7 +38,7 @@ type ReleaseNotificationConfig struct {
 	ShowSourceCode  bool   `json:"show_source_code"`
 }
 
-type UpdateReleaseNotificationConfigRequest struct {
+type UpdateReleaseNotificationConfigInput struct {
 	Message         *string `json:"message"`
 	ShowProjectName *bool   `json:"show_project_name"`
 	ShowReleaseName *bool   `json:"show_release_name"`
@@ -47,58 +47,37 @@ type UpdateReleaseNotificationConfigRequest struct {
 	ShowSourceCode  *bool   `json:"show_source_code"`
 }
 
-func ToSvcProjectCreation(name, slackChannelID string, rlsCfg ReleaseNotificationConfig) svcmodel.ProjectCreation {
-	return svcmodel.ProjectCreation{
-		Name:                      name,
-		SlackChannelID:            slackChannelID,
-		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(rlsCfg),
+func ToSvcCreateProjectInput(c CreateProjectInput) svcmodel.CreateProjectInput {
+	return svcmodel.CreateProjectInput{
+		Name:                      c.Name,
+		SlackChannelID:            c.SlackChannelID,
+		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(c.ReleaseNotificationConfig),
 	}
 }
 
-func ToSvcProjectUpdate(
-	name,
-	slackChannelID *string,
-	rlsCfg *UpdateReleaseNotificationConfigRequest,
-) svcmodel.ProjectUpdate {
-	var p svcmodel.ProjectUpdate
-
-	p.Name, p.SlackChannelID = name, slackChannelID
-	if rlsCfg != nil {
-		p.ReleaseNotificationConfigUpdate = svcmodel.ReleaseNotificationConfigUpdate(*rlsCfg)
-	}
-
-	return p
-}
-
-func ToProjectResponse(
-	id uuid.UUID,
-	name,
-	slackChannelID string,
-	rlsConfig svcmodel.ReleaseNotificationConfig,
-	createdAt,
-	updatedAt time.Time,
-) ProjectResponse {
-	return ProjectResponse{
-		ID:                        id,
-		Name:                      name,
-		SlackChannelID:            slackChannelID,
-		ReleaseNotificationConfig: ReleaseNotificationConfig(rlsConfig),
-		CreatedAt:                 createdAt.Local(),
-		UpdatedAt:                 updatedAt.Local(),
+func ToSvcUpdateProjectInput(u UpdateProjectInput) svcmodel.UpdateProjectInput {
+	return svcmodel.UpdateProjectInput{
+		Name:                            u.Name,
+		SlackChannelID:                  u.SlackChannelID,
+		ReleaseNotificationConfigUpdate: svcmodel.UpdateReleaseNotificationConfigInput(u.ReleaseNotificationConfig),
 	}
 }
 
-func ToProjects(projects []svcmodel.Project) []ProjectResponse {
-	p := make([]ProjectResponse, 0, len(projects))
+func ToProject(p svcmodel.Project) Project {
+	return Project{
+		ID:                        p.ID,
+		Name:                      p.Name,
+		SlackChannelID:            p.SlackChannelID,
+		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
+		CreatedAt:                 p.CreatedAt.Local(),
+		UpdatedAt:                 p.UpdatedAt.Local(),
+	}
+}
+
+func ToProjects(projects []svcmodel.Project) []Project {
+	p := make([]Project, 0, len(projects))
 	for _, project := range projects {
-		p = append(p, ToProjectResponse(
-			project.ID,
-			project.Name,
-			project.SlackChannelID,
-			project.ReleaseNotificationConfig,
-			project.CreatedAt,
-			project.UpdatedAt,
-		))
+		p = append(p, ToProject(project))
 	}
 
 	return p

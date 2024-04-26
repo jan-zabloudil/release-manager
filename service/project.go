@@ -31,7 +31,7 @@ func NewProjectService(
 	}
 }
 
-func (s *ProjectService) Create(ctx context.Context, c model.ProjectCreation, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) Create(ctx context.Context, c model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
 	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.Project{}, err
 	}
@@ -64,7 +64,7 @@ func (s *ProjectService) Get(ctx context.Context, projectID uuid.UUID, authUserI
 	return p, nil
 }
 
-func (s *ProjectService) GetAll(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
+func (s *ProjectService) ListAll(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
 	// TODO add project member authorization
 	// TODO fetch only project where the user is a member
 
@@ -84,7 +84,7 @@ func (s *ProjectService) Delete(ctx context.Context, projectID uuid.UUID, authUs
 	return s.projectRepo.Delete(ctx, projectID)
 }
 
-func (s *ProjectService) Update(ctx context.Context, u model.ProjectUpdate, projectID, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) Update(ctx context.Context, u model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
 	// TODO add project member authorization
 
 	p, err := s.Get(ctx, projectID, authUserID)
@@ -103,7 +103,7 @@ func (s *ProjectService) Update(ctx context.Context, u model.ProjectUpdate, proj
 	return p, nil
 }
 
-func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.EnvironmentCreation, authUserID uuid.UUID) (model.Environment, error) {
+func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {
 	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.Environment{}, err
 	}
@@ -152,7 +152,7 @@ func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, a
 	return env, nil
 }
 
-func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.EnvironmentUpdate, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
+func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
 	// TODO add project member authorization
 
 	if _, err := s.Get(ctx, projectID, authUserID); err != nil {
@@ -184,7 +184,7 @@ func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.Environm
 	return env, nil
 }
 
-func (s *ProjectService) GetEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Environment, error) {
+func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Environment, error) {
 	// TODO add project member authorization
 
 	_, err := s.Get(ctx, projectID, authUserID)

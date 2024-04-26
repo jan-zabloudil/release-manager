@@ -20,16 +20,16 @@ type Project struct {
 	UpdatedAt                 time.Time
 }
 
-type ProjectCreation struct {
+type CreateProjectInput struct {
 	Name                      string
 	SlackChannelID            string
 	ReleaseNotificationConfig ReleaseNotificationConfig
 }
 
-type ProjectUpdate struct {
+type UpdateProjectInput struct {
 	Name                            *string
 	SlackChannelID                  *string
-	ReleaseNotificationConfigUpdate ReleaseNotificationConfigUpdate
+	ReleaseNotificationConfigUpdate UpdateReleaseNotificationConfigInput
 }
 
 type ReleaseNotificationConfig struct {
@@ -41,7 +41,7 @@ type ReleaseNotificationConfig struct {
 	ShowSourceCode  bool
 }
 
-type ReleaseNotificationConfigUpdate struct {
+type UpdateReleaseNotificationConfigInput struct {
 	Message         *string
 	ShowProjectName *bool
 	ShowReleaseName *bool
@@ -50,7 +50,7 @@ type ReleaseNotificationConfigUpdate struct {
 	ShowSourceCode  *bool
 }
 
-func NewProject(c ProjectCreation) (Project, error) {
+func NewProject(c CreateProjectInput) (Project, error) {
 	now := time.Now()
 	p := Project{
 		ID:                        uuid.New(),
@@ -68,7 +68,7 @@ func NewProject(c ProjectCreation) (Project, error) {
 	return p, nil
 }
 
-func (p *Project) Update(u ProjectUpdate) error {
+func (p *Project) Update(u UpdateProjectInput) error {
 	if u.Name != nil {
 		p.Name = *u.Name
 	}
@@ -118,7 +118,7 @@ func (p *Project) IsSlackConfigured() bool {
 	return p.SlackChannelID != ""
 }
 
-func (c *ReleaseNotificationConfig) Update(u ReleaseNotificationConfigUpdate) {
+func (c *ReleaseNotificationConfig) Update(u UpdateReleaseNotificationConfigInput) {
 	if u.Message != nil {
 		c.Message = *u.Message
 	}
