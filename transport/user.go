@@ -18,19 +18,11 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToUser(
-		u.ID,
-		u.Role,
-		u.Email,
-		u.Name,
-		u.AvatarURL,
-		u.CreatedAt,
-		u.UpdatedAt,
-	))
+	WriteJSONResponse(w, http.StatusOK, model.ToUser(u))
 }
 
-func (h *Handler) getUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.UserSvc.GetAll(r.Context(), util.ContextAuthUserID(r))
+func (h *Handler) listUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := h.UserSvc.ListAll(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
 		WriteResponseError(w, util.ToResponseError(err))
 		return

@@ -45,19 +45,15 @@ func (s *UserService) Delete(ctx context.Context, id uuid.UUID, authUserID uuid.
 		return err
 	}
 
-	if err := s.repository.Delete(ctx, id); err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return apierrors.NewUserNotFoundError().Wrap(err)
-		default:
-			return err
-		}
+	_, err := s.Get(ctx, id, authUserID)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return s.repository.Delete(ctx, id)
 }
 
-func (s *UserService) GetAll(ctx context.Context, authUserID uuid.UUID) ([]model.User, error) {
+func (s *UserService) ListAll(ctx context.Context, authUserID uuid.UUID) ([]model.User, error) {
 	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return nil, err
 	}

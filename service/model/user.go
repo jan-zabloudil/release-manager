@@ -6,6 +6,21 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	UserRoleAdmin UserRole = "admin"
+	UserRoleUser  UserRole = "user"
+
+	userRoleAdminPriority int = 1
+	userRoleUserPriority  int = 2
+)
+
+var userRolePriority = map[UserRole]int{
+	UserRoleAdmin: userRoleAdminPriority,
+	UserRoleUser:  userRoleUserPriority,
+}
+
+type UserRole string
+
 type User struct {
 	ID        uuid.UUID
 	Email     string
@@ -16,23 +31,10 @@ type User struct {
 	UpdatedAt time.Time
 }
 
-func ToUser(id uuid.UUID, email, name, avatarURL, roleStr string, createdAt, updatedAt time.Time) (User, error) {
-	role, err := NewUserRole(roleStr)
-	if err != nil {
-		return User{}, err
-	}
-
-	return User{
-		ID:        id,
-		Email:     email,
-		Name:      name,
-		AvatarURL: avatarURL,
-		Role:      role,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-	}, nil
-}
-
 func (s User) HasAtLeastRole(role UserRole) bool {
 	return s.Role.IsRoleAtLeast(role)
+}
+
+func (r UserRole) IsRoleAtLeast(role UserRole) bool {
+	return userRolePriority[r] <= userRolePriority[role]
 }
