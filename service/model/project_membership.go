@@ -14,6 +14,9 @@ const (
 	ProjectRoleEditor ProjectRole = "editor"
 	ProjectRoleViewer ProjectRole = "viewer"
 
+	projectRoleEditorPriority int = 1
+	projectRoleViewerPriority int = 2
+
 	InvitationStatusPending  ProjectInvitationStatus = "pending"
 	InvitationStatusAccepted ProjectInvitationStatus = "accepted_awaiting_registration"
 )
@@ -22,6 +25,11 @@ var (
 	validProjectRoles = map[ProjectRole]bool{
 		ProjectRoleEditor: true,
 		ProjectRoleViewer: true,
+	}
+
+	projectRolePriority = map[ProjectRole]int{
+		ProjectRoleEditor: projectRoleEditorPriority,
+		ProjectRoleViewer: projectRoleViewerPriority,
 	}
 
 	validInvitationStatuses = map[ProjectInvitationStatus]bool{
@@ -114,4 +122,45 @@ func (i ProjectInvitationStatus) Validate() error {
 	}
 
 	return errProjectInvitationStatusInvalid
+}
+
+func (r ProjectRole) IsRoleAtLeast(role ProjectRole) bool {
+	return projectRolePriority[r] <= projectRolePriority[role]
+}
+
+type ProjectMember struct {
+	User        User
+	ProjectID   uuid.UUID
+	ProjectRole ProjectRole
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+func NewProjectEditor(u User, projectID uuid.UUID) ProjectMember {
+	return NewProjectMember(u, projectID, ProjectRoleEditor)
+}
+
+func NewProjectViewer(u User, projectID uuid.UUID) ProjectMember {
+	return NewProjectMember(u, projectID, ProjectRoleViewer)
+}
+
+func NewProjectMember(u User, projectID uuid.UUID, role ProjectRole) ProjectMember {
+	now := time.Now()
+
+	return ProjectMember{
+		User:        u,
+		ProjectID:   projectID,
+		ProjectRole: role,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+}
+
+func (m *ProjectMember) UpdateProjectRole(role ProjectRole) {
+	m.ProjectRole = role
+	m.UpdatedAt = time.Now()
+}
+
+func (m *ProjectMember) HasAtLeastProjectRole(role ProjectRole) bool {
+	return m.ProjectRole.IsRoleAtLeast(role)
 }
