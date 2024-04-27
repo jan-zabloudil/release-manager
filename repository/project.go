@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	"release-manager/pkg/dberrors"
 	"release-manager/repository/model"
 	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
@@ -25,14 +24,7 @@ func NewProjectRepository(c *supabase.Client) *ProjectRepository {
 }
 
 func (r *ProjectRepository) Create(ctx context.Context, p svcmodel.Project) error {
-	data := model.ToProject(
-		p.ID,
-		p.Name,
-		p.SlackChannelID,
-		p.ReleaseNotificationConfig,
-		p.CreatedAt,
-		p.UpdatedAt,
-	)
+	data := model.ToProject(p)
 
 	err := r.client.
 		DB.From(r.entity).
@@ -56,19 +48,7 @@ func (r *ProjectRepository) Read(ctx context.Context, id uuid.UUID) (svcmodel.Pr
 		return svcmodel.Project{}, util.ToDBError(err)
 	}
 
-	p, err := model.ToSvcProject(
-		resp.ID,
-		resp.Name,
-		resp.SlackChannelID,
-		resp.ReleaseNotificationConfig,
-		resp.CreatedAt,
-		resp.UpdatedAt,
-	)
-	if err != nil {
-		return svcmodel.Project{}, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return p, nil
+	return model.ToSvcProject(resp), nil
 }
 
 func (r *ProjectRepository) ReadAll(ctx context.Context) ([]svcmodel.Project, error) {
@@ -81,12 +61,7 @@ func (r *ProjectRepository) ReadAll(ctx context.Context) ([]svcmodel.Project, er
 		return nil, util.ToDBError(err)
 	}
 
-	p, err := model.ToSvcProjects(resp)
-	if err != nil {
-		return nil, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return p, nil
+	return model.ToSvcProjects(resp), nil
 }
 
 func (r *ProjectRepository) Delete(ctx context.Context, id uuid.UUID) error {
@@ -102,12 +77,7 @@ func (r *ProjectRepository) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (r *ProjectRepository) Update(ctx context.Context, p svcmodel.Project) error {
-	data := model.ToProjectUpdate(
-		p.Name,
-		p.SlackChannelID,
-		p.ReleaseNotificationConfig,
-		p.UpdatedAt,
-	)
+	data := model.ToProjectUpdate(p)
 
 	err := r.client.
 		DB.From(r.entity).

@@ -25,14 +25,7 @@ func NewEnvironmentRepository(c *supabase.Client) *EnvironmentRepository {
 }
 
 func (r *EnvironmentRepository) Create(ctx context.Context, e svcmodel.Environment) error {
-	data := model.ToEnvironment(
-		e.ID,
-		e.ProjectID,
-		e.Name,
-		e.ServiceURL,
-		e.CreatedAt,
-		e.UpdatedAt,
-	)
+	data := model.ToEnvironment(e)
 
 	err := r.client.
 		DB.From(r.entity).
@@ -56,14 +49,7 @@ func (r *EnvironmentRepository) Read(ctx context.Context, envID uuid.UUID) (svcm
 		return svcmodel.Environment{}, util.ToDBError(err)
 	}
 
-	env, err := svcmodel.ToEnvironment(
-		resp.ID,
-		resp.ProjectID,
-		resp.Name,
-		resp.ServiceURL,
-		resp.CreatedAt,
-		resp.UpdatedAt,
-	)
+	env, err := model.ToSvcEnvironment(resp)
 	if err != nil {
 		return svcmodel.Environment{}, dberrors.NewToSvcModelError().Wrap(err)
 	}
@@ -83,14 +69,7 @@ func (r *EnvironmentRepository) ReadByNameForProject(ctx context.Context, projec
 		return svcmodel.Environment{}, util.ToDBError(err)
 	}
 
-	env, err := svcmodel.ToEnvironment(
-		resp.ID,
-		resp.ProjectID,
-		resp.Name,
-		resp.ServiceURL,
-		resp.CreatedAt,
-		resp.UpdatedAt,
-	)
+	env, err := model.ToSvcEnvironment(resp)
 	if err != nil {
 		return svcmodel.Environment{}, dberrors.NewToSvcModelError().Wrap(err)
 	}
@@ -131,11 +110,7 @@ func (r *EnvironmentRepository) Delete(ctx context.Context, envID uuid.UUID) err
 }
 
 func (r *EnvironmentRepository) Update(ctx context.Context, e svcmodel.Environment) error {
-	data := model.ToEnvironmentUpdate(
-		e.Name,
-		e.ServiceURL,
-		e.UpdatedAt,
-	)
+	data := model.ToEnvironmentUpdate(e)
 
 	err := r.client.
 		DB.From(r.entity).

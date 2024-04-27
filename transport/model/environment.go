@@ -1,7 +1,6 @@
 package model
 
 import (
-	"net/url"
 	"time"
 
 	svcmodel "release-manager/service/model"
@@ -9,17 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type CreateEnvironmentRequest struct {
+type CreateEnvironmentInput struct {
 	Name       string `json:"name"`
 	ServiceURL string `json:"service_url"`
 }
 
-type UpdateEnvironmentRequest struct {
+type UpdateEnvironmentInput struct {
 	Name       *string `json:"name"`
 	ServiceURL *string `json:"service_url"`
 }
 
-type EnvironmentResponse struct {
+type Environment struct {
 	ID         uuid.UUID `json:"id"`
 	Name       string    `json:"name"`
 	ServiceURL string    `json:"service_url"`
@@ -27,41 +26,35 @@ type EnvironmentResponse struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-func ToSvcEnvironmentCreation(projectID uuid.UUID, name, rawURL string) svcmodel.EnvironmentCreation {
-	return svcmodel.EnvironmentCreation{
+func ToSvcCreateEnvironmentInput(c CreateEnvironmentInput, projectID uuid.UUID) svcmodel.CreateEnvironmentInput {
+	return svcmodel.CreateEnvironmentInput{
 		ProjectID:     projectID,
-		Name:          name,
-		ServiceRawURL: rawURL,
+		Name:          c.Name,
+		ServiceRawURL: c.ServiceURL,
 	}
 }
 
-func ToSvcEnvironmentUpdate(name, rawURL *string) svcmodel.EnvironmentUpdate {
-	return svcmodel.EnvironmentUpdate{
-		Name:          name,
-		ServiceRawURL: rawURL,
+func ToSvcUpdateEnvironmentInput(u UpdateEnvironmentInput) svcmodel.UpdateEnvironmentInput {
+	return svcmodel.UpdateEnvironmentInput{
+		Name:          u.Name,
+		ServiceRawURL: u.ServiceURL,
 	}
 }
 
-func ToEnvironmentResponse(id uuid.UUID, name string, u url.URL, createdAt, updatedAt time.Time) EnvironmentResponse {
-	return EnvironmentResponse{
-		ID:         id,
-		Name:       name,
-		ServiceURL: u.String(),
-		CreatedAt:  createdAt.Local(),
-		UpdatedAt:  updatedAt.Local(),
+func ToEnvironment(e svcmodel.Environment) Environment {
+	return Environment{
+		ID:         e.ID,
+		Name:       e.Name,
+		ServiceURL: e.ServiceURL.String(),
+		CreatedAt:  e.CreatedAt.Local(),
+		UpdatedAt:  e.UpdatedAt.Local(),
 	}
 }
 
-func ToEnvironmentsResponse(envs []svcmodel.Environment) []EnvironmentResponse {
-	e := make([]EnvironmentResponse, 0, len(envs))
+func ToEnvironments(envs []svcmodel.Environment) []Environment {
+	e := make([]Environment, 0, len(envs))
 	for _, env := range envs {
-		e = append(e, ToEnvironmentResponse(
-			env.ID,
-			env.Name,
-			env.ServiceURL,
-			env.CreatedAt,
-			env.UpdatedAt,
-		))
+		e = append(e, ToEnvironment(env))
 	}
 
 	return e

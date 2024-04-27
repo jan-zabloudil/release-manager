@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
-	var req model.CreateProjectRequest
+	var req model.CreateProjectInput
 	if err := UnmarshalRequest(r, &req); err != nil {
 		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
@@ -17,11 +17,7 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 
 	p, err := h.ProjectSvc.Create(
 		r.Context(),
-		model.ToSvcProjectCreation(
-			req.Name,
-			req.SlackChannelID,
-			req.ReleaseNotificationConfig,
-		),
+		model.ToSvcCreateProjectInput(req),
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -29,18 +25,7 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(
-		w,
-		http.StatusCreated,
-		model.ToProjectResponse(
-			p.ID,
-			p.Name,
-			p.SlackChannelID,
-			p.ReleaseNotificationConfig,
-			p.CreatedAt,
-			p.UpdatedAt,
-		),
-	)
+	WriteJSONResponse(w, http.StatusCreated, model.ToProject(p))
 }
 
 func (h *Handler) getProject(w http.ResponseWriter, r *http.Request) {
@@ -50,22 +35,11 @@ func (h *Handler) getProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(
-		w,
-		http.StatusOK,
-		model.ToProjectResponse(
-			p.ID,
-			p.Name,
-			p.SlackChannelID,
-			p.ReleaseNotificationConfig,
-			p.CreatedAt,
-			p.UpdatedAt,
-		),
-	)
+	WriteJSONResponse(w, http.StatusOK, model.ToProject(p))
 }
 
-func (h *Handler) getProjects(w http.ResponseWriter, r *http.Request) {
-	p, err := h.ProjectSvc.GetAll(r.Context(), util.ContextAuthUserID(r))
+func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
+	p, err := h.ProjectSvc.ListAll(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
 		WriteResponseError(w, util.ToResponseError(err))
 		return
@@ -75,7 +49,7 @@ func (h *Handler) getProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
-	var req model.UpdateProjectRequest
+	var req model.UpdateProjectInput
 
 	if err := UnmarshalRequest(r, &req); err != nil {
 		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -84,11 +58,7 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 
 	p, err := h.ProjectSvc.Update(
 		r.Context(),
-		model.ToSvcProjectUpdate(
-			req.Name,
-			req.SlackChannelID,
-			req.ReleaseNotificationConfig,
-		),
+		model.ToSvcUpdateProjectInput(req),
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),
 	)
@@ -97,18 +67,7 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(
-		w,
-		http.StatusOK,
-		model.ToProjectResponse(
-			p.ID,
-			p.Name,
-			p.SlackChannelID,
-			p.ReleaseNotificationConfig,
-			p.CreatedAt,
-			p.UpdatedAt,
-		),
-	)
+	WriteJSONResponse(w, http.StatusOK, model.ToProject(p))
 }
 
 func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {

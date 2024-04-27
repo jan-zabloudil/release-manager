@@ -24,36 +24,45 @@ type EnvironmentUpdate struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-func ToEnvironment(id, projectID uuid.UUID, name string, u url.URL, createdAt, updatedAt time.Time) Environment {
+func ToEnvironment(e svcmodel.Environment) Environment {
 	return Environment{
-		ID:         id,
-		ProjectID:  projectID,
-		Name:       name,
-		ServiceURL: u.String(),
-		CreatedAt:  createdAt,
-		UpdatedAt:  updatedAt,
+		ID:         e.ID,
+		ProjectID:  e.ProjectID,
+		Name:       e.Name,
+		ServiceURL: e.ServiceURL.String(),
+		CreatedAt:  e.CreatedAt,
+		UpdatedAt:  e.UpdatedAt,
 	}
 }
 
-func ToEnvironmentUpdate(name string, serviceURL url.URL, updatedAt time.Time) EnvironmentUpdate {
+func ToEnvironmentUpdate(e svcmodel.Environment) EnvironmentUpdate {
 	return EnvironmentUpdate{
-		Name:       name,
-		ServiceURL: serviceURL.String(),
-		UpdatedAt:  updatedAt,
+		Name:       e.Name,
+		ServiceURL: e.ServiceURL.String(),
+		UpdatedAt:  e.UpdatedAt,
 	}
+}
+
+func ToSvcEnvironment(e Environment) (svcmodel.Environment, error) {
+	u, err := url.Parse(e.ServiceURL)
+	if err != nil {
+		return svcmodel.Environment{}, err
+	}
+
+	return svcmodel.Environment{
+		ID:         e.ID,
+		ProjectID:  e.ProjectID,
+		Name:       e.Name,
+		ServiceURL: *u,
+		CreatedAt:  e.CreatedAt,
+		UpdatedAt:  e.UpdatedAt,
+	}, nil
 }
 
 func ToSvcEnvironments(envs []Environment) ([]svcmodel.Environment, error) {
 	svcEnvs := make([]svcmodel.Environment, 0, len(envs))
 	for _, e := range envs {
-		svcEnv, err := svcmodel.ToEnvironment(
-			e.ID,
-			e.ProjectID,
-			e.Name,
-			e.ServiceURL,
-			e.CreatedAt,
-			e.UpdatedAt,
-		)
+		svcEnv, err := ToSvcEnvironment(e)
 		if err != nil {
 			return nil, err
 		}

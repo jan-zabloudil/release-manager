@@ -33,73 +33,42 @@ type ReleaseNotificationConfig struct {
 	ShowSourceCode  bool   `json:"show_source_code"`
 }
 
-func ToProject(
-	id uuid.UUID,
-	name,
-	slackChannelID string,
-	rlsCfg svcmodel.ReleaseNotificationConfig,
-	createdAt,
-	updatedAt time.Time,
-) Project {
+func ToProject(p svcmodel.Project) Project {
 	return Project{
-		ID:                        id,
-		Name:                      name,
-		SlackChannelID:            slackChannelID,
-		ReleaseNotificationConfig: ReleaseNotificationConfig(rlsCfg),
-		CreatedAt:                 createdAt,
-		UpdatedAt:                 updatedAt,
+		ID:                        p.ID,
+		Name:                      p.Name,
+		SlackChannelID:            p.SlackChannelID,
+		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
+		CreatedAt:                 p.CreatedAt,
+		UpdatedAt:                 p.UpdatedAt,
 	}
 }
 
-func ToProjectUpdate(
-	name,
-	slackChannelID string,
-	rlsCfg svcmodel.ReleaseNotificationConfig,
-	updatedAt time.Time,
-) ProjectUpdate {
+func ToProjectUpdate(p svcmodel.Project) ProjectUpdate {
 	return ProjectUpdate{
-		Name:                      name,
-		SlackChannelID:            slackChannelID,
-		ReleaseNotificationConfig: ReleaseNotificationConfig(rlsCfg),
-		UpdatedAt:                 updatedAt,
+		Name:                      p.Name,
+		SlackChannelID:            p.SlackChannelID,
+		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
+		UpdatedAt:                 p.UpdatedAt,
 	}
 }
 
-func ToSvcProject(
-	id uuid.UUID,
-	name,
-	slackChannelID string,
-	cfg ReleaseNotificationConfig,
-	createdAt,
-	updatedAt time.Time,
-) (svcmodel.Project, error) {
-	return svcmodel.ToProject(
-		id,
-		name,
-		slackChannelID,
-		svcmodel.ReleaseNotificationConfig(cfg),
-		createdAt,
-		updatedAt,
-	)
+func ToSvcProject(p Project) svcmodel.Project {
+	return svcmodel.Project{
+		ID:                        p.ID,
+		Name:                      p.Name,
+		SlackChannelID:            p.SlackChannelID,
+		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
+		CreatedAt:                 p.CreatedAt,
+		UpdatedAt:                 p.UpdatedAt,
+	}
 }
 
-func ToSvcProjects(projects []Project) ([]svcmodel.Project, error) {
-	svcProjects := make([]svcmodel.Project, 0, len(projects))
-	for _, p := range projects {
-		svcProject, err := ToSvcProject(
-			p.ID,
-			p.Name,
-			p.SlackChannelID,
-			p.ReleaseNotificationConfig,
-			p.CreatedAt,
-			p.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		svcProjects = append(svcProjects, svcProject)
+func ToSvcProjects(projects []Project) []svcmodel.Project {
+	p := make([]svcmodel.Project, 0, len(projects))
+	for _, project := range projects {
+		p = append(p, ToSvcProject(project))
 	}
 
-	return svcProjects, nil
+	return p
 }

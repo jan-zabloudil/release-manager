@@ -10,12 +10,12 @@ import (
 func TestProject_NewProject(t *testing.T) {
 	tests := []struct {
 		name     string
-		creation ProjectCreation
+		creation CreateProjectInput
 		wantErr  bool
 	}{
 		{
 			name: "Valid Project",
-			creation: ProjectCreation{
+			creation: CreateProjectInput{
 				Name:                      "Test Project",
 				SlackChannelID:            "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: "Test Message"},
@@ -24,7 +24,7 @@ func TestProject_NewProject(t *testing.T) {
 		},
 		{
 			name: "Invalid Project",
-			creation: ProjectCreation{
+			creation: CreateProjectInput{
 				Name:                      "",
 				SlackChannelID:            "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: "Test Message"},
@@ -55,7 +55,7 @@ func TestProject_Update(t *testing.T) {
 	tests := []struct {
 		name    string
 		project Project
-		update  ProjectUpdate
+		update  UpdateProjectInput
 		wantErr bool
 	}{
 		{
@@ -65,7 +65,7 @@ func TestProject_Update(t *testing.T) {
 				Name:           oldName,
 				SlackChannelID: oldSlackChannelID,
 			},
-			update: ProjectUpdate{
+			update: UpdateProjectInput{
 				Name:           &newValidName,
 				SlackChannelID: &newSlackChannelID,
 			},
@@ -78,7 +78,7 @@ func TestProject_Update(t *testing.T) {
 				Name:           oldName,
 				SlackChannelID: oldSlackChannelID,
 			},
-			update: ProjectUpdate{
+			update: UpdateProjectInput{
 				Name:           &newInvalidName,
 				SlackChannelID: &newSlackChannelID,
 			},
