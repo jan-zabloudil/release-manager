@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"release-manager/pkg/dberrors"
 	"release-manager/repository/model"
 	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
@@ -48,7 +49,12 @@ func (r *ProjectRepository) Read(ctx context.Context, id uuid.UUID) (svcmodel.Pr
 		return svcmodel.Project{}, util.ToDBError(err)
 	}
 
-	return model.ToSvcProject(resp), nil
+	p, err := model.ToSvcProject(resp)
+	if err != nil {
+		return svcmodel.Project{}, dberrors.NewToSvcModelError().Wrap(err)
+	}
+
+	return p, nil
 }
 
 func (r *ProjectRepository) ReadAll(ctx context.Context) ([]svcmodel.Project, error) {
@@ -61,7 +67,12 @@ func (r *ProjectRepository) ReadAll(ctx context.Context) ([]svcmodel.Project, er
 		return nil, util.ToDBError(err)
 	}
 
-	return model.ToSvcProjects(resp), nil
+	p, err := model.ToSvcProjects(resp)
+	if err != nil {
+		return nil, dberrors.NewToSvcModelError().Wrap(err)
+	}
+
+	return p, nil
 }
 
 func (r *ProjectRepository) Delete(ctx context.Context, id uuid.UUID) error {

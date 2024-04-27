@@ -31,6 +31,46 @@ func TestProject_NewProject(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Invalid Project - invalid github repository url - not absolute url",
+			creation: CreateProjectInput{
+				Name:                      "",
+				SlackChannelID:            "channelID",
+				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: "Test Message"},
+				GithubRepositoryRawURL:    "invalid/url",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Project - invalid github repository url - not github host",
+			creation: CreateProjectInput{
+				Name:                      "",
+				SlackChannelID:            "channelID",
+				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: "Test Message"},
+				GithubRepositoryRawURL:    "https://google.com/url/url",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Project - invalid github repository url - not repository url #1",
+			creation: CreateProjectInput{
+				Name:                      "",
+				SlackChannelID:            "channelID",
+				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: "Test Message"},
+				GithubRepositoryRawURL:    "https://github.com/owner",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Project - invalid github repository url - not repository url #2",
+			creation: CreateProjectInput{
+				Name:                      "",
+				SlackChannelID:            "channelID",
+				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: "Test Message"},
+				GithubRepositoryRawURL:    "https://github.com/owner/repo/pr",
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -51,6 +91,11 @@ func TestProject_Update(t *testing.T) {
 	newValidName := "New Name"
 	newInvalidName := ""
 	newSlackChannelID := "newChannelID"
+
+	githubInvalidURL := "invalid/url"
+	githubInvalidHost := "https://google.com/url/url"
+	githubInvalidRepoURL1 := "https://github.com/owner"
+	githubInvalidRepoURL2 := "https://github.com/owner/repo/pr"
 
 	tests := []struct {
 		name    string
@@ -81,6 +126,62 @@ func TestProject_Update(t *testing.T) {
 			update: UpdateProjectInput{
 				Name:           &newInvalidName,
 				SlackChannelID: &newSlackChannelID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Update - invalid github repository url - not absolute url",
+			project: Project{
+				ID:             uuid.New(),
+				Name:           oldName,
+				SlackChannelID: oldSlackChannelID,
+			},
+			update: UpdateProjectInput{
+				Name:                   &newInvalidName,
+				SlackChannelID:         &newSlackChannelID,
+				GithubRepositoryRawURL: &githubInvalidURL,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Update - invalid github repository url - not github host",
+			project: Project{
+				ID:             uuid.New(),
+				Name:           oldName,
+				SlackChannelID: oldSlackChannelID,
+			},
+			update: UpdateProjectInput{
+				Name:                   &newInvalidName,
+				SlackChannelID:         &newSlackChannelID,
+				GithubRepositoryRawURL: &githubInvalidHost,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Update - invalid github repository url - not repository url #1",
+			project: Project{
+				ID:             uuid.New(),
+				Name:           oldName,
+				SlackChannelID: oldSlackChannelID,
+			},
+			update: UpdateProjectInput{
+				Name:                   &newInvalidName,
+				SlackChannelID:         &newSlackChannelID,
+				GithubRepositoryRawURL: &githubInvalidRepoURL1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Update - invalid github repository url - not repository url #2",
+			project: Project{
+				ID:             uuid.New(),
+				Name:           oldName,
+				SlackChannelID: oldSlackChannelID,
+			},
+			update: UpdateProjectInput{
+				Name:                   &newInvalidName,
+				SlackChannelID:         &newSlackChannelID,
+				GithubRepositoryRawURL: &githubInvalidRepoURL2,
 			},
 			wantErr: true,
 		},
