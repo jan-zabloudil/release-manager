@@ -752,55 +752,6 @@ paths:
           $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
-  /projects/{project-id}/repository:
-    put:
-      summary: 'Connect SCM repository'
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - SCM repository
-      parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GitRepositoryRequest'
-      responses:
-        '200':
-          description: 'Repository connected'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GitRepositoryResponse'
-        '401':
-          $ref: '#/components/responses/GitRepositoryUnauthorizedErrorResponse'
-        '403':
-          $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-          $ref: '#/components/responses/NotFoundErrorResponse'
-        '422':
-          $ref: '#/components/responses/UnprocesssableEntityResponse'
-    get:
-      summary: 'Get connected repository'
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - SCM repository
-      parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
-      responses:
-        '200':
-          description: 'Repository fetched'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GitRepositoryResponse'
-        '401':
-          $ref: '#/components/responses/GitRepositoryUnauthorizedErrorResponse'
-        '404':
-          $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/repository/tags:
     get:
       summary: 'List repository tags'
@@ -1062,6 +1013,10 @@ components:
             show_source_code:
               type: boolean
               default: false
+        github_repository_url:
+          type: string
+          format: url
+          example: "htttp://github.com/owner/repo"
       required:
         - name
     ProjectResponse:
@@ -1149,43 +1104,6 @@ components:
         - status
         - created_at
         - updated_at
-    GitRepositoryRequest:
-      type: object
-      properties:
-        platform:
-          type: string
-          enum:
-            - github
-        repository:
-          type: object
-          properties:
-            url:
-              type: string
-              example: 'https://github.com/organization/repo'
-          required:
-            - url
-      required:
-        - platform
-        - repository
-    GitRepositoryResponse:
-      type: object
-      properties:
-        platform:
-          type: string
-          enum:
-            - github
-        repository:
-          type: object
-          properties:
-            url:
-              type: string
-              example: 'https://github.com/organization/repo'
-            name:
-              type: string
-              example: 'Hello-world'
-          required:
-            - url
-            - name
     EnvironmentRequest:
       type: object
       properties:

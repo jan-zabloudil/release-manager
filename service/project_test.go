@@ -47,6 +47,19 @@ func TestProjectService_Create(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Invalid project - invalid github repository url",
+			project: model.CreateProjectInput{
+				Name:                      "",
+				SlackChannelID:            "",
+				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
+				GithubRepositoryRawURL:    "https://github.com/owner",
+			},
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository) {
+				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -181,6 +194,7 @@ func TestProjectService_Update(t *testing.T) {
 	validProjectName := "Project name"
 	invalidProjectName := ""
 	slackChannelID := "channelID"
+	invalidGithubRepositoryURL := "https://github.com/owner"
 
 	testCases := []struct {
 		name      string
@@ -207,6 +221,26 @@ func TestProjectService_Update(t *testing.T) {
 				projectRepo.On("Update", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: false,
+		},
+		{
+			name: "Invalid project update - invalid github repository url",
+			update: model.UpdateProjectInput{
+				Name:           &validProjectName,
+				SlackChannelID: &slackChannelID,
+				ReleaseNotificationConfigUpdate: model.UpdateReleaseNotificationConfigInput{
+					Message:         new(string),
+					ShowProjectName: new(bool),
+					ShowReleaseName: new(bool),
+					ShowChangelog:   new(bool),
+					ShowDeployments: new(bool),
+					ShowSourceCode:  new(bool),
+				},
+				GithubRepositoryRawURL: &invalidGithubRepositoryURL,
+			},
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository) {
+				projectRepo.On("Read", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+			},
+			wantErr: true,
 		},
 		{
 			name: "Invalid project update - missing name",
