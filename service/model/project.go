@@ -135,6 +135,10 @@ func (p *Project) IsSlackConfigured() bool {
 	return p.SlackChannelID != ""
 }
 
+func (p *Project) IsGithubConfigured() bool {
+	return p.GithubRepository != (GithubRepository{})
+}
+
 func (c *ReleaseNotificationConfig) Update(u UpdateReleaseNotificationConfigInput) {
 	if u.Message != nil {
 		c.Message = *u.Message
@@ -192,4 +196,8 @@ func toGithubRepository(rawURL string) (GithubRepository, error) {
 		OwnerSlug:      slugs[0],
 		RepositorySlug: slugs[1],
 	}, nil
+}
+
+type GitTag struct {
+	Name string
 }

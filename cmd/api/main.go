@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 
+	githubx "release-manager/github"
 	"release-manager/repository"
 	"release-manager/service"
 	"release-manager/transport"
@@ -23,9 +24,18 @@ func main() {
 	slog.SetDefault(logger)
 
 	supaClient := supabase.CreateClient(cfg.Supabase.APIURL, cfg.Supabase.SecretKey)
+	githubClient := githubx.NewClient()
 
 	repo := repository.NewRepository(supaClient)
-	svc := service.NewService(repo.Auth, repo.User, repo.Project, repo.Environment, repo.Settings, repo.ProjectInvitation)
+	svc := service.NewService(
+		repo.Auth,
+		repo.User,
+		repo.Project,
+		repo.Environment,
+		repo.Settings,
+		repo.ProjectInvitation,
+		githubClient,
+	)
 	h := transport.NewHandler(svc.Auth, svc.User, svc.Project, svc.Settings, svc.ProjectMembership)
 
 	serverConfig := httpx.ServerConfig{

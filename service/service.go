@@ -17,15 +17,17 @@ func NewService(
 	env model.EnvironmentRepository,
 	sr model.SettingsRepository,
 	pi model.ProjectInvitationRepository,
+	gc model.GithubClient,
 ) *Service {
 	authSvc := NewAuthService(ar, ur)
-	projectSvc := NewProjectService(authSvc, pr, env, pi)
+	settingsSvc := NewSettingsService(authSvc, sr)
+	projectSvc := NewProjectService(authSvc, settingsSvc, pr, env, pi, gc)
 
 	return &Service{
 		Auth:              authSvc,
 		User:              NewUserService(authSvc, ur),
 		Project:           projectSvc,
-		Settings:          NewSettingsService(authSvc, sr),
+		Settings:          settingsSvc,
 		ProjectMembership: NewProjectMembershipService(authSvc, projectSvc, pi),
 	}
 }
