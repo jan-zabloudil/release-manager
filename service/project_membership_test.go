@@ -20,13 +20,13 @@ func TestProjectService_CreateInvitation(t *testing.T) {
 	testCases := []struct {
 		name      string
 		creation  model.CreateProjectInvitationInput
-		mockSetup func(*svc.AuthService, *svc.ProjectService, *repo.ProjectInvitationRepository)
+		mockSetup func(*svc.AuthService, *svc.EmailService, *svc.ProjectService, *repo.ProjectInvitationRepository)
 		wantErr   bool
 	}{
 		{
 			name:     "Unknown project",
 			creation: model.CreateProjectInvitationInput{},
-			mockSetup: func(auth *svc.AuthService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
+			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
 				project.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
@@ -39,7 +39,7 @@ func TestProjectService_CreateInvitation(t *testing.T) {
 				ProjectRole: "editor",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
+			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
 				project.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
@@ -52,7 +52,7 @@ func TestProjectService_CreateInvitation(t *testing.T) {
 				ProjectRole: "new",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
+			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
 				project.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
@@ -65,7 +65,7 @@ func TestProjectService_CreateInvitation(t *testing.T) {
 				ProjectRole: "viewer",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
+			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
 				project.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				repo.On("ReadByEmailForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, nil)
@@ -79,11 +79,12 @@ func TestProjectService_CreateInvitation(t *testing.T) {
 				ProjectRole: "viewer",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
+			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, project *svc.ProjectService, repo *repo.ProjectInvitationRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
 				project.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				repo.On("ReadByEmailForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
 				repo.On("Create", mock.Anything, mock.Anything).Return(nil)
+				email.On("SendProjectInvitation", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -94,9 +95,10 @@ func TestProjectService_CreateInvitation(t *testing.T) {
 			repository := new(repo.ProjectInvitationRepository)
 			project := new(svc.ProjectService)
 			auth := new(svc.AuthService)
-			service := NewProjectMembershipService(auth, project, repository)
+			invitationSender := new(svc.EmailService)
+			service := NewProjectMembershipService(auth, project, repository, invitationSender)
 
-			tc.mockSetup(auth, project, repository)
+			tc.mockSetup(auth, invitationSender, project, repository)
 
 			_, err := service.CreateInvitation(context.Background(), tc.creation, uuid.New())
 
@@ -148,7 +150,8 @@ func TestProjectService_GetInvitations(t *testing.T) {
 			repository := new(repo.ProjectInvitationRepository)
 			project := new(svc.ProjectService)
 			auth := new(svc.AuthService)
-			service := NewProjectMembershipService(auth, project, repository)
+			invitationSender := new(svc.EmailService)
+			service := NewProjectMembershipService(auth, project, repository, invitationSender)
 
 			tc.mockSetup(auth, project, repository)
 
@@ -207,7 +210,8 @@ func TestProjectService_DeleteInvitation(t *testing.T) {
 			repository := new(repo.ProjectInvitationRepository)
 			project := new(svc.ProjectService)
 			auth := new(svc.AuthService)
-			service := NewProjectMembershipService(auth, project, repository)
+			invitationSender := new(svc.EmailService)
+			service := NewProjectMembershipService(auth, project, repository, invitationSender)
 
 			tc.mockSetup(auth, project, repository)
 
@@ -259,7 +263,8 @@ func TestProjectService_AcceptInvitation(t *testing.T) {
 			repository := new(repo.ProjectInvitationRepository)
 			project := new(svc.ProjectService)
 			auth := new(svc.AuthService)
-			service := NewProjectMembershipService(auth, project, repository)
+			invitationSender := new(svc.EmailService)
+			service := NewProjectMembershipService(auth, project, repository, invitationSender)
 
 			tc.mockSetup(repository)
 
@@ -314,7 +319,8 @@ func TestProjectService_RejectInvitation(t *testing.T) {
 			repository := new(repo.ProjectInvitationRepository)
 			project := new(svc.ProjectService)
 			auth := new(svc.AuthService)
-			service := NewProjectMembershipService(auth, project, repository)
+			invitationSender := new(svc.EmailService)
+			service := NewProjectMembershipService(auth, project, repository, invitationSender)
 
 			tc.mockSetup(repository)
 

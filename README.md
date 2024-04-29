@@ -22,16 +22,24 @@ Supabase is used for authentication with Google OAuth and storing data in Postgr
 3. Navigate to the project folder and start the local Supabase by running `supabase start`.
 4. To test if Google OAuth was set up correctly, open your browser and navigate to `<SUPABASE_API_URL>/auth/v1/authorize?provider=google`.
 
+### Email service
+
+[Resend](https://resend.com) is used for sending emails. Sign up to get API key.
+
 ### REST API
 
 1. Now set env variables for REST API:
 
-| Env variable          | Where do I find this value?                                                                                                                                                           | Default |
-|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| `PORT`                | -                                                                                                                                                                                     | `8080`  |
-| `LOG_LEVEL`           | Allowed values `DEBUG`, `INFO`, `WARN`, `ERROR`.                                                                                                                                      | `INFO`  |
-| `SUPABASE_API_URL`    | Assuming that the local Supabase instance is running, navigate to the project folder and run `supabase status` in your terminal. The Supabase credentials are printed, use `API URL`. | -       |
-| `SUPABASE_SECRET_KEY` | As mentioned above, run `supabase status` and use `service_role key`.                                                                                                                 | -       |
+| Env variable                     | Where do I find this value?                                                                                                                                                           | Default |
+|----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `PORT`                           | -                                                                                                                                                                                     | `8080`  |
+| `LOG_LEVEL`                      | Allowed values `DEBUG`, `INFO`, `WARN`, `ERROR`.                                                                                                                                      | `INFO`  |
+| `SUPABASE_API_URL`               | Assuming that the local Supabase instance is running, navigate to the project folder and run `supabase status` in your terminal. The Supabase credentials are printed, use `API URL`. | -       |
+| `SUPABASE_SECRET_KEY`            | As mentioned above, run `supabase status` and use `service_role key`.                                                                                                                 | -       |
+| `RESEND_API_KEY`                 | Login to your Resend account and create API key.                                                                                                                                      | -       |
+| `RESEND_TEST_RECIPIENT`          | Your Resend account email or there are several `*@resend.dev` options, see [docs](https://resend.com/docs/dashboard/emails/send-test-emails).                                         | -       |
+| `RESEND_SENDER`                  | Sender email address. You have to verify your domain in order to be able to provide your email, for testing use `onboarding@resend.dev`                                               | -       |
+| `RESEND_SEND_TO_REAL_RECIPIENTS` | -                                                                                                                                                                                     | -       |
 
 > If you are using hosted Supabase, navigate to Supabase Studio, then go to *Your project > Project Settings > API* to find the api url and secret key.
 
