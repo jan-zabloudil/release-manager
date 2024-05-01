@@ -18,7 +18,7 @@ type Environment struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-type EnvironmentUpdate struct {
+type UpdateEnvironmentInput struct {
 	Name       string    `json:"name"`
 	ServiceURL string    `json:"service_url"`
 	UpdatedAt  time.Time `json:"updated_at"`
@@ -35,8 +35,8 @@ func ToEnvironment(e svcmodel.Environment) Environment {
 	}
 }
 
-func ToEnvironmentUpdate(e svcmodel.Environment) EnvironmentUpdate {
-	return EnvironmentUpdate{
+func ToUpdateEnvironmentInput(e svcmodel.Environment) UpdateEnvironmentInput {
+	return UpdateEnvironmentInput{
 		Name:       e.Name,
 		ServiceURL: e.ServiceURL.String(),
 		UpdatedAt:  e.UpdatedAt,

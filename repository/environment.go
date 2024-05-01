@@ -110,7 +110,7 @@ func (r *EnvironmentRepository) Delete(ctx context.Context, envID uuid.UUID) err
 }
 
 func (r *EnvironmentRepository) Update(ctx context.Context, e svcmodel.Environment) error {
-	data := model.ToEnvironmentUpdate(e)
+	data := model.ToUpdateEnvironmentInput(e)
 
 	err := r.client.
 		DB.From(r.entity).

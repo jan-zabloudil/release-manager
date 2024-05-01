@@ -97,7 +97,7 @@ func (r *ProjectInvitationRepository) ReadAllForProject(ctx context.Context, pro
 }
 
 func (r *ProjectInvitationRepository) Update(ctx context.Context, i svcmodel.ProjectInvitation) error {
-	data := model.ToProjectInvitationUpdate(i)
+	data := model.ToUpdateProjectInvitationInput(i)
 
 	err := r.client.
 		DB.From(r.entity).

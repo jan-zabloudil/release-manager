@@ -19,7 +19,7 @@ type Project struct {
 	UpdatedAt                 time.Time                 `json:"updated_at"`
 }
 
-type ProjectUpdate struct {
+type UpdateProjectInput struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
@@ -54,8 +54,8 @@ func ToProject(p svcmodel.Project) Project {
 	}
 }
 
-func ToProjectUpdate(p svcmodel.Project) ProjectUpdate {
-	return ProjectUpdate{
+func ToUpdateProjectInput(p svcmodel.Project) UpdateProjectInput {
+	return UpdateProjectInput{
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
