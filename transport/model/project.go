@@ -88,3 +88,16 @@ func ToProjects(projects []svcmodel.Project) []Project {
 
 	return p
 }
+
+type GitTag struct {
+	Name string `json:"name"`
+}
+
+func ToGitTags(tags []svcmodel.GitTag) []GitTag {
+	t := make([]GitTag, 0, len(tags))
+	for _, tag := range tags {
+		t = append(t, GitTag{Name: tag.Name})
+	}
+
+	return t
+}

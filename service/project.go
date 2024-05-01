@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"release-manager/pkg/apierrors"
 	"release-manager/pkg/dberrors"
+	"release-manager/pkg/githuberrors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -12,22 +14,28 @@ import (
 
 type ProjectService struct {
 	authSvc        model.AuthService
+	settingsSvc    model.SettingsService
 	projectRepo    model.ProjectRepository
 	envRepo        model.EnvironmentRepository
 	invitationRepo model.ProjectInvitationRepository
+	githubClient   model.GithubClient
 }
 
 func NewProjectService(
 	authSvc model.AuthService,
+	settingsSvc model.SettingsService,
 	projectRepo model.ProjectRepository,
 	envRepo model.EnvironmentRepository,
 	invitationRepo model.ProjectInvitationRepository,
+	githubClient model.GithubClient,
 ) *ProjectService {
 	return &ProjectService{
 		authSvc:        authSvc,
+		settingsSvc:    settingsSvc,
 		projectRepo:    projectRepo,
 		envRepo:        envRepo,
 		invitationRepo: invitationRepo,
+		githubClient:   githubClient,
 	}
 }
 
@@ -216,6 +224,46 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 	}
 
 	return s.envRepo.Delete(ctx, envID)
+}
+
+func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
+	// TODO add project member authorization
+
+	project, err := s.Get(ctx, projectID, authUserID)
+	if err != nil {
+		return nil, err
+	}
+
+	github, err := s.settingsSvc.GetGithubSettings(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !github.Enabled {
+		return nil, apierrors.NewGithubIntegrationNotEnabledError()
+	}
+
+	if !project.IsGithubConfigured() {
+		return nil, apierrors.NewGithubRepositoryNotConfiguredForProjectError()
+	}
+
+	s.githubClient.SetToken(github.Token)
+
+	t, err := s.githubClient.ListTagsForRepository(ctx, project.GithubRepository)
+	if err != nil {
+		switch {
+		case githuberrors.IsUnauthorizedError(err):
+			return nil, apierrors.NewGithubIntegrationUnauthorizedError().Wrap(err)
+		case githuberrors.IsForbiddenError(err):
+			return nil, apierrors.NewGithubIntegrationForbiddenError().Wrap(err)
+		case githuberrors.IsNotFoundError(err):
+			return nil, apierrors.NewGithubRepositoryNotFoundError().Wrap(err).
+				WithMessage(fmt.Sprintf("%s not found among accessible repositories.", project.GithubRepository.URL.String()))
+		default:
+			return nil, err
+		}
+	}
+
+	return t, nil
 }
 
 func (s *ProjectService) isEnvironmentNameUnique(ctx context.Context, projectID uuid.UUID, name string) (bool, error) {

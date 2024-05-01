@@ -49,3 +49,12 @@ func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInpu
 
 	return settings, nil
 }
+
+func (s *SettingsService) GetGithubSettings(ctx context.Context) (model.GithubSettings, error) {
+	settings, err := s.repository.Read(ctx)
+	if err != nil {
+		return model.GithubSettings{}, err
+	}
+
+	return settings.Github, nil
+}

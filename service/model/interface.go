@@ -58,3 +58,12 @@ type ProjectInvitationRepository interface {
 type ProjectService interface {
 	Get(ctx context.Context, projectID, authUserID uuid.UUID) (Project, error)
 }
+
+type GithubClient interface {
+	ListTagsForRepository(ctx context.Context, repo GithubRepository) ([]GitTag, error)
+	SetToken(token string)
+}
+
+type SettingsService interface {
+	GetGithubSettings(ctx context.Context) (GithubSettings, error)
+}

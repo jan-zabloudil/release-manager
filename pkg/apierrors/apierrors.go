@@ -6,18 +6,23 @@ import (
 )
 
 var (
-	errCodeUnauthorizedInvalidToken       = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
-	errCodeForbiddenInsufficientUserRole  = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
-	errCodeUserNotFound                   = "ERR_USER_NOT_FOUND"
-	errCodeProjectNotFound                = "ERR_PROJECT_NOT_FOUND"
-	errCodeEnvironmentNotFound            = "ERR_ENVIRONMENT_NOT_FOUND"
-	errCodeProjectUnprocessable           = "ERR_PROJECT_UNPROCESSABLE"
-	errCodeEnvironmentUnprocessable       = "ERR_ENVIRONMENT_UNPROCESSABLE"
-	errCodeEnvironmentDuplicateName       = "ERR_ENVIRONMENT_DUPLICATE_NAME"
-	errCodeSettingsUnprocessable          = "ERR_SETTINGS_UNPROCESSABLE"
-	errCodeProjectInvitationUnprocessable = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
-	errCodeProjectInvitationAlreadyExists = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
-	errCodeProjectInvitationNotFound      = "ERR_PROJECT_INVITATION_NOT_FOUND"
+	errCodeUnauthorizedInvalidToken                = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
+	errCodeForbiddenInsufficientUserRole           = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
+	errCodeUserNotFound                            = "ERR_USER_NOT_FOUND"
+	errCodeProjectNotFound                         = "ERR_PROJECT_NOT_FOUND"
+	errCodeEnvironmentNotFound                     = "ERR_ENVIRONMENT_NOT_FOUND"
+	errCodeProjectUnprocessable                    = "ERR_PROJECT_UNPROCESSABLE"
+	errCodeEnvironmentUnprocessable                = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	errCodeEnvironmentDuplicateName                = "ERR_ENVIRONMENT_DUPLICATE_NAME"
+	errCodeSettingsUnprocessable                   = "ERR_SETTINGS_UNPROCESSABLE"
+	errCodeProjectInvitationUnprocessable          = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
+	errCodeProjectInvitationAlreadyExists          = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
+	errCodeProjectInvitationNotFound               = "ERR_PROJECT_INVITATION_NOT_FOUND"
+	errCodeGithubIntegrationNotEnabled             = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
+	errCodeGithubIntegrationUnauthorized           = "ERR_GITHUB_INTEGRATION_UNAUTHORIZED"
+	errCodeGithubIntegrationForbidden              = "ERR_GITHUB_INTEGRATION_FORBIDDEN"
+	errCodeGithubRepositoryNotConfiguredForProject = "ERR_GITHUB_REPOSITORY_NOT_CONFIGURED_FOR_PROJECT"
+	errCodeGithubRepositoryNotFound                = "ERR_GITHUB_REPOSITORY_NOT_FOUND"
 )
 
 type APIError struct {
@@ -127,6 +132,41 @@ func NewProjectInvitationNotFoundError() *APIError {
 	}
 }
 
+func NewGithubIntegrationNotEnabledError() *APIError {
+	return &APIError{
+		Code:    errCodeGithubIntegrationNotEnabled,
+		Message: "Github integration is not enabled.",
+	}
+}
+
+func NewGithubRepositoryNotConfiguredForProjectError() *APIError {
+	return &APIError{
+		Code:    errCodeGithubRepositoryNotConfiguredForProject,
+		Message: "Github repository is not configured for the project.",
+	}
+}
+
+func NewGithubIntegrationUnauthorizedError() *APIError {
+	return &APIError{
+		Code:    errCodeGithubIntegrationUnauthorized,
+		Message: "Cannot access Github API, invalid or expired token.",
+	}
+}
+
+func NewGithubIntegrationForbiddenError() *APIError {
+	return &APIError{
+		Code:    errCodeGithubIntegrationForbidden,
+		Message: "Cannot access given resource via Github API.",
+	}
+}
+
+func NewGithubRepositoryNotFoundError() *APIError {
+	return &APIError{
+		Code:    errCodeGithubRepositoryNotFound,
+		Message: "Github repository not found among accessible repositories.",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -140,7 +180,10 @@ func IsNotFoundError(err error) bool {
 	return IsErrorWithCode(err, errCodeUserNotFound) ||
 		IsErrorWithCode(err, errCodeProjectNotFound) ||
 		IsErrorWithCode(err, errCodeEnvironmentNotFound) ||
-		IsErrorWithCode(err, errCodeProjectInvitationNotFound)
+		IsErrorWithCode(err, errCodeProjectInvitationNotFound) ||
+		IsErrorWithCode(err, errCodeGithubRepositoryNotFound) ||
+		IsErrorWithCode(err, errCodeGithubRepositoryNotConfiguredForProject) ||
+		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled)
 }
 
 func IsUnprocessableModelError(err error) bool {
@@ -151,11 +194,13 @@ func IsUnprocessableModelError(err error) bool {
 }
 
 func IsUnauthorizedError(err error) bool {
-	return IsErrorWithCode(err, errCodeUnauthorizedInvalidToken)
+	return IsErrorWithCode(err, errCodeUnauthorizedInvalidToken) ||
+		IsErrorWithCode(err, errCodeGithubIntegrationUnauthorized)
 }
 
 func IsForbiddenError(err error) bool {
-	return IsErrorWithCode(err, errCodeForbiddenInsufficientUserRole)
+	return IsErrorWithCode(err, errCodeForbiddenInsufficientUserRole) ||
+		IsErrorWithCode(err, errCodeGithubIntegrationForbidden)
 }
 
 func IsConflictError(err error) bool {

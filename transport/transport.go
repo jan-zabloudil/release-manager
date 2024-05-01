@@ -75,6 +75,7 @@ func NewHandler(
 					r.Delete("/", h.requireAuthUser(h.deleteInvitation))
 				})
 			})
+			r.Get("/repository/tags", h.requireAuthUser(h.listGithubRepositoryTags))
 		})
 	})
 
