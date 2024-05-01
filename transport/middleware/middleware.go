@@ -1,19 +1,23 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/responseerrors"
-	"release-manager/transport/model"
 	"release-manager/transport/util"
 
 	"github.com/google/uuid"
 	httpx "go.strv.io/net/http"
 )
 
-func Auth(authSvc model.AuthService) func(next http.Handler) http.Handler {
+type AuthService interface {
+	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
+}
+
+func Auth(authSvc AuthService) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authorizationHeader := r.Header.Get(httpx.Header.Authorization)
