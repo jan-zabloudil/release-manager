@@ -1,4 +1,4 @@
-package transport
+package handler
 
 import (
 	"net/http"
@@ -10,8 +10,8 @@ import (
 
 func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	var req model.UpdateSettingsInput
-	if err := UnmarshalRequest(r, &req); err != nil {
-		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+	if err := util.UnmarshalRequest(r, &req); err != nil {
+		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -21,19 +21,19 @@ func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToSettings(s))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToSettings(s))
 }
 
 func (h *Handler) getSettings(w http.ResponseWriter, r *http.Request) {
 	s, err := h.SettingsSvc.Get(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToSettings(s))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToSettings(s))
 }

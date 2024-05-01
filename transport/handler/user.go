@@ -1,4 +1,4 @@
-package transport
+package handler
 
 import (
 	"net/http"
@@ -14,21 +14,21 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToUser(u))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToUser(u))
 }
 
 func (h *Handler) listUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.UserSvc.ListAll(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToUsers(users))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToUsers(users))
 }
 
 func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +37,7 @@ func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
 		util.ContextUserID(r),
 		util.ContextAuthUserID(r),
 	); err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 

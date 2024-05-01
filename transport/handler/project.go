@@ -1,4 +1,4 @@
-package transport
+package handler
 
 import (
 	"net/http"
@@ -10,8 +10,8 @@ import (
 
 func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateProjectInput
-	if err := UnmarshalRequest(r, &req); err != nil {
-		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+	if err := util.UnmarshalRequest(r, &req); err != nil {
+		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -21,38 +21,38 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusCreated, model.ToProject(p))
+	util.WriteJSONResponse(w, http.StatusCreated, model.ToProject(p))
 }
 
 func (h *Handler) getProject(w http.ResponseWriter, r *http.Request) {
 	p, err := h.ProjectSvc.Get(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToProject(p))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToProject(p))
 }
 
 func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
 	p, err := h.ProjectSvc.ListAll(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToProjects(p))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToProjects(p))
 }
 
 func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 	var req model.UpdateProjectInput
 
-	if err := UnmarshalRequest(r, &req); err != nil {
-		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+	if err := util.UnmarshalRequest(r, &req); err != nil {
+		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -63,16 +63,16 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToProject(p))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToProject(p))
 }
 
 func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
 	if err := h.ProjectSvc.Delete(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r)); err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
@@ -86,9 +86,9 @@ func (h *Handler) listGithubRepositoryTags(w http.ResponseWriter, r *http.Reques
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToGitTags(t))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToGitTags(t))
 }

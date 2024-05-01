@@ -12,20 +12,20 @@ import (
 )
 
 type ProjectMembershipService struct {
-	authSvc    model.AuthService
-	projectSvc model.ProjectService
-	repository model.ProjectInvitationRepository
+	authGuard     authGuard
+	projectGetter projectGetter
+	repository    projectInvitationRepository
 }
 
 func NewProjectMembershipService(
-	authSvc model.AuthService,
-	projectSvc model.ProjectService,
-	repo model.ProjectInvitationRepository,
+	guard authGuard,
+	projectGetter projectGetter,
+	repo projectInvitationRepository,
 ) *ProjectMembershipService {
 	return &ProjectMembershipService{
-		authSvc:    authSvc,
-		projectSvc: projectSvc,
-		repository: repo,
+		authGuard:     guard,
+		projectGetter: projectGetter,
+		repository:    repo,
 	}
 }
 
@@ -34,11 +34,11 @@ func (s *ProjectMembershipService) CreateInvitation(
 	c model.CreateProjectInvitationInput,
 	authUserID uuid.UUID,
 ) (model.ProjectInvitation, error) {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.ProjectInvitation{}, err
 	}
 
-	if _, err := s.projectSvc.Get(ctx, c.ProjectID, authUserID); err != nil {
+	if _, err := s.projectGetter.Get(ctx, c.ProjectID, authUserID); err != nil {
 		return model.ProjectInvitation{}, err
 	}
 
@@ -70,11 +70,11 @@ func (s *ProjectMembershipService) CreateInvitation(
 }
 
 func (s *ProjectMembershipService) ListInvitations(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectInvitation, error) {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return nil, err
 	}
 
-	_, err := s.projectSvc.Get(ctx, projectID, authUserID)
+	_, err := s.projectGetter.Get(ctx, projectID, authUserID)
 	if err != nil {
 		return nil, err
 	}
@@ -83,11 +83,11 @@ func (s *ProjectMembershipService) ListInvitations(ctx context.Context, projectI
 }
 
 func (s *ProjectMembershipService) DeleteInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return err
 	}
 
-	_, err := s.projectSvc.Get(ctx, projectID, authUserID)
+	_, err := s.projectGetter.Get(ctx, projectID, authUserID)
 	if err != nil {
 		return err
 	}

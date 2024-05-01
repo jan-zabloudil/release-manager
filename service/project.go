@@ -13,25 +13,25 @@ import (
 )
 
 type ProjectService struct {
-	authSvc        model.AuthService
-	settingsSvc    model.SettingsService
-	projectRepo    model.ProjectRepository
-	envRepo        model.EnvironmentRepository
-	invitationRepo model.ProjectInvitationRepository
-	githubClient   model.GithubClient
+	authGuard      authGuard
+	settingsGetter settingsGetter
+	projectRepo    projectRepository
+	envRepo        environmentRepository
+	invitationRepo projectInvitationRepository
+	githubClient   githubClient
 }
 
 func NewProjectService(
-	authSvc model.AuthService,
-	settingsSvc model.SettingsService,
-	projectRepo model.ProjectRepository,
-	envRepo model.EnvironmentRepository,
-	invitationRepo model.ProjectInvitationRepository,
-	githubClient model.GithubClient,
+	guard authGuard,
+	settingsGetter settingsGetter,
+	projectRepo projectRepository,
+	envRepo environmentRepository,
+	invitationRepo projectInvitationRepository,
+	githubClient githubClient,
 ) *ProjectService {
 	return &ProjectService{
-		authSvc:        authSvc,
-		settingsSvc:    settingsSvc,
+		authGuard:      guard,
+		settingsGetter: settingsGetter,
 		projectRepo:    projectRepo,
 		envRepo:        envRepo,
 		invitationRepo: invitationRepo,
@@ -40,7 +40,7 @@ func NewProjectService(
 }
 
 func (s *ProjectService) Create(ctx context.Context, c model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.Project{}, err
 	}
 
@@ -80,7 +80,7 @@ func (s *ProjectService) ListAll(ctx context.Context, authUserID uuid.UUID) ([]m
 }
 
 func (s *ProjectService) Delete(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return err
 	}
 
@@ -112,7 +112,7 @@ func (s *ProjectService) Update(ctx context.Context, u model.UpdateProjectInput,
 }
 
 func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.Environment{}, err
 	}
 
@@ -209,7 +209,7 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUs
 }
 
 func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID uuid.UUID) error {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return err
 	}
 
@@ -234,7 +234,7 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 		return nil, err
 	}
 
-	github, err := s.settingsSvc.GetGithubSettings(ctx)
+	github, err := s.settingsGetter.GetGithubSettings(ctx)
 	if err != nil {
 		return nil, err
 	}

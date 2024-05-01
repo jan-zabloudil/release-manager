@@ -26,7 +26,7 @@ func TestProjectService_Create(t *testing.T) {
 		{
 			name: "Valid project",
 			project: model.CreateProjectInput{
-				Name:                      "Test Project",
+				Name:                      "Test projectGetter",
 				SlackChannelID:            "c1234",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
 			},
@@ -198,7 +198,7 @@ func TestProjectService_Delete(t *testing.T) {
 }
 
 func TestProjectService_Update(t *testing.T) {
-	validProjectName := "Project name"
+	validProjectName := "projectGetter name"
 	invalidProjectName := ""
 	slackChannelID := "channelID"
 	invalidGithubRepositoryURL := "https://github.com/owner"
@@ -406,7 +406,7 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "Project not found",
+			name:      "projectGetter not found",
 			projectID: uuid.New(),
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository) {
@@ -562,7 +562,7 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "Project not found",
+			name:      "projectGetter not found",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository) {
 				projectRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
@@ -619,7 +619,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "Project not found",
+			name:      "projectGetter not found",
 			projectID: uuid.New(),
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository, envRepo *repo.EnvironmentRepository) {

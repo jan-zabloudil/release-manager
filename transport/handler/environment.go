@@ -1,4 +1,4 @@
-package transport
+package handler
 
 import (
 	"net/http"
@@ -10,8 +10,8 @@ import (
 
 func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateEnvironmentInput
-	if err := UnmarshalRequest(r, &req); err != nil {
-		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+	if err := util.UnmarshalRequest(r, &req); err != nil {
+		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -21,17 +21,17 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusCreated, model.ToEnvironment(env))
+	util.WriteJSONResponse(w, http.StatusCreated, model.ToEnvironment(env))
 }
 
 func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 	var req model.UpdateEnvironmentInput
-	if err := UnmarshalRequest(r, &req); err != nil {
-		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+	if err := util.UnmarshalRequest(r, &req); err != nil {
+		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -43,11 +43,11 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToEnvironment(env))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToEnvironment(env))
 }
 
 func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
@@ -58,11 +58,11 @@ func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToEnvironment(env))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToEnvironment(env))
 }
 
 func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
@@ -72,11 +72,11 @@ func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToEnvironments(envs))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToEnvironments(envs))
 }
 
 func (h *Handler) deleteEnvironment(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,7 @@ func (h *Handler) deleteEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
