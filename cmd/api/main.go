@@ -9,7 +9,7 @@ import (
 	githubx "release-manager/github"
 	"release-manager/repository"
 	"release-manager/service"
-	"release-manager/transport"
+	"release-manager/transport/handler"
 
 	"github.com/nedpals/supabase-go"
 	httpx "go.strv.io/net/http"
@@ -36,7 +36,7 @@ func main() {
 		repo.ProjectInvitation,
 		githubClient,
 	)
-	h := transport.NewHandler(svc.Auth, svc.User, svc.Project, svc.Settings, svc.ProjectMembership)
+	h := handler.NewHandler(svc.Auth, svc.User, svc.Project, svc.Settings, svc.ProjectMembership)
 
 	serverConfig := httpx.ServerConfig{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

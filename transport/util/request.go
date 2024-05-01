@@ -1,4 +1,4 @@
-package transport
+package util
 
 import (
 	"encoding/json"

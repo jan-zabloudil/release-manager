@@ -1,4 +1,4 @@
-package transport
+package handler
 
 import (
 	"net/http"
@@ -10,8 +10,8 @@ import (
 
 func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateProjectInvitationInput
-	if err := UnmarshalRequest(r, &req); err != nil {
-		WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+	if err := util.UnmarshalRequest(r, &req); err != nil {
+		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -21,21 +21,21 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusCreated, model.ToProjectInvitation(i))
+	util.WriteJSONResponse(w, http.StatusCreated, model.ToProjectInvitation(i))
 }
 
 func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
 	i, err := h.ProjectMembershipSvc.ListInvitations(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToProjectInvitations(i))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToProjectInvitations(i))
 }
 
 func (h *Handler) deleteInvitation(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +46,7 @@ func (h *Handler) deleteInvitation(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *Handler) deleteInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 	err := h.ProjectMembershipSvc.AcceptInvitation(r.Context(), util.ContextProjectInvitationToken(r))
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {
 	err := h.ProjectMembershipSvc.RejectInvitation(r.Context(), util.ContextProjectInvitationToken(r))
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
