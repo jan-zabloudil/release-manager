@@ -12,20 +12,23 @@ import (
 )
 
 type ProjectMembershipService struct {
-	authGuard     authGuard
-	projectGetter projectGetter
-	repository    projectInvitationRepository
+	authGuard        authGuard
+	projectGetter    projectGetter
+	repository       projectInvitationRepository
+	invitationSender projectInvitationSender
 }
 
 func NewProjectMembershipService(
 	guard authGuard,
 	projectGetter projectGetter,
 	repo projectInvitationRepository,
+	invitationSender projectInvitationSender,
 ) *ProjectMembershipService {
 	return &ProjectMembershipService{
-		authGuard:     guard,
-		projectGetter: projectGetter,
-		repository:    repo,
+		authGuard:        guard,
+		projectGetter:    projectGetter,
+		repository:       repo,
+		invitationSender: invitationSender,
 	}
 }
 
@@ -38,7 +41,8 @@ func (s *ProjectMembershipService) CreateInvitation(
 		return model.ProjectInvitation{}, err
 	}
 
-	if _, err := s.projectGetter.Get(ctx, c.ProjectID, authUserID); err != nil {
+	p, err := s.projectGetter.Get(ctx, c.ProjectID, authUserID)
+	if err != nil {
 		return model.ProjectInvitation{}, err
 	}
 
@@ -64,7 +68,11 @@ func (s *ProjectMembershipService) CreateInvitation(
 		return model.ProjectInvitation{}, err
 	}
 
-	// TODO send invitation email
+	s.invitationSender.SendProjectInvitation(ctx, model.ProjectInvitationInput{
+		ProjectName:    p.Name,
+		RecipientEmail: i.Email,
+		Token:          tkn,
+	})
 
 	return i, nil
 }

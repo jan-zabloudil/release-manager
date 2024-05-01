@@ -69,12 +69,21 @@ type settingsGetter interface {
 	GetGithubSettings(ctx context.Context) (model.GithubSettings, error)
 }
 
+type projectInvitationSender interface {
+	SendProjectInvitation(ctx context.Context, input model.ProjectInvitationInput)
+}
+
+type mailer interface {
+	SendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string)
+}
+
 type Service struct {
 	Auth              *AuthService
 	User              *UserService
 	Project           *ProjectService
 	Settings          *SettingsService
 	ProjectMembership *ProjectMembershipService
+	Email             *EmailService
 }
 
 func NewService(
@@ -85,16 +94,18 @@ func NewService(
 	sr settingsRepository,
 	pi projectInvitationRepository,
 	gc githubClient,
+	m mailer,
 ) *Service {
 	authSvc := NewAuthService(ar, ur)
 	settingsSvc := NewSettingsService(authSvc, sr)
 	projectSvc := NewProjectService(authSvc, settingsSvc, pr, env, pi, gc)
+	emailSvc := NewEmailService(m)
 
 	return &Service{
 		Auth:              authSvc,
 		User:              NewUserService(authSvc, ur),
 		Project:           projectSvc,
 		Settings:          settingsSvc,
-		ProjectMembership: NewProjectMembershipService(authSvc, projectSvc, pi),
+		ProjectMembership: NewProjectMembershipService(authSvc, projectSvc, pi, emailSvc),
 	}
 }

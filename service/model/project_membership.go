@@ -192,3 +192,9 @@ func (m *ProjectMember) UpdateProjectRole(role ProjectRole) error {
 func (m *ProjectMember) HasAtLeastProjectRole(role ProjectRole) bool {
 	return m.ProjectRole.IsRoleAtLeast(role)
 }
+
+type ProjectInvitationInput struct {
+	RecipientEmail string
+	ProjectName    string
+	Token          cryptox.Token
+}
