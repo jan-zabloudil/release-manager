@@ -88,7 +88,7 @@ func (r *ProjectRepository) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (r *ProjectRepository) Update(ctx context.Context, p svcmodel.Project) error {
-	data := model.ToProjectUpdate(p)
+	data := model.ToUpdateProjectInput(p)
 
 	err := r.client.
 		DB.From(r.entity).
