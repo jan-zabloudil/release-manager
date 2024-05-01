@@ -10,19 +10,19 @@ import (
 )
 
 type SettingsService struct {
-	authService model.AuthService
-	repository  model.SettingsRepository
+	authGuard  authGuard
+	repository settingsRepository
 }
 
-func NewSettingsService(authSvc model.AuthService, r model.SettingsRepository) *SettingsService {
+func NewSettingsService(guard authGuard, r settingsRepository) *SettingsService {
 	return &SettingsService{
-		authService: authSvc,
-		repository:  r,
+		authGuard:  guard,
+		repository: r,
 	}
 }
 
 func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.Settings, error) {
-	if err := s.authService.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.Settings{}, err
 	}
 
@@ -30,7 +30,7 @@ func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.
 }
 
 func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInput, authUserID uuid.UUID) (model.Settings, error) {
-	if err := s.authService.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.Settings{}, err
 	}
 

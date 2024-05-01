@@ -86,9 +86,9 @@ func (h *Handler) listGithubRepositoryTags(w http.ResponseWriter, r *http.Reques
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}
 
-	WriteJSONResponse(w, http.StatusOK, model.ToGitTags(t))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToGitTags(t))
 }

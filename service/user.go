@@ -11,19 +11,19 @@ import (
 )
 
 type UserService struct {
-	authSvc    model.AuthService
-	repository model.UserRepository
+	authGuard  authGuard
+	repository userRepository
 }
 
-func NewUserService(authSvc model.AuthService, repo model.UserRepository) *UserService {
+func NewUserService(guard authGuard, repo userRepository) *UserService {
 	return &UserService{
-		authSvc:    authSvc,
+		authGuard:  guard,
 		repository: repo,
 	}
 }
 
 func (s *UserService) Get(ctx context.Context, id uuid.UUID, authUserID uuid.UUID) (model.User, error) {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.User{}, err
 	}
 
@@ -41,7 +41,7 @@ func (s *UserService) Get(ctx context.Context, id uuid.UUID, authUserID uuid.UUI
 }
 
 func (s *UserService) Delete(ctx context.Context, id uuid.UUID, authUserID uuid.UUID) error {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return err
 	}
 
@@ -54,7 +54,7 @@ func (s *UserService) Delete(ctx context.Context, id uuid.UUID, authUserID uuid.
 }
 
 func (s *UserService) ListAll(ctx context.Context, authUserID uuid.UUID) ([]model.User, error) {
-	if err := s.authSvc.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return nil, err
 	}
 

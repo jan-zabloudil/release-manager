@@ -51,6 +51,7 @@ func (h *Handler) setupRoutes() {
 					r.Delete("/", middleware.RequireAuthUser(h.deleteInvitation))
 				})
 			})
+			r.Get("/repository/tags", middleware.RequireAuthUser(h.listGithubRepositoryTags))
 		})
 	})
 
