@@ -11,11 +11,11 @@ import (
 )
 
 type projectService interface {
-	Create(ctx context.Context, c svcmodel.CreateProjectInput, authUserID uuid.UUID) (svcmodel.Project, error)
-	Get(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (svcmodel.Project, error)
-	ListAll(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.Project, error)
-	Update(ctx context.Context, u svcmodel.UpdateProjectInput, projectID, authUserID uuid.UUID) (svcmodel.Project, error)
-	Delete(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error
+	CreateProject(ctx context.Context, c svcmodel.CreateProjectInput, authUserID uuid.UUID) (svcmodel.Project, error)
+	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (svcmodel.Project, error)
+	ListProjects(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.Project, error)
+	UpdateProject(ctx context.Context, u svcmodel.UpdateProjectInput, projectID, authUserID uuid.UUID) (svcmodel.Project, error)
+	DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error
 
 	CreateEnvironment(ctx context.Context, c svcmodel.CreateEnvironmentInput, authUserID uuid.UUID) (svcmodel.Environment, error)
 	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
@@ -24,12 +24,10 @@ type projectService interface {
 	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
 
 	ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.GitTag, error)
-}
 
-type projectMembershipService interface {
-	CreateInvitation(ctx context.Context, c svcmodel.CreateProjectInvitationInput, authUserID uuid.UUID) (svcmodel.ProjectInvitation, error)
+	Invite(ctx context.Context, c svcmodel.CreateProjectInvitationInput, authUserID uuid.UUID) (svcmodel.ProjectInvitation, error)
 	ListInvitations(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectInvitation, error)
-	DeleteInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error
+	CancelInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error
 	AcceptInvitation(ctx context.Context, tkn cryptox.Token) error
 	RejectInvitation(ctx context.Context, tkn cryptox.Token) error
 }
@@ -50,12 +48,11 @@ type settingsService interface {
 }
 
 type Handler struct {
-	Mux                  *chi.Mux
-	AuthSvc              authService
-	UserSvc              userService
-	ProjectSvc           projectService
-	SettingsSvc          settingsService
-	ProjectMembershipSvc projectMembershipService
+	Mux         *chi.Mux
+	AuthSvc     authService
+	UserSvc     userService
+	ProjectSvc  projectService
+	SettingsSvc settingsService
 }
 
 func NewHandler(
@@ -63,15 +60,13 @@ func NewHandler(
 	us userService,
 	ps projectService,
 	ss settingsService,
-	pms projectMembershipService,
 ) *Handler {
 	h := &Handler{
-		Mux:                  chi.NewRouter(),
-		AuthSvc:              as,
-		UserSvc:              us,
-		ProjectSvc:           ps,
-		SettingsSvc:          ss,
-		ProjectMembershipSvc: pms,
+		Mux:         chi.NewRouter(),
+		AuthSvc:     as,
+		UserSvc:     us,
+		ProjectSvc:  ps,
+		SettingsSvc: ss,
 	}
 
 	h.setupRoutes()

@@ -11,37 +11,16 @@ import (
 )
 
 const (
-	ProjectRoleOwner  ProjectRole = "owner"
-	ProjectRoleEditor ProjectRole = "editor"
-	ProjectRoleViewer ProjectRole = "viewer"
-
-	projectRoleOwnerPriority  int = 1
-	projectRoleEditorPriority int = 2
-	projectRoleViewerPriority int = 3
-
 	InvitationStatusPending  ProjectInvitationStatus = "pending"
 	InvitationStatusAccepted ProjectInvitationStatus = "accepted_awaiting_registration"
 )
 
 var (
-	validProjectRoles = map[ProjectRole]bool{
-		ProjectRoleOwner:  true,
-		ProjectRoleEditor: true,
-		ProjectRoleViewer: true,
-	}
-
-	projectRolePriority = map[ProjectRole]int{
-		ProjectRoleOwner:  projectRoleOwnerPriority,
-		ProjectRoleEditor: projectRoleEditorPriority,
-		ProjectRoleViewer: projectRoleViewerPriority,
-	}
-
 	validInvitationStatuses = map[ProjectInvitationStatus]bool{
 		InvitationStatusPending:  true,
 		InvitationStatusAccepted: true,
 	}
 
-	errProjectRoleInvalid                    = errors.New("invalid project role")
 	errProjectInvitationStatusInvalid        = errors.New("invalid invitation status")
 	errProjectInvitationEmailRequired        = errors.New("email is required")
 	errProjectInvitationInvalidEmail         = errors.New("invalid email")
@@ -66,7 +45,6 @@ type CreateProjectInvitationInput struct {
 	ProjectRole string
 }
 
-type ProjectRole string
 type ProjectInvitationStatus string
 
 func NewProjectInvitation(c CreateProjectInvitationInput, tkn cryptox.Token, inviterUserID uuid.UUID) (ProjectInvitation, error) {
@@ -116,81 +94,12 @@ func (i *ProjectInvitation) Validate() error {
 	return nil
 }
 
-func (r ProjectRole) Validate() error {
-	if _, exists := validProjectRoles[r]; exists {
-		return nil
-	}
-
-	return errProjectRoleInvalid
-}
-
 func (i ProjectInvitationStatus) Validate() error {
 	if _, exists := validInvitationStatuses[i]; exists {
 		return nil
 	}
 
 	return errProjectInvitationStatusInvalid
-}
-
-func (r ProjectRole) IsRoleAtLeast(role ProjectRole) bool {
-	return projectRolePriority[r] <= projectRolePriority[role]
-}
-
-type ProjectMember struct {
-	User        User
-	ProjectID   uuid.UUID
-	ProjectRole ProjectRole
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
-func NewProjectOwner(u User, projectID uuid.UUID) (ProjectMember, error) {
-	return NewProjectMember(u, projectID, ProjectRoleOwner)
-}
-
-func NewProjectEditor(u User, projectID uuid.UUID) (ProjectMember, error) {
-	return NewProjectMember(u, projectID, ProjectRoleEditor)
-}
-
-func NewProjectViewer(u User, projectID uuid.UUID) (ProjectMember, error) {
-	return NewProjectMember(u, projectID, ProjectRoleViewer)
-}
-
-func NewProjectMember(u User, projectID uuid.UUID, role ProjectRole) (ProjectMember, error) {
-	now := time.Now()
-
-	m := ProjectMember{
-		User:        u,
-		ProjectID:   projectID,
-		ProjectRole: role,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-	}
-
-	if err := m.Validate(); err != nil {
-		return ProjectMember{}, err
-	}
-
-	return m, nil
-}
-
-func (m *ProjectMember) Validate() error {
-	if err := m.ProjectRole.Validate(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ProjectMember) UpdateProjectRole(role ProjectRole) error {
-	m.ProjectRole = role
-	m.UpdatedAt = time.Now()
-
-	return m.Validate()
-}
-
-func (m *ProjectMember) HasAtLeastProjectRole(role ProjectRole) bool {
-	return m.ProjectRole.IsRoleAtLeast(role)
 }
 
 type ProjectInvitationInput struct {

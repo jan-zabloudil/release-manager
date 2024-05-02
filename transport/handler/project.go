@@ -15,7 +15,7 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := h.ProjectSvc.Create(
+	p, err := h.ProjectSvc.CreateProject(
 		r.Context(),
 		model.ToSvcCreateProjectInput(req),
 		util.ContextAuthUserID(r),
@@ -29,7 +29,7 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getProject(w http.ResponseWriter, r *http.Request) {
-	p, err := h.ProjectSvc.Get(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
+	p, err := h.ProjectSvc.GetProject(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, util.ToResponseError(err))
 		return
@@ -39,7 +39,7 @@ func (h *Handler) getProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
-	p, err := h.ProjectSvc.ListAll(r.Context(), util.ContextAuthUserID(r))
+	p, err := h.ProjectSvc.ListProjects(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, util.ToResponseError(err))
 		return
@@ -56,7 +56,7 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := h.ProjectSvc.Update(
+	p, err := h.ProjectSvc.UpdateProject(
 		r.Context(),
 		model.ToSvcUpdateProjectInput(req),
 		util.ContextProjectID(r),
@@ -71,7 +71,7 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
-	if err := h.ProjectSvc.Delete(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r)); err != nil {
+	if err := h.ProjectSvc.DeleteProject(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r)); err != nil {
 		util.WriteResponseError(w, util.ToResponseError(err))
 		return
 	}

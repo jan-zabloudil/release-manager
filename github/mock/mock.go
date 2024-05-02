@@ -8,15 +8,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type GithubClient struct {
+type Client struct {
 	mock.Mock
 }
 
-func (m *GithubClient) SetToken(token string) {
+func (m *Client) SetToken(token string) {
 	m.Called(token)
 }
 
-func (m *GithubClient) ListTagsForRepository(ctx context.Context, repo svcmodel.GithubRepository) ([]svcmodel.GitTag, error) {
+func (m *Client) ListTagsForRepository(ctx context.Context, repo svcmodel.GithubRepository) ([]svcmodel.GitTag, error) {
 	args := m.Called(ctx, repo)
 	return args.Get(0).([]svcmodel.GitTag), args.Error(1)
 }

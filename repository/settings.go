@@ -10,15 +10,17 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
+const (
+	settingsDBEntity = "settings"
+)
+
 type SettingsRepository struct {
 	client *supabase.Client
-	entity string
 }
 
 func NewSettingsRepository(c *supabase.Client) *SettingsRepository {
 	return &SettingsRepository{
 		client: c,
-		entity: "settings",
 	}
 }
 
@@ -26,7 +28,7 @@ func (r *SettingsRepository) Update(ctx context.Context, s svcmodel.Settings) er
 	data := model.ToSettings(s)
 
 	err := r.client.
-		DB.From(r.entity).
+		DB.From(settingsDBEntity).
 		Upsert(&data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
@@ -39,7 +41,7 @@ func (r *SettingsRepository) Update(ctx context.Context, s svcmodel.Settings) er
 func (r *SettingsRepository) Read(ctx context.Context) (svcmodel.Settings, error) {
 	var resp model.Settings
 	err := r.client.
-		DB.From(r.entity).
+		DB.From(settingsDBEntity).
 		Select("*").
 		ExecuteWithContext(ctx, &resp)
 	if err != nil {
