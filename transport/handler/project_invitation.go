@@ -15,7 +15,7 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := h.ProjectMembershipSvc.CreateInvitation(
+	i, err := h.ProjectSvc.Invite(
 		r.Context(),
 		model.ToSvcCreateProjectInvitationInput(req, util.ContextProjectID(r)),
 		util.ContextAuthUserID(r),
@@ -29,7 +29,7 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
-	i, err := h.ProjectMembershipSvc.ListInvitations(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
+	i, err := h.ProjectSvc.ListInvitations(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, util.ToResponseError(err))
 		return
@@ -38,8 +38,8 @@ func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
 	util.WriteJSONResponse(w, http.StatusOK, model.ToProjectInvitations(i))
 }
 
-func (h *Handler) deleteInvitation(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectMembershipSvc.DeleteInvitation(
+func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
+	err := h.ProjectSvc.CancelInvitation(
 		r.Context(),
 		util.ContextProjectID(r),
 		util.ContextProjectInvitationID(r),
@@ -54,7 +54,7 @@ func (h *Handler) deleteInvitation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectMembershipSvc.AcceptInvitation(r.Context(), util.ContextProjectInvitationToken(r))
+	err := h.ProjectSvc.AcceptInvitation(r.Context(), util.ContextProjectInvitationToken(r))
 	if err != nil {
 		util.WriteResponseError(w, util.ToResponseError(err))
 		return
@@ -64,7 +64,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectMembershipSvc.RejectInvitation(r.Context(), util.ContextProjectInvitationToken(r))
+	err := h.ProjectSvc.RejectInvitation(r.Context(), util.ContextProjectInvitationToken(r))
 	if err != nil {
 		util.WriteResponseError(w, util.ToResponseError(err))
 		return

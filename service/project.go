@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"release-manager/pkg/apierrors"
+	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/dberrors"
 	"release-manager/pkg/githuberrors"
 	"release-manager/service/model"
@@ -13,33 +14,30 @@ import (
 )
 
 type ProjectService struct {
-	authGuard      authGuard
-	settingsGetter settingsGetter
-	projectRepo    projectRepository
-	envRepo        environmentRepository
-	invitationRepo projectInvitationRepository
-	githubClient   githubClient
+	authGuard               authGuard
+	settingsGetter          settingsGetter
+	githubRepositoryManager githubRepositoryManager
+	invitationSender        projectInvitationSender
+	repo                    projectRepository
 }
 
 func NewProjectService(
 	guard authGuard,
 	settingsGetter settingsGetter,
-	projectRepo projectRepository,
-	envRepo environmentRepository,
-	invitationRepo projectInvitationRepository,
-	githubClient githubClient,
+	githubRepoManager githubRepositoryManager,
+	invitationSender projectInvitationSender,
+	repo projectRepository,
 ) *ProjectService {
 	return &ProjectService{
-		authGuard:      guard,
-		settingsGetter: settingsGetter,
-		projectRepo:    projectRepo,
-		envRepo:        envRepo,
-		invitationRepo: invitationRepo,
-		githubClient:   githubClient,
+		authGuard:               guard,
+		settingsGetter:          settingsGetter,
+		githubRepositoryManager: githubRepoManager,
+		invitationSender:        invitationSender,
+		repo:                    repo,
 	}
 }
 
-func (s *ProjectService) Create(ctx context.Context, c model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
 	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return model.Project{}, err
 	}
@@ -49,17 +47,17 @@ func (s *ProjectService) Create(ctx context.Context, c model.CreateProjectInput,
 		return model.Project{}, apierrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	if err := s.projectRepo.Create(ctx, p); err != nil {
+	if err := s.repo.CreateProject(ctx, p); err != nil {
 		return model.Project{}, err
 	}
 
 	return p, nil
 }
 
-func (s *ProjectService) Get(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error) {
 	// TODO add project member authorization
 
-	p, err := s.projectRepo.Read(ctx, projectID)
+	p, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
 		switch {
 		case dberrors.IsNotFoundError(err):
@@ -72,30 +70,30 @@ func (s *ProjectService) Get(ctx context.Context, projectID uuid.UUID, authUserI
 	return p, nil
 }
 
-func (s *ProjectService) ListAll(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
+func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
 	// TODO add project member authorization
 	// TODO fetch only project where the user is a member
 
-	return s.projectRepo.ReadAll(ctx)
+	return s.repo.ReadAllProjects(ctx)
 }
 
-func (s *ProjectService) Delete(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error {
+func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return err
 	}
 
-	_, err := s.Get(ctx, projectID, authUserID)
+	_, err := s.GetProject(ctx, projectID, authUserID)
 	if err != nil {
 		return err
 	}
 
-	return s.projectRepo.Delete(ctx, projectID)
+	return s.repo.DeleteProject(ctx, projectID)
 }
 
-func (s *ProjectService) Update(ctx context.Context, u model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
 	// TODO add project member authorization
 
-	p, err := s.Get(ctx, projectID, authUserID)
+	p, err := s.GetProject(ctx, projectID, authUserID)
 	if err != nil {
 		return model.Project{}, err
 	}
@@ -104,7 +102,7 @@ func (s *ProjectService) Update(ctx context.Context, u model.UpdateProjectInput,
 		return model.Project{}, apierrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	if err := s.projectRepo.Update(ctx, p); err != nil {
+	if err := s.repo.UpdateProject(ctx, p); err != nil {
 		return model.Project{}, err
 	}
 
@@ -116,7 +114,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 		return model.Environment{}, err
 	}
 
-	_, err := s.Get(ctx, c.ProjectID, authUserID)
+	_, err := s.GetProject(ctx, c.ProjectID, authUserID)
 	if err != nil {
 		return model.Environment{}, err
 	}
@@ -132,7 +130,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 		return model.Environment{}, apierrors.NewEnvironmentDuplicateNameError()
 	}
 
-	if err := s.envRepo.Create(ctx, env); err != nil {
+	if err := s.repo.CreateEnvironment(ctx, env); err != nil {
 		return model.Environment{}, err
 	}
 
@@ -142,12 +140,12 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
 	// TODO add project member authorization
 
-	_, err := s.Get(ctx, projectID, authUserID)
+	_, err := s.GetProject(ctx, projectID, authUserID)
 	if err != nil {
 		return model.Environment{}, err
 	}
 
-	env, err := s.envRepo.Read(ctx, envID)
+	env, err := s.repo.ReadEnvironment(ctx, envID)
 	if err != nil {
 		switch {
 		case dberrors.IsNotFoundError(err):
@@ -163,7 +161,7 @@ func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, a
 func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
 	// TODO add project member authorization
 
-	if _, err := s.Get(ctx, projectID, authUserID); err != nil {
+	if _, err := s.GetProject(ctx, projectID, authUserID); err != nil {
 		return model.Environment{}, err
 	}
 
@@ -185,7 +183,7 @@ func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.UpdateEn
 		}
 	}
 
-	if err := s.envRepo.Update(ctx, env); err != nil {
+	if err := s.repo.UpdateEnvironment(ctx, env); err != nil {
 		return model.Environment{}, err
 	}
 
@@ -195,12 +193,12 @@ func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.UpdateEn
 func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Environment, error) {
 	// TODO add project member authorization
 
-	_, err := s.Get(ctx, projectID, authUserID)
+	_, err := s.GetProject(ctx, projectID, authUserID)
 	if err != nil {
 		return nil, err
 	}
 
-	envs, err := s.envRepo.ReadAllForProject(ctx, projectID)
+	envs, err := s.repo.ReadAllEnvironmentsForProject(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +211,7 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 		return err
 	}
 
-	_, err := s.Get(ctx, projectID, authUserID)
+	_, err := s.GetProject(ctx, projectID, authUserID)
 	if err != nil {
 		return err
 	}
@@ -223,13 +221,13 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 		return err
 	}
 
-	return s.envRepo.Delete(ctx, envID)
+	return s.repo.DeleteEnvironment(ctx, envID)
 }
 
 func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
 	// TODO add project member authorization
 
-	project, err := s.Get(ctx, projectID, authUserID)
+	project, err := s.GetProject(ctx, projectID, authUserID)
 	if err != nil {
 		return nil, err
 	}
@@ -246,9 +244,9 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 		return nil, apierrors.NewGithubRepositoryNotConfiguredForProjectError()
 	}
 
-	s.githubClient.SetToken(github.Token)
+	s.githubRepositoryManager.SetToken(github.Token)
 
-	t, err := s.githubClient.ListTagsForRepository(ctx, project.GithubRepository)
+	t, err := s.githubRepositoryManager.ListTagsForRepository(ctx, project.GithubRepository)
 	if err != nil {
 		switch {
 		case githuberrors.IsUnauthorizedError(err):
@@ -266,8 +264,152 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 	return t, nil
 }
 
+func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvitationInput, authUserID uuid.UUID) (model.ProjectInvitation, error) {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+		return model.ProjectInvitation{}, err
+	}
+
+	p, err := s.GetProject(ctx, c.ProjectID, authUserID)
+	if err != nil {
+		return model.ProjectInvitation{}, err
+	}
+
+	tkn, err := cryptox.NewToken()
+	if err != nil {
+		return model.ProjectInvitation{}, err
+	}
+
+	i, err := model.NewProjectInvitation(c, tkn, authUserID)
+	if err != nil {
+		return model.ProjectInvitation{}, apierrors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
+	}
+
+	// TODO check if the user is already a member of the project
+
+	invitationExists, err := s.invitationExists(ctx, i.Email, c.ProjectID)
+	if err != nil {
+		return model.ProjectInvitation{}, err
+	}
+	if invitationExists {
+		return model.ProjectInvitation{}, apierrors.NewProjectInvitationAlreadyExistsError()
+	}
+
+	if err := s.repo.CreateInvitation(ctx, i); err != nil {
+		return model.ProjectInvitation{}, err
+	}
+
+	s.invitationSender.SendProjectInvitation(ctx, model.ProjectInvitationInput{
+		ProjectName:    p.Name,
+		RecipientEmail: i.Email,
+		Token:          tkn,
+	})
+
+	return i, nil
+}
+
+func (s *ProjectService) ListInvitations(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectInvitation, error) {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+		return nil, err
+	}
+
+	exists, err := s.projectExists(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, apierrors.NewProjectNotFoundError()
+	}
+
+	return s.repo.ReadAllInvitationsForProject(ctx, projectID)
+}
+
+func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+		return err
+	}
+
+	exists, err := s.projectExists(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return apierrors.NewProjectNotFoundError()
+	}
+
+	_, err = s.repo.ReadInvitation(ctx, invitationID)
+	if err != nil {
+		switch {
+		case dberrors.IsNotFoundError(err):
+			return apierrors.NewProjectInvitationNotFoundError().Wrap(err)
+		default:
+			return err
+		}
+	}
+
+	return s.repo.DeleteInvitation(ctx, invitationID)
+}
+
+func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token) error {
+	invitation, err := s.getPendingInvitationByToken(ctx, tkn)
+	if err != nil {
+		return err
+	}
+
+	// TODO check if the user is already a member of the project and based on that decide if to create project member or just update the invitation
+
+	invitation.Accept()
+	return s.repo.UpdateInvitation(ctx, invitation)
+}
+
+func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token) error {
+	invitation, err := s.getPendingInvitationByToken(ctx, tkn)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.DeleteInvitation(ctx, invitation.ID)
+}
+
+func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
+	_, err := s.repo.ReadProject(ctx, projectID)
+	if err != nil {
+		if dberrors.IsNotFoundError(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (s *ProjectService) getPendingInvitationByToken(ctx context.Context, tkn cryptox.Token) (model.ProjectInvitation, error) {
+	i, err := s.repo.ReadInvitationByTokenHashAndStatus(ctx, tkn.ToHash(), model.InvitationStatusPending)
+	if err != nil {
+		if dberrors.IsNotFoundError(err) {
+			return model.ProjectInvitation{}, apierrors.NewProjectInvitationNotFoundError().Wrap(err)
+		}
+
+		return model.ProjectInvitation{}, err
+	}
+
+	return i, nil
+}
+
+func (s *ProjectService) invitationExists(ctx context.Context, email string, projectID uuid.UUID) (bool, error) {
+	if _, err := s.repo.ReadInvitationByEmailForProject(ctx, email, projectID); err != nil {
+		if dberrors.IsNotFoundError(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (s *ProjectService) isEnvironmentNameUnique(ctx context.Context, projectID uuid.UUID, name string) (bool, error) {
-	if _, err := s.envRepo.ReadByNameForProject(ctx, projectID, name); err != nil {
+	if _, err := s.repo.ReadEnvironmentByNameForProject(ctx, projectID, name); err != nil {
 		if dberrors.IsNotFoundError(err) {
 			return true, nil
 		}

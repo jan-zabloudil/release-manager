@@ -8,11 +8,11 @@ import (
 )
 
 type EmailService struct {
-	mailer mailer
+	emailSender emailSender
 }
 
-func NewEmailService(m mailer) *EmailService {
-	return &EmailService{mailer: m}
+func NewEmailService(s emailSender) *EmailService {
+	return &EmailService{emailSender: s}
 }
 
 func (s *EmailService) SendProjectInvitation(ctx context.Context, input model.ProjectInvitationInput) {
@@ -21,5 +21,5 @@ func (s *EmailService) SendProjectInvitation(ctx context.Context, input model.Pr
 	text := fmt.Sprintf("You have been invited to join the project %s. (Token: %s)", input.ProjectName, input.Token)
 	html := fmt.Sprintf("<p>You have been invited to join the project %s.</p><p>Token: %s)</p>", input.ProjectName, input.Token)
 
-	s.mailer.SendEmailAsync(ctx, subject, text, html, input.RecipientEmail)
+	s.emailSender.SendEmailAsync(ctx, subject, text, html, input.RecipientEmail)
 }
