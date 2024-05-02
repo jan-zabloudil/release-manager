@@ -13,19 +13,19 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
+const (
+	projectDBEntity     = "projects"
+	environmentDBEntity = "environments"
+	invitationDBEntity  = "project_invitations"
+)
+
 type ProjectRepository struct {
-	client            *supabase.Client
-	projectEntity     string
-	environmentEntity string
-	invitationEntity  string
+	client *supabase.Client
 }
 
 func NewProjectRepository(c *supabase.Client) *ProjectRepository {
 	return &ProjectRepository{
-		client:            c,
-		projectEntity:     "projects",
-		environmentEntity: "environments",
-		invitationEntity:  "project_invitations",
+		client: c,
 	}
 }
 
@@ -33,7 +33,7 @@ func (r *ProjectRepository) CreateProject(ctx context.Context, p svcmodel.Projec
 	data := model.ToProject(p)
 
 	err := r.client.
-		DB.From(r.projectEntity).
+		DB.From(projectDBEntity).
 		Insert(&data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
@@ -46,7 +46,7 @@ func (r *ProjectRepository) CreateProject(ctx context.Context, p svcmodel.Projec
 func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcmodel.Project, error) {
 	var resp model.Project
 	err := r.client.
-		DB.From(r.projectEntity).
+		DB.From(projectDBEntity).
 		Select("*").Single().
 		Eq("id", id.String()).
 		ExecuteWithContext(ctx, &resp)
@@ -65,7 +65,7 @@ func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcm
 func (r *ProjectRepository) ReadAllProjects(ctx context.Context) ([]svcmodel.Project, error) {
 	var resp []model.Project
 	err := r.client.
-		DB.From(r.projectEntity).
+		DB.From(projectDBEntity).
 		Select("*").
 		ExecuteWithContext(ctx, &resp)
 	if err != nil {
@@ -82,7 +82,7 @@ func (r *ProjectRepository) ReadAllProjects(ctx context.Context) ([]svcmodel.Pro
 
 func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
 	err := r.client.
-		DB.From(r.projectEntity).
+		DB.From(projectDBEntity).
 		Delete().Eq("id", id.String()).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
@@ -96,7 +96,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, p svcmodel.Projec
 	data := model.ToUpdateProjectInput(p)
 
 	err := r.client.
-		DB.From(r.projectEntity).
+		DB.From(projectDBEntity).
 		Update(&data).
 		Eq("id", (p.ID).String()).
 		ExecuteWithContext(ctx, nil)
@@ -111,7 +111,7 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 	data := model.ToEnvironment(e)
 
 	err := r.client.
-		DB.From(r.environmentEntity).
+		DB.From(environmentDBEntity).
 		Insert(&data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
@@ -124,7 +124,7 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 func (r *ProjectRepository) ReadEnvironment(ctx context.Context, envID uuid.UUID) (svcmodel.Environment, error) {
 	var resp model.Environment
 	err := r.client.
-		DB.From(r.environmentEntity).
+		DB.From(environmentDBEntity).
 		Select("*").Single().
 		Eq("id", envID.String()).
 		ExecuteWithContext(ctx, &resp)
@@ -143,7 +143,7 @@ func (r *ProjectRepository) ReadEnvironment(ctx context.Context, envID uuid.UUID
 func (r *ProjectRepository) ReadEnvironmentByNameForProject(ctx context.Context, projectID uuid.UUID, name string) (svcmodel.Environment, error) {
 	var resp model.Environment
 	err := r.client.
-		DB.From(r.environmentEntity).
+		DB.From(environmentDBEntity).
 		Select("*").Single().
 		Eq("name", name).
 		Eq("project_id", projectID.String()).
@@ -163,7 +163,7 @@ func (r *ProjectRepository) ReadEnvironmentByNameForProject(ctx context.Context,
 func (r *ProjectRepository) ReadAllEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
 	var resp []model.Environment
 	err := r.client.
-		DB.From(r.environmentEntity).
+		DB.From(environmentDBEntity).
 		Select("*").
 		Eq("project_id", projectID.String()).
 		ExecuteWithContext(ctx, &resp)
@@ -181,7 +181,7 @@ func (r *ProjectRepository) ReadAllEnvironmentsForProject(ctx context.Context, p
 
 func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, envID uuid.UUID) error {
 	err := r.client.
-		DB.From(r.environmentEntity).
+		DB.From(environmentDBEntity).
 		Delete().
 		Eq("id", envID.String()).
 		ExecuteWithContext(ctx, nil)
@@ -196,7 +196,7 @@ func (r *ProjectRepository) UpdateEnvironment(ctx context.Context, e svcmodel.En
 	data := model.ToUpdateEnvironmentInput(e)
 
 	err := r.client.
-		DB.From(r.environmentEntity).
+		DB.From(environmentDBEntity).
 		Update(&data).
 		Eq("id", e.ID.String()).
 		ExecuteWithContext(ctx, nil)
@@ -211,7 +211,7 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	data := model.ToProjectInvitation(i)
 
 	err := r.client.
-		DB.From(r.invitationEntity).
+		DB.From(invitationDBEntity).
 		Insert(&data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
@@ -224,7 +224,7 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 func (r *ProjectRepository) ReadInvitation(ctx context.Context, id uuid.UUID) (svcmodel.ProjectInvitation, error) {
 	var resp model.ProjectInvitation
 	err := r.client.
-		DB.From(r.invitationEntity).
+		DB.From(invitationDBEntity).
 		Select("*").Single().
 		Eq("id", id.String()).
 		ExecuteWithContext(ctx, &resp)
@@ -238,7 +238,7 @@ func (r *ProjectRepository) ReadInvitation(ctx context.Context, id uuid.UUID) (s
 func (r *ProjectRepository) ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
 	var resp model.ProjectInvitation
 	err := r.client.
-		DB.From(r.invitationEntity).
+		DB.From(invitationDBEntity).
 		Select("*").Single().
 		Eq("email", email).
 		Eq("project_id", projectID.String()).
@@ -253,7 +253,7 @@ func (r *ProjectRepository) ReadInvitationByEmailForProject(ctx context.Context,
 func (r *ProjectRepository) ReadInvitationByTokenHashAndStatus(ctx context.Context, hash crypto.Hash, status svcmodel.ProjectInvitationStatus) (svcmodel.ProjectInvitation, error) {
 	var resp model.ProjectInvitation
 	err := r.client.
-		DB.From(r.invitationEntity).
+		DB.From(invitationDBEntity).
 		Select("*").Single().
 		Eq("token_hash", hash.ToBase64()).
 		Eq("status", string(status)).
@@ -268,7 +268,7 @@ func (r *ProjectRepository) ReadInvitationByTokenHashAndStatus(ctx context.Conte
 func (r *ProjectRepository) ReadAllInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
 	var resp []model.ProjectInvitation
 	err := r.client.
-		DB.From(r.invitationEntity).
+		DB.From(invitationDBEntity).
 		Select("*").
 		Eq("project_id", projectID.String()).
 		ExecuteWithContext(ctx, &resp)
@@ -283,7 +283,7 @@ func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 	data := model.ToUpdateProjectInvitationInput(i)
 
 	err := r.client.
-		DB.From(r.invitationEntity).
+		DB.From(invitationDBEntity).
 		Update(&data).
 		Eq("id", i.ID.String()).
 		ExecuteWithContext(ctx, nil)
@@ -296,7 +296,7 @@ func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 
 func (r *ProjectRepository) DeleteInvitation(ctx context.Context, id uuid.UUID) error {
 	err := r.client.
-		DB.From(r.invitationEntity).
+		DB.From(invitationDBEntity).
 		Delete().Eq("id", id.String()).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {

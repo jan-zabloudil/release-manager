@@ -11,22 +11,24 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
+const (
+	userDBEntity = "users"
+)
+
 type UserRepository struct {
 	client *supabase.Client
-	entity string
 }
 
 func NewUserRepository(client *supabase.Client) *UserRepository {
 	return &UserRepository{
 		client: client,
-		entity: "users",
 	}
 }
 
 func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.User, error) {
 	var resp model.User
 	err := r.client.
-		DB.From(r.entity).
+		DB.From(userDBEntity).
 		Select("*").Single().
 		Eq("id", userID.String()).
 		ExecuteWithContext(ctx, &resp)
@@ -40,7 +42,7 @@ func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.U
 func (r *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
 	var resp []model.User
 	err := r.client.
-		DB.From(r.entity).
+		DB.From(userDBEntity).
 		Select("*").
 		ExecuteWithContext(ctx, &resp)
 	if err != nil {
