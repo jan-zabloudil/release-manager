@@ -16,7 +16,9 @@ type GeneratedNotes struct {
 func ToSvcGitTags(tags []*github.RepositoryTag) []svcmodel.GitTag {
 	t := make([]svcmodel.GitTag, 0, len(tags))
 	for _, tag := range tags {
-		t = append(t, ToSvcGitTag(*tag.Name))
+		if tag.Name != nil {
+			t = append(t, ToSvcGitTag(*tag.Name))
+		}
 	}
 
 	return t
