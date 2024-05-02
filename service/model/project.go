@@ -197,7 +197,3 @@ func toGithubRepository(rawURL string) (GithubRepository, error) {
 		RepositorySlug: slugs[1],
 	}, nil
 }
-
-type GitTag struct {
-	Name string
-}

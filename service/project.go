@@ -244,7 +244,7 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 		return nil, apierrors.NewGithubRepositoryNotConfiguredForProjectError()
 	}
 
-	s.githubRepositoryManager.SetToken(github.Token)
+	s.githubRepositoryManager.RefreshClientWithToken(github.Token)
 
 	t, err := s.githubRepositoryManager.ListTagsForRepository(ctx, project.GithubRepository)
 	if err != nil {

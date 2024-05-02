@@ -62,7 +62,8 @@ type projectInvitationSender interface {
 
 type githubRepositoryManager interface {
 	ListTagsForRepository(ctx context.Context, repo model.GithubRepository) ([]model.GitTag, error)
-	SetToken(token string)
+	RefreshClientWithToken(token string)
+	CreateReleaseDraft(ctx context.Context, repo model.GithubRepository, input model.CreateReleaseDraftInput) (model.ReleaseDraft, error)
 }
 
 type emailSender interface {

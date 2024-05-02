@@ -6,10 +6,11 @@ import (
 )
 
 const (
-	errCodeUnauthorized = "ERR_GITHUB_UNAUTHORIZED"
-	errCodeForbidden    = "ERR_GITHUB_FORBIDDEN"
-	errCodeNotFound     = "ERR_GITHUB_NOT_FOUND"
-	errCodeUnknown      = "ERR_GITHUB_UNKNOWN"
+	errCodeUnauthorized        = "ERR_GITHUB_UNAUTHORIZED"
+	errCodeForbidden           = "ERR_GITHUB_FORBIDDEN"
+	errCodeNotFound            = "ERR_GITHUB_NOT_FOUND"
+	errCodeCannotMapToSvcModel = "ERR_GITHUB_CANNOT_MAP_TO_SVC_MODEL"
+	errCodeUnknown             = "ERR_GITHUB_UNKNOWN"
 )
 
 type GithubError struct {
@@ -49,6 +50,12 @@ func NewNotFoundError() *GithubError {
 func NewUnknownError() *GithubError {
 	return &GithubError{
 		Code: errCodeUnknown,
+	}
+}
+
+func NewToSvcModelError() *GithubError {
+	return &GithubError{
+		Code: errCodeCannotMapToSvcModel,
 	}
 }
 
