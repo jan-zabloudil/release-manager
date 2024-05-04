@@ -21,10 +21,11 @@ var (
 	errCodeProjectInvitationNotFound               = "ERR_PROJECT_INVITATION_NOT_FOUND"
 	errCodeProjectMemberAlreadyExists              = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
 	errCodeGithubIntegrationNotEnabled             = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
-	errCodeGithubIntegrationUnauthorized           = "ERR_GITHUB_INTEGRATION_UNAUTHORIZED"
-	errCodeGithubIntegrationForbidden              = "ERR_GITHUB_INTEGRATION_FORBIDDEN"
+	errCodeGithubClientUnauthorized                = "ERR_GITHUB_CLIENT_UNAUTHORIZED"
+	errCodeGithubClientForbidden                   = "ERR_GITHUB_CLIENT_FORBIDDEN"
 	errCodeGithubRepositoryNotConfiguredForProject = "ERR_GITHUB_REPOSITORY_NOT_CONFIGURED_FOR_PROJECT"
 	errCodeGithubRepositoryNotFound                = "ERR_GITHUB_REPOSITORY_NOT_FOUND"
+	errCodeGithubRepositoryInvalidURL              = "ERR_GITHUB_REPOSITORY_INVALID_URL"
 	errCodeProjectMemberNotFound                   = "ERR_PROJECT_MEMBER_NOT_FOUND"
 	errCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
 	errCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
@@ -151,6 +152,13 @@ func NewProjectMemberAlreadyExistsError() *APIError {
 	}
 }
 
+func NewGithubRepositoryInvalidURL() *APIError {
+	return &APIError{
+		Code:    errCodeGithubRepositoryInvalidURL,
+		Message: "Invalid Github repository URL.",
+	}
+}
+
 func NewGithubIntegrationNotEnabledError() *APIError {
 	return &APIError{
 		Code:    errCodeGithubIntegrationNotEnabled,
@@ -165,17 +173,17 @@ func NewGithubRepositoryNotConfiguredForProjectError() *APIError {
 	}
 }
 
-func NewGithubIntegrationUnauthorizedError() *APIError {
+func NewGithubClientUnauthorizedError() *APIError {
 	return &APIError{
-		Code:    errCodeGithubIntegrationUnauthorized,
-		Message: "Cannot access Github API, invalid or expired token.",
+		Code:    errCodeGithubClientUnauthorized,
+		Message: "Request to the GitHub API cannot be processed because the client is not properly authenticated (invalid or expired token).",
 	}
 }
 
-func NewGithubIntegrationForbiddenError() *APIError {
+func NewGithubClientForbiddenError() *APIError {
 	return &APIError{
-		Code:    errCodeGithubIntegrationForbidden,
-		Message: "Cannot access given resource via Github API.",
+		Code:    errCodeGithubClientForbidden,
+		Message: "Request cannot be processed because the client does not have permission to access the specified resource via GitHub API.",
 	}
 }
 
@@ -224,7 +232,9 @@ func IsNotFoundError(err error) bool {
 		IsErrorWithCode(err, errCodeGithubRepositoryNotFound) ||
 		IsErrorWithCode(err, errCodeGithubRepositoryNotConfiguredForProject) ||
 		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled) ||
-		IsErrorWithCode(err, errCodeProjectMemberNotFound)
+		IsErrorWithCode(err, errCodeProjectMemberNotFound) ||
+		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled) ||
+		IsErrorWithCode(err, errCodeGithubRepositoryInvalidURL)
 }
 
 func IsUnprocessableModelError(err error) bool {
@@ -238,12 +248,12 @@ func IsUnprocessableModelError(err error) bool {
 
 func IsUnauthorizedError(err error) bool {
 	return IsErrorWithCode(err, errCodeUnauthorizedInvalidToken) ||
-		IsErrorWithCode(err, errCodeGithubIntegrationUnauthorized)
+		IsErrorWithCode(err, errCodeGithubClientUnauthorized)
 }
 
 func IsForbiddenError(err error) bool {
 	return IsErrorWithCode(err, errCodeForbiddenInsufficientUserRole) ||
-		IsErrorWithCode(err, errCodeGithubIntegrationForbidden) ||
+		IsErrorWithCode(err, errCodeGithubClientForbidden) ||
 		IsErrorWithCode(err, errCodeForbiddenInsufficientProjectRole)
 }
 

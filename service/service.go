@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net/url"
 
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/service/model"
@@ -66,7 +67,7 @@ type authGuard interface {
 }
 
 type settingsGetter interface {
-	GetGithubSettings(ctx context.Context) (model.GithubSettings, error)
+	GetGithubToken(ctx context.Context) (string, error)
 }
 
 type userGetter interface {
@@ -82,9 +83,8 @@ type projectInvitationSender interface {
 	SendProjectInvitation(ctx context.Context, input model.ProjectInvitationInput)
 }
 
-type githubRepositoryManager interface {
-	ListTagsForRepository(ctx context.Context, repo model.GithubRepository) ([]model.GitTag, error)
-	SetToken(token string)
+type githubClient interface {
+	ReadTagsForRepository(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
 }
 
 type emailSender interface {
@@ -105,14 +105,14 @@ func NewService(
 	projectRepo projectRepository,
 	settingsRepo settingsRepository,
 	releaseRepo releaseRepository,
-	githubRepoManager githubRepositoryManager,
+	githubClient githubClient,
 	emailSender emailSender,
 ) *Service {
 	authSvc := NewAuthService(authRepo, userRepo, projectRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	emailSvc := NewEmailService(emailSender)
-	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, githubRepoManager, emailSvc, projectRepo)
+	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, githubClient, projectRepo)
 	releaseSvc := NewReleaseService(projectSvc, releaseRepo)
 
 	return &Service{

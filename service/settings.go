@@ -50,11 +50,15 @@ func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInpu
 	return settings, nil
 }
 
-func (s *SettingsService) GetGithubSettings(ctx context.Context) (model.GithubSettings, error) {
+func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
 	settings, err := s.repository.Read(ctx)
 	if err != nil {
-		return model.GithubSettings{}, err
+		return "", err
 	}
 
-	return settings.Github, nil
+	if !settings.Github.Enabled {
+		return "", apierrors.NewGithubIntegrationNotEnabledError()
+	}
+
+	return settings.Github.Token, nil
 }
