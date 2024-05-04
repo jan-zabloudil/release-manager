@@ -20,7 +20,8 @@ const (
 	invitationDBEntity    = "project_invitations"
 	projectMemberDBEntity = "project_members"
 
-	createMemberPostgresFunction = "create_project_member_and_delete_invitation"
+	createMemberPostgresFunction  = "create_project_member_and_delete_invitation"
+	createProjectPostgresFunction = "create_project_and_owner_member"
 )
 
 type ProjectRepository struct {
@@ -33,12 +34,14 @@ func NewProjectRepository(c *supabase.Client) *ProjectRepository {
 	}
 }
 
-func (r *ProjectRepository) CreateProject(ctx context.Context, p svcmodel.Project) error {
-	data := model.ToProject(p)
+// CreateProject creates a new project and adding the owner as a project member
+// TODO change function name to better capture the action of creating not only project but also project member
+func (r *ProjectRepository) CreateProject(ctx context.Context, p svcmodel.Project, owner svcmodel.ProjectMember) error {
+	data := model.ToCreateProjectInput(p, owner)
 
+	// // Calls the stored function in order to create a project and project member in a single transaction
 	err := r.client.
-		DB.From(projectDBEntity).
-		Insert(&data).
+		DB.Rpc(createProjectPostgresFunction, data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
 		return util.ToDBError(err)

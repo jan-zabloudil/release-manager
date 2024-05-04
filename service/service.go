@@ -14,7 +14,7 @@ type authRepository interface {
 }
 
 type projectRepository interface {
-	CreateProject(ctx context.Context, p model.Project) error
+	CreateProject(ctx context.Context, p model.Project, owner model.ProjectMember) error
 	ReadProject(ctx context.Context, id uuid.UUID) (model.Project, error)
 	ReadAllProjects(ctx context.Context) ([]model.Project, error)
 	DeleteProject(ctx context.Context, id uuid.UUID) error
@@ -63,6 +63,7 @@ type settingsGetter interface {
 }
 
 type userGetter interface {
+	Get(ctx context.Context, userID, authUserID uuid.UUID) (model.User, error)
 	GetByEmail(ctx context.Context, email string) (model.User, error)
 }
 

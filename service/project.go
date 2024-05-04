@@ -50,7 +50,17 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 		return model.Project{}, apierrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	if err := s.repo.CreateProject(ctx, p); err != nil {
+	u, err := s.userGetter.Get(ctx, authUserID, authUserID)
+	if err != nil {
+		return model.Project{}, err
+	}
+
+	owner, err := model.NewProjectOwner(u, p.ID)
+	if err != nil {
+		return model.Project{}, err
+	}
+
+	if err := s.repo.CreateProject(ctx, p, owner); err != nil {
 		return model.Project{}, err
 	}
 

@@ -22,7 +22,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 	testCases := []struct {
 		name      string
 		project   model.CreateProjectInput
-		mockSetup func(*svc.AuthService, *repo.ProjectRepository)
+		mockSetup func(*svc.AuthService, *svc.UserService, *repo.ProjectRepository)
 		wantErr   bool
 	}{
 		{
@@ -32,9 +32,10 @@ func TestProjectService_CreateProject(t *testing.T) {
 				SlackChannelID:            "c1234",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
 			},
-			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("CreateProject", mock.Anything, mock.Anything).Return(nil)
+				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
+				projectRepo.On("CreateProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -45,7 +46,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 				SlackChannelID:            "",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
 			},
-			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: true,
@@ -58,7 +59,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
 				GithubRepositoryRawURL:    "https://github.com/owner",
 			},
-			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: true,
@@ -75,7 +76,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			authSvc := new(svc.AuthService)
 			service := NewProjectService(authSvc, settingsSvc, userSvc, githubClient, emailSvc, projectRepo)
 
-			tc.mockSetup(authSvc, projectRepo)
+			tc.mockSetup(authSvc, userSvc, projectRepo)
 
 			_, err := service.CreateProject(context.Background(), tc.project, uuid.New())
 
@@ -86,6 +87,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			}
 
 			projectRepo.AssertExpectations(t)
+			userSvc.AssertExpectations(t)
 			authSvc.AssertExpectations(t)
 		})
 	}

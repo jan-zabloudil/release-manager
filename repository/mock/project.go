@@ -14,8 +14,8 @@ type ProjectRepository struct {
 	mock.Mock
 }
 
-func (m *ProjectRepository) CreateProject(ctx context.Context, p svcmodel.Project) error {
-	args := m.Called(ctx, p)
+func (m *ProjectRepository) CreateProject(ctx context.Context, p svcmodel.Project, owner svcmodel.ProjectMember) error {
+	args := m.Called(ctx, p, owner)
 	return args.Error(0)
 }
 
