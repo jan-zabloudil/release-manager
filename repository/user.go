@@ -39,6 +39,20 @@ func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.U
 	return model.ToSvcUser(resp), nil
 }
 
+func (r *UserRepository) ReadByEmail(ctx context.Context, email string) (svcmodel.User, error) {
+	var resp model.User
+	err := r.client.
+		DB.From(userDBEntity).
+		Select("*").Single().
+		Eq("email", email).
+		ExecuteWithContext(ctx, &resp)
+	if err != nil {
+		return svcmodel.User{}, util.ToDBError(err)
+	}
+
+	return model.ToSvcUser(resp), nil
+}
+
 func (r *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
 	var resp []model.User
 	err := r.client.

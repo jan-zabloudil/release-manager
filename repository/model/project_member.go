@@ -8,12 +8,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// CreateProjectMemberInput is the input for creating a project member and deleting an invitation
 type CreateProjectMemberInput struct {
-	UserID      uuid.UUID `json:"user_id"`
-	ProjectID   uuid.UUID `json:"project_id"`
-	ProjectRole string    `json:"project_role"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	UserID      uuid.UUID `json:"p_user_id"`
+	ProjectID   uuid.UUID `json:"p_project_id"`
+	Email       string    `json:"p_email"`
+	ProjectRole string    `json:"p_project_role"`
+	CreatedAt   time.Time `json:"p_created_at"`
+	UpdatedAt   time.Time `json:"p_updated_at"`
 }
 
 type ProjectMember struct {
@@ -22,6 +24,17 @@ type ProjectMember struct {
 	ProjectRole string    `json:"project_role"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func ToCreateProjectMemberInput(m svcmodel.ProjectMember) CreateProjectMemberInput {
+	return CreateProjectMemberInput{
+		UserID:      m.User.ID,
+		ProjectID:   m.ProjectID,
+		Email:       m.User.Email,
+		ProjectRole: string(m.ProjectRole),
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
+	}
 }
 
 func ToSvcProjectMember(p ProjectMember) svcmodel.ProjectMember {

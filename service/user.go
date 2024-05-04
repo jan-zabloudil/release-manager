@@ -40,6 +40,20 @@ func (s *UserService) Get(ctx context.Context, id uuid.UUID, authUserID uuid.UUI
 	return u, nil
 }
 
+func (s *UserService) GetByEmail(ctx context.Context, email string) (model.User, error) {
+	u, err := s.repository.ReadByEmail(ctx, email)
+	if err != nil {
+		switch {
+		case dberrors.IsNotFoundError(err):
+			return model.User{}, apierrors.NewUserNotFoundError().Wrap(err)
+		default:
+			return model.User{}, err
+		}
+	}
+
+	return u, nil
+}
+
 func (s *UserService) Delete(ctx context.Context, id uuid.UUID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
 		return err

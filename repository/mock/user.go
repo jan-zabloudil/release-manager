@@ -18,6 +18,11 @@ func (m *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.U
 	return args.Get(0).(svcmodel.User), args.Error(1)
 }
 
+func (m *UserRepository) ReadByEmail(ctx context.Context, email string) (svcmodel.User, error) {
+	args := m.Called(ctx, email)
+	return args.Get(0).(svcmodel.User), args.Error(1)
+}
+
 func (m *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
 	args := m.Called(ctx)
 	return args.Get(0).([]svcmodel.User), args.Error(1)

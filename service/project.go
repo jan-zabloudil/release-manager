@@ -16,6 +16,7 @@ import (
 type ProjectService struct {
 	authGuard               authGuard
 	settingsGetter          settingsGetter
+	userGetter              userGetter
 	githubRepositoryManager githubRepositoryManager
 	invitationSender        projectInvitationSender
 	repo                    projectRepository
@@ -24,6 +25,7 @@ type ProjectService struct {
 func NewProjectService(
 	guard authGuard,
 	settingsGetter settingsGetter,
+	userGetter userGetter,
 	githubRepoManager githubRepositoryManager,
 	invitationSender projectInvitationSender,
 	repo projectRepository,
@@ -31,6 +33,7 @@ func NewProjectService(
 	return &ProjectService{
 		authGuard:               guard,
 		settingsGetter:          settingsGetter,
+		userGetter:              userGetter,
 		githubRepositoryManager: githubRepoManager,
 		invitationSender:        invitationSender,
 		repo:                    repo,
@@ -355,10 +358,26 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 		return err
 	}
 
-	// TODO check if the user is already a member of the project and based on that decide if to create project member or just update the invitation
+	u, err := s.userGetter.GetByEmail(ctx, invitation.Email)
+	if err != nil && !apierrors.IsNotFoundError(err) {
+		return err
+	}
 
-	invitation.Accept()
-	return s.repo.UpdateInvitation(ctx, invitation)
+	// User does not exist yet, just accept the invitation
+	// When a user registers, a project membership will be created;
+	// PostgreSQL function handle_new_user() is triggered upon user creation
+	if apierrors.IsNotFoundError(err) {
+		invitation.Accept()
+		return s.repo.UpdateInvitation(ctx, invitation)
+	}
+
+	// User exists
+	member, err := model.NewProjectMember(u, invitation.ProjectID, invitation.ProjectRole)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.CreateMember(ctx, member)
 }
 
 func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token) error {
