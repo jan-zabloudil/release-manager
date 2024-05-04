@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"release-manager/pkg/crypto"
 	"release-manager/pkg/dberrors"
@@ -14,9 +15,10 @@ import (
 )
 
 const (
-	projectDBEntity     = "projects"
-	environmentDBEntity = "environments"
-	invitationDBEntity  = "project_invitations"
+	projectDBEntity       = "projects"
+	environmentDBEntity   = "environments"
+	invitationDBEntity    = "project_invitations"
+	projectMemberDBEntity = "project_members"
 )
 
 type ProjectRepository struct {
@@ -298,6 +300,50 @@ func (r *ProjectRepository) DeleteInvitation(ctx context.Context, id uuid.UUID) 
 	err := r.client.
 		DB.From(invitationDBEntity).
 		Delete().Eq("id", id.String()).
+		ExecuteWithContext(ctx, nil)
+	if err != nil {
+		return util.ToDBError(err)
+	}
+
+	return nil
+}
+
+func (r *ProjectRepository) ReadMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+	var resp []model.ProjectMember
+	err := r.client.
+		DB.From(projectMemberDBEntity).
+		Select(fmt.Sprintf("*,%s(*)", userDBEntity)). // docs https://supabase.com/docs/guides/database/joins-and-nesting
+		Eq("project_id", projectID.String()).
+		ExecuteWithContext(ctx, &resp)
+	if err != nil {
+		return nil, util.ToDBError(err)
+	}
+
+	return model.ToSvcProjectMembers(resp), nil
+}
+
+func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
+	var resp model.ProjectMember
+	err := r.client.
+		DB.From(projectMemberDBEntity).
+		Select(fmt.Sprintf("*,%s(*)", userDBEntity)). // docs https://supabase.com/docs/guides/database/joins-and-nesting
+		Single().
+		Eq("project_id", projectID.String()).
+		Eq("user_id", userID.String()).
+		ExecuteWithContext(ctx, &resp)
+	if err != nil {
+		return svcmodel.ProjectMember{}, util.ToDBError(err)
+	}
+
+	return model.ToSvcProjectMember(resp), nil
+}
+
+func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
+	err := r.client.
+		DB.From(projectMemberDBEntity).
+		Delete().
+		Eq("project_id", projectID.String()).
+		Eq("user_id", userID.String()).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
 		return util.ToDBError(err)

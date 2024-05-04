@@ -1042,3 +1042,118 @@ func TestProjectService_RejectInvitation(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectService_ListMembers(t *testing.T) {
+	testCases := []struct {
+		name      string
+		projectID uuid.UUID
+		mockSetup func(*svc.AuthService, *repo.ProjectRepository)
+		wantErr   bool
+	}{
+		{
+			name:      "Non existing project",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Success",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("ReadMembersForProject", mock.Anything, mock.Anything).Return([]model.ProjectMember{}, nil)
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectRepo := new(repo.ProjectRepository)
+			githubClient := new(github.Client)
+			emailSvc := new(svc.EmailService)
+			settingsSvc := new(svc.SettingsService)
+			authSvc := new(svc.AuthService)
+			service := NewProjectService(authSvc, settingsSvc, githubClient, emailSvc, projectRepo)
+
+			tc.mockSetup(authSvc, projectRepo)
+
+			_, err := service.ListMembers(context.Background(), tc.projectID, uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			projectRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestProjectService_DeleteMember(t *testing.T) {
+	testCases := []struct {
+		name      string
+		projectID uuid.UUID
+		mockSetup func(*svc.AuthService, *repo.ProjectRepository)
+		wantErr   bool
+	}{
+		{
+			name:      "Non existing project",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Non existing member",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Success",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, nil)
+				projectRepo.On("DeleteMember", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectRepo := new(repo.ProjectRepository)
+			githubClient := new(github.Client)
+			emailSvc := new(svc.EmailService)
+			settingsSvc := new(svc.SettingsService)
+			authSvc := new(svc.AuthService)
+			service := NewProjectService(authSvc, settingsSvc, githubClient, emailSvc, projectRepo)
+
+			tc.mockSetup(authSvc, projectRepo)
+
+			err := service.DeleteMember(context.Background(), tc.projectID, uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			projectRepo.AssertExpectations(t)
+		})
+	}
+}

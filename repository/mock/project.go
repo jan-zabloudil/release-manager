@@ -103,3 +103,18 @@ func (m *ProjectRepository) DeleteInvitation(ctx context.Context, id uuid.UUID) 
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
+
+func (m *ProjectRepository) ReadMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+	args := m.Called(ctx, projectID)
+	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
+}
+
+func (m *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
+	args := m.Called(ctx, projectID, userID)
+	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
+}
+
+func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
+	args := m.Called(ctx, projectID, userID)
+	return args.Error(0)
+}

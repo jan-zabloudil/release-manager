@@ -34,6 +34,10 @@ type projectRepository interface {
 	ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (model.ProjectInvitation, error)
 	DeleteInvitation(ctx context.Context, invitationID uuid.UUID) error
 	UpdateInvitation(ctx context.Context, i model.ProjectInvitation) error
+
+	ReadMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
+	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
+	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
 }
 
 type userRepository interface {
