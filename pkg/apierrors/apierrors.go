@@ -19,6 +19,7 @@ var (
 	errCodeProjectInvitationUnprocessable          = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
 	errCodeProjectInvitationAlreadyExists          = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
 	errCodeProjectInvitationNotFound               = "ERR_PROJECT_INVITATION_NOT_FOUND"
+	errCodeProjectMemberAlreadyExists              = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
 	errCodeGithubIntegrationNotEnabled             = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
 	errCodeGithubIntegrationUnauthorized           = "ERR_GITHUB_INTEGRATION_UNAUTHORIZED"
 	errCodeGithubIntegrationForbidden              = "ERR_GITHUB_INTEGRATION_FORBIDDEN"
@@ -141,6 +142,13 @@ func NewProjectInvitationNotFoundError() *APIError {
 	}
 }
 
+func NewProjectMemberAlreadyExistsError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectMemberAlreadyExists,
+		Message: "Project member already exists",
+	}
+}
+
 func NewGithubIntegrationNotEnabledError() *APIError {
 	return &APIError{
 		Code:    errCodeGithubIntegrationNotEnabled,
@@ -223,5 +231,6 @@ func IsForbiddenError(err error) bool {
 
 func IsConflictError(err error) bool {
 	return IsErrorWithCode(err, errCodeEnvironmentDuplicateName) ||
-		IsErrorWithCode(err, errCodeProjectInvitationAlreadyExists)
+		IsErrorWithCode(err, errCodeProjectInvitationAlreadyExists) ||
+		IsErrorWithCode(err, errCodeProjectMemberAlreadyExists)
 }
