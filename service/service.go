@@ -54,6 +54,10 @@ type settingsRepository interface {
 	Read(ctx context.Context) (model.Settings, error)
 }
 
+type releaseRepository interface {
+	Create(ctx context.Context, r model.Release) error
+}
+
 type authGuard interface {
 	AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error
 	AuthorizeUserRole(ctx context.Context, userID uuid.UUID, model model.UserRole) error
@@ -68,6 +72,10 @@ type settingsGetter interface {
 type userGetter interface {
 	Get(ctx context.Context, userID, authUserID uuid.UUID) (model.User, error)
 	GetByEmail(ctx context.Context, email string) (model.User, error)
+}
+
+type projectGetter interface {
+	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
 }
 
 type projectInvitationSender interface {
@@ -88,6 +96,7 @@ type Service struct {
 	User     *UserService
 	Project  *ProjectService
 	Settings *SettingsService
+	Release  *ReleaseService
 }
 
 func NewService(
@@ -95,6 +104,7 @@ func NewService(
 	userRepo userRepository,
 	projectRepo projectRepository,
 	settingsRepo settingsRepository,
+	releaseRepo releaseRepository,
 	githubRepoManager githubRepositoryManager,
 	emailSender emailSender,
 ) *Service {
@@ -103,11 +113,13 @@ func NewService(
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	emailSvc := NewEmailService(emailSender)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, githubRepoManager, emailSvc, projectRepo)
+	releaseSvc := NewReleaseService(projectSvc, releaseRepo)
 
 	return &Service{
 		Auth:     authSvc,
 		User:     userSvc,
 		Project:  projectSvc,
 		Settings: settingsSvc,
+		Release:  releaseSvc,
 	}
 }

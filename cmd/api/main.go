@@ -41,10 +41,11 @@ func main() {
 		repo.User,
 		repo.Project,
 		repo.Settings,
+		repo.Release,
 		githubClient,
 		resendClient,
 	)
-	h := handler.NewHandler(svc.Auth, svc.User, svc.Project, svc.Settings)
+	h := handler.NewHandler(svc.Auth, svc.User, svc.Project, svc.Settings, svc.Release)
 
 	serverConfig := httpx.ServerConfig{
 		Addr: fmt.Sprintf(":%d", cfg.Port),
