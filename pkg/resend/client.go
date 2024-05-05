@@ -11,22 +11,22 @@ import (
 	"go.strv.io/background/task"
 )
 
-type Resend struct {
+type Client struct {
 	taskManager *background.Manager
 	client      *resend.Client
 	reqBuilder  *EmailRequestBuilder
 }
 
-func NewClient(manager *background.Manager, cfg config.ResendConfig) *Resend {
-	return &Resend{
+func NewClient(manager *background.Manager, cfg config.ResendConfig) *Client {
+	return &Client{
 		taskManager: manager,
 		client:      resend.NewClient(cfg.APIKey),
 		reqBuilder:  NewEmailRequestBuilder(cfg),
 	}
 }
 
-func (r *Resend) SendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string) {
-	req := r.reqBuilder.
+func (c *Client) SendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string) {
+	req := c.reqBuilder.
 		SetRecipients(recipients).
 		SetSubject(subject).
 		SetText(text).
@@ -39,7 +39,7 @@ func (r *Resend) SendEmailAsync(ctx context.Context, subject, text, html string,
 			"task": "sending email",
 		},
 		Fn: func(ctx context.Context) error {
-			_, err := r.client.Emails.SendWithContext(ctx, req)
+			_, err := c.client.Emails.SendWithContext(ctx, req)
 			if err != nil {
 				return emailerrors.NewEmailSendingFailedError().Wrap(err)
 			}
@@ -48,5 +48,5 @@ func (r *Resend) SendEmailAsync(ctx context.Context, subject, text, html string,
 		},
 	}
 
-	r.taskManager.RunTask(ctx, t)
+	c.taskManager.RunTask(ctx, t)
 }

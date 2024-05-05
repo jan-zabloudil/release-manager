@@ -8,8 +8,8 @@ import (
 
 	"release-manager/config"
 	githubx "release-manager/github"
+	resendx "release-manager/pkg/resend"
 	"release-manager/repository"
-	resendx "release-manager/resend"
 	"release-manager/service"
 	"release-manager/transport/handler"
 
