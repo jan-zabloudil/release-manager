@@ -484,26 +484,7 @@ paths:
               $ref: '#/components/responses/UnauthorizedErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /members/{member-id}:
-    get:
-      summary: 'Get member by ID'
-      security:
-        - bearerAuth: []
-      tags:
-        - Project members
-      parameters:
-        - $ref: '#/components/parameters/MemberIdParam'
-      responses:
-        '200':
-          description: 'Member fetched'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectMemberResponse'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/members/{user-id}:
     patch:
       summary: "Change member's role"
       security:
@@ -511,7 +492,8 @@ paths:
       tags:
         - Project members
       parameters:
-        - $ref: '#/components/parameters/MemberIdParam'
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/UserIdParam'
       requestBody:
         required: true
         content:

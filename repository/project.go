@@ -371,3 +371,19 @@ func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 
 	return nil
 }
+
+func (r *ProjectRepository) UpdateMember(ctx context.Context, m svcmodel.ProjectMember) error {
+	data := model.ToUpdateProjectMemberInput(m)
+
+	err := r.client.
+		DB.From(projectMemberDBEntity).
+		Update(&data).
+		Eq("project_id", m.ProjectID.String()).
+		Eq("user_id", m.User.ID.String()).
+		ExecuteWithContext(ctx, nil)
+	if err != nil {
+		return util.ToDBError(err)
+	}
+
+	return nil
+}

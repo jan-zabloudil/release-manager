@@ -1210,3 +1210,91 @@ func TestProjectService_DeleteMember(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectService_UpdateMemberRole(t *testing.T) {
+	testCases := []struct {
+		name      string
+		newRole   model.ProjectRole
+		projectID uuid.UUID
+		mockSetup func(*svc.AuthService, *repo.ProjectRepository)
+		wantErr   bool
+	}{
+		{
+			name:      "Non existing project",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Non existing member",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Updating to owner role",
+			newRole:   model.ProjectRoleOwner,
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Updating to invalid role",
+			newRole:   "invalid",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Success",
+			newRole:   model.ProjectRoleEditor,
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, nil)
+				projectRepo.On("UpdateMember", mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectRepo := new(repo.ProjectRepository)
+			githubClient := new(github.Client)
+			emailSvc := new(svc.EmailService)
+			userSvc := new(svc.UserService)
+			settingsSvc := new(svc.SettingsService)
+			authSvc := new(svc.AuthService)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, githubClient, emailSvc, projectRepo)
+
+			tc.mockSetup(authSvc, projectRepo)
+
+			_, err := service.UpdateMemberRole(context.Background(), tc.newRole, tc.projectID, uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			projectRepo.AssertExpectations(t)
+		})
+	}
+}

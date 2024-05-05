@@ -39,6 +39,7 @@ type projectRepository interface {
 	ReadMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
+	UpdateMember(ctx context.Context, m model.ProjectMember) error
 }
 
 type userRepository interface {

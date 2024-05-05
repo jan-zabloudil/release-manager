@@ -18,6 +18,11 @@ type CreateProjectMemberInput struct {
 	UpdatedAt   time.Time `json:"p_updated_at"`
 }
 
+type UpdateProjectMemberInput struct {
+	ProjectRole string    `json:"project_role"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
 type ProjectMember struct {
 	User        User      `json:"users"` // Supabase returns joined table data in json array named after joined table, "users" in this case
 	ProjectID   uuid.UUID `json:"project_id"`
@@ -53,4 +58,11 @@ func ToSvcProjectMembers(members []ProjectMember) []svcmodel.ProjectMember {
 		m = append(m, ToSvcProjectMember(member))
 	}
 	return m
+}
+
+func ToUpdateProjectMemberInput(p svcmodel.ProjectMember) UpdateProjectMemberInput {
+	return UpdateProjectMemberInput{
+		ProjectRole: string(p.ProjectRole),
+		UpdatedAt:   p.UpdatedAt,
+	}
 }
