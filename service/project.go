@@ -400,7 +400,7 @@ func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token
 }
 
 func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectMember, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return nil, err
 	}
 
@@ -416,7 +416,7 @@ func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID 
 }
 
 func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return err
 	}
 

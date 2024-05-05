@@ -33,7 +33,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
 			},
 			mockSetup: func(auth *svc.AuthService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -47,7 +47,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
 			},
 			mockSetup: func(auth *svc.AuthService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: true,
 		},
@@ -60,7 +60,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 				GithubRepositoryRawURL:    "https://github.com/owner",
 			},
 			mockSetup: func(auth *svc.AuthService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: true,
 		},
@@ -155,7 +155,7 @@ func TestProjectService_DeleteProject(t *testing.T) {
 			name:      "Existing project",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("DeleteProject", mock.Anything, mock.Anything).Return(nil)
 			},
@@ -165,7 +165,7 @@ func TestProjectService_DeleteProject(t *testing.T) {
 			name:      "Non-existing project",
 			projectID: uuid.Nil,
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
 			},
 			wantErr: true,
@@ -311,7 +311,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 				ServiceRawURL: "http://example.com",
 			},
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadEnvironmentByNameForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, dberrors.NewNotFoundError())
 				projectRepo.On("CreateEnvironment", mock.Anything, mock.Anything).Return(nil)
@@ -326,7 +326,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 				ServiceRawURL: "http://example.com",
 			},
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadEnvironmentByNameForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 			},
@@ -340,7 +340,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 				ServiceRawURL: "example",
 			},
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: true,
@@ -353,7 +353,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 				ServiceRawURL: "example",
 			},
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: true,
@@ -607,7 +607,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			projectID: uuid.New(),
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 				projectRepo.On("DeleteEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -619,7 +619,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			projectID: uuid.New(),
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
 			},
 			wantErr: true,
@@ -629,7 +629,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			projectID: uuid.New(),
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, errors.New("env not found"))
 			},
@@ -737,7 +737,7 @@ func TestProjectService_Invite(t *testing.T) {
 			name:     "Unknown project",
 			creation: model.CreateProjectInvitationInput{},
 			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
@@ -750,7 +750,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectID:   uuid.New(),
 			},
 			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -763,7 +763,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectID:   uuid.New(),
 			},
 			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: true,
@@ -776,7 +776,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectID:   uuid.New(),
 			},
 			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadInvitationByEmailForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, nil)
 			},
@@ -790,7 +790,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectID:   uuid.New(),
 			},
 			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadInvitationByEmailForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
 				projectRepo.On("CreateInvitation", mock.Anything, mock.Anything).Return(nil)
@@ -836,7 +836,7 @@ func TestProjectService_GetInvitations(t *testing.T) {
 		{
 			name: "Unknown project",
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -844,7 +844,7 @@ func TestProjectService_GetInvitations(t *testing.T) {
 		{
 			name: "Success",
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadAllInvitationsForProject", mock.Anything, mock.Anything).Return(
 					[]model.ProjectInvitation{
@@ -892,7 +892,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 		{
 			name: "Unknown project",
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -900,7 +900,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 		{
 			name: "Unknown invitation",
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadInvitation", mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
 			},
@@ -909,7 +909,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 		{
 			name: "Success",
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadInvitation", mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, nil)
 				projectRepo.On("DeleteInvitation", mock.Anything, mock.Anything).Return(nil)
@@ -1087,7 +1087,7 @@ func TestProjectService_ListMembers(t *testing.T) {
 			name:      "Non existing project",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -1096,7 +1096,7 @@ func TestProjectService_ListMembers(t *testing.T) {
 			name:      "Success",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadMembersForProject", mock.Anything, mock.Anything).Return([]model.ProjectMember{}, nil)
 			},
@@ -1140,7 +1140,7 @@ func TestProjectService_DeleteMember(t *testing.T) {
 			name:      "Non existing project",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -1149,7 +1149,7 @@ func TestProjectService_DeleteMember(t *testing.T) {
 			name:      "Non existing member",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
 			},
@@ -1159,7 +1159,7 @@ func TestProjectService_DeleteMember(t *testing.T) {
 			name:      "Success",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, nil)
 				projectRepo.On("DeleteMember", mock.Anything, mock.Anything, mock.Anything).Return(nil)

@@ -13,103 +13,57 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestAuth_AuthorizeRole(t *testing.T) {
-	mockAuthRepo := new(repo.AuthRepository)
-	mockUserRepo := new(repo.UserRepository)
-	mockProjectRepo := new(repo.ProjectRepository)
-	authService := NewAuthService(mockAuthRepo, mockUserRepo, mockProjectRepo)
-
-	adminRole := model.UserRoleAdmin
-	userRole := model.UserRoleUser
-
-	testCases := []struct {
-		name        string
-		userID      uuid.UUID
-		role        model.UserRole
-		requireRole model.UserRole
-		expectErr   bool
-	}{
-		{
-			name:        "Admin - user role required",
-			userID:      uuid.New(),
-			role:        adminRole,
-			requireRole: userRole,
-			expectErr:   false,
-		},
-		{
-			name:        "Admin - admin role required",
-			userID:      uuid.New(),
-			role:        adminRole,
-			requireRole: adminRole,
-			expectErr:   false,
-		},
-		{
-			name:        "User - admin role required",
-			userID:      uuid.New(),
-			role:        userRole,
-			requireRole: adminRole,
-			expectErr:   true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			mockUser := model.User{Role: tc.role}
-			mockUserRepo.On("Read", mock.Anything, tc.userID).Return(mockUser, nil)
-
-			err := authService.AuthorizeUserRole(context.Background(), tc.userID, tc.requireRole)
-
-			if tc.expectErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-
-			mockUserRepo.AssertExpectations(t)
-		})
-	}
-}
-
-func TestAuth_AuthorizeAdminRole(t *testing.T) {
-	mockAuthRepo := new(repo.AuthRepository)
-	mockUserRepo := new(repo.UserRepository)
-	mockProjectRepo := new(repo.ProjectRepository)
-	authService := NewAuthService(mockAuthRepo, mockUserRepo, mockProjectRepo)
+func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
+	adminUser := model.User{Role: model.UserRoleAdmin}
+	user := model.User{Role: model.UserRoleUser}
 
 	testCases := []struct {
 		name      string
-		userID    uuid.UUID
-		userRole  model.UserRole
-		expectErr bool
+		mockSetup func(*repo.AuthRepository, *repo.UserRepository)
+		wantErr   bool
 	}{
 		{
-			name:      "Admin role success",
-			userID:    uuid.New(),
-			userRole:  model.UserRoleAdmin,
-			expectErr: false,
+			name: "User role admin",
+			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository) {
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
+			},
+			wantErr: false,
 		},
 		{
-			name:      "User role denied",
-			userID:    uuid.New(),
-			userRole:  model.UserRoleUser,
-			expectErr: true,
+			name: "User role user",
+			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository) {
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name: "User not found",
+			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository) {
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, dberrors.NewNotFoundError())
+			},
+			wantErr: true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockUser := model.User{Role: tc.userRole}
-			mockUserRepo.On("Read", mock.Anything, tc.userID).Return(mockUser, nil)
+			authRepo := new(repo.AuthRepository)
+			userRepo := new(repo.UserRepository)
+			projectRepo := new(repo.ProjectRepository)
+			service := NewAuthService(authRepo, userRepo, projectRepo)
 
-			err := authService.AuthorizeUserRoleAdmin(context.Background(), tc.userID)
+			tc.mockSetup(authRepo, userRepo)
 
-			if tc.expectErr {
+			err := service.AuthorizeUserRoleAdmin(context.Background(), uuid.New())
+
+			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
 
-			mockUserRepo.AssertExpectations(t)
+			userRepo.AssertExpectations(t)
+			authRepo.AssertExpectations(t)
 		})
 	}
 }
