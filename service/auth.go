@@ -12,14 +12,16 @@ import (
 )
 
 type AuthService struct {
-	authRepo authRepository
-	userRepo userRepository
+	authRepo    authRepository
+	userRepo    userRepository
+	projectRepo projectRepository
 }
 
-func NewAuthService(authRepo authRepository, userRepo userRepository) *AuthService {
+func NewAuthService(authRepo authRepository, userRepo userRepository, projectRepo projectRepository) *AuthService {
 	return &AuthService{
-		authRepo: authRepo,
-		userRepo: userRepo,
+		authRepo:    authRepo,
+		userRepo:    userRepo,
+		projectRepo: projectRepo,
 	}
 }
 
@@ -37,11 +39,11 @@ func (s *AuthService) Authenticate(ctx context.Context, token string) (uuid.UUID
 	return id, nil
 }
 
-func (s *AuthService) AuthorizeAdminRole(ctx context.Context, userID uuid.UUID) error {
-	return s.AuthorizeRole(ctx, userID, model.UserRoleAdmin)
+func (s *AuthService) AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error {
+	return s.AuthorizeUserRole(ctx, userID, model.UserRoleAdmin)
 }
 
-func (s *AuthService) AuthorizeRole(ctx context.Context, userID uuid.UUID, role model.UserRole) error {
+func (s *AuthService) AuthorizeUserRole(ctx context.Context, userID uuid.UUID, role model.UserRole) error {
 	user, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {
@@ -54,6 +56,47 @@ func (s *AuthService) AuthorizeRole(ctx context.Context, userID uuid.UUID, role 
 
 	if !user.HasAtLeastRole(role) {
 		return apierrors.NewForbiddenInsufficientUserRoleError()
+	}
+
+	return nil
+}
+
+func (s *AuthService) AuthorizeProjectRoleEditor(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) error {
+	return s.AuthorizeProjectRole(ctx, projectID, userID, model.ProjectRoleEditor)
+}
+
+func (s *AuthService) AuthorizeProjectRoleViewer(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) error {
+	return s.AuthorizeProjectRole(ctx, projectID, userID, model.ProjectRoleViewer)
+}
+
+func (s *AuthService) AuthorizeProjectRole(ctx context.Context, projectID uuid.UUID, userID uuid.UUID, role model.ProjectRole) error {
+	user, err := s.userRepo.Read(ctx, userID)
+	if err != nil {
+		switch {
+		case dberrors.IsNotFoundError(err):
+			return apierrors.NewUnauthorizedError().Wrap(err)
+		default:
+			return err
+		}
+	}
+
+	// Admin user can access all projects
+	if user.IsAdmin() {
+		return nil
+	}
+
+	member, err := s.projectRepo.ReadMember(ctx, projectID, userID)
+	if err != nil {
+		switch {
+		case dberrors.IsNotFoundError(err):
+			return apierrors.NewForbiddenInsufficientProjectRoleError().Wrap(err)
+		default:
+			return err
+		}
+	}
+
+	if !member.HasAtLeastProjectRole(role) {
+		return apierrors.NewForbiddenInsufficientProjectRoleError()
 	}
 
 	return nil

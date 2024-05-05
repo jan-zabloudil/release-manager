@@ -41,7 +41,7 @@ func NewProjectService(
 }
 
 func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Project{}, err
 	}
 
@@ -91,7 +91,7 @@ func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID)
 }
 
 func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return err
 	}
 
@@ -123,7 +123,7 @@ func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjec
 }
 
 func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Environment{}, err
 	}
 
@@ -220,7 +220,7 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUs
 }
 
 func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return err
 	}
 
@@ -278,7 +278,7 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 }
 
 func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvitationInput, authUserID uuid.UUID) (model.ProjectInvitation, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.ProjectInvitation{}, err
 	}
 
@@ -321,7 +321,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 }
 
 func (s *ProjectService) ListInvitations(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectInvitation, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return nil, err
 	}
 
@@ -337,7 +337,7 @@ func (s *ProjectService) ListInvitations(ctx context.Context, projectID, authUse
 }
 
 func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return err
 	}
 

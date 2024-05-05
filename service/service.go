@@ -54,8 +54,10 @@ type settingsRepository interface {
 }
 
 type authGuard interface {
-	AuthorizeAdminRole(ctx context.Context, userID uuid.UUID) error
-	AuthorizeRole(ctx context.Context, userID uuid.UUID, role model.UserRole) error
+	AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error
+	AuthorizeUserRole(ctx context.Context, userID uuid.UUID, model model.UserRole) error
+	AuthorizeProjectRoleEditor(ctx context.Context, projectID, userID uuid.UUID) error
+	AuthorizeProjectRoleViewer(ctx context.Context, projectID, userID uuid.UUID) error
 }
 
 type settingsGetter interface {
@@ -95,7 +97,7 @@ func NewService(
 	githubRepoManager githubRepositoryManager,
 	emailSender emailSender,
 ) *Service {
-	authSvc := NewAuthService(authRepo, userRepo)
+	authSvc := NewAuthService(authRepo, userRepo, projectRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	emailSvc := NewEmailService(emailSender)

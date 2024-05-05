@@ -22,7 +22,7 @@ func NewSettingsService(guard authGuard, r settingsRepository) *SettingsService 
 }
 
 func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.Settings, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Settings{}, err
 	}
 
@@ -30,7 +30,7 @@ func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.
 }
 
 func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInput, authUserID uuid.UUID) (model.Settings, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Settings{}, err
 	}
 

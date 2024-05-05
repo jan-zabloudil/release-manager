@@ -52,3 +52,25 @@ func TestUserRole_IsRoleAtLeast(t *testing.T) {
 		})
 	}
 }
+
+func TestUser_IsAdmin(t *testing.T) {
+	testCases := []struct {
+		name     string
+		userRole UserRole
+		expected bool
+	}{
+		{"Admin user", UserRoleAdmin, true},
+		{"Non-admin user", UserRoleUser, false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			user := User{
+				ID:   uuid.New(),
+				Role: tc.userRole,
+			}
+
+			assert.Equal(t, tc.expected, user.IsAdmin())
+		})
+	}
+}

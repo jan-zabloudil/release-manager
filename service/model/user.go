@@ -35,6 +35,10 @@ func (s User) HasAtLeastRole(role UserRole) bool {
 	return s.Role.IsRoleAtLeast(role)
 }
 
+func (s User) IsAdmin() bool {
+	return s.Role == UserRoleAdmin
+}
+
 func (r UserRole) IsRoleAtLeast(role UserRole) bool {
 	return userRolePriority[r] <= userRolePriority[role]
 }
