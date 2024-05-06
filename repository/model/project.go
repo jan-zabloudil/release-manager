@@ -41,12 +41,12 @@ type UpdateProjectInput struct {
 }
 
 type ReleaseNotificationConfig struct {
-	Message         string `json:"message"`
-	ShowProjectName bool   `json:"show_project_name"`
-	ShowReleaseName bool   `json:"show_release_name"`
-	ShowChangelog   bool   `json:"show_changelog"`
-	ShowDeployments bool   `json:"show_deployments"`
-	ShowSourceCode  bool   `json:"show_source_code"`
+	Message          string `json:"message"`
+	ShowProjectName  bool   `json:"show_project_name"`
+	ShowReleaseTitle bool   `json:"show_release_title"`
+	ShowReleaseNotes bool   `json:"show_release_notes"`
+	ShowDeployments  bool   `json:"show_deployments"`
+	ShowSourceCode   bool   `json:"show_source_code"`
 }
 
 type GithubRepository struct {

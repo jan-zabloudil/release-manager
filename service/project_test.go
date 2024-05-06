@@ -215,12 +215,12 @@ func TestProjectService_UpdateProject(t *testing.T) {
 				Name:           &validProjectName,
 				SlackChannelID: &slackChannelID,
 				ReleaseNotificationConfigUpdate: model.UpdateReleaseNotificationConfigInput{
-					Message:         new(string),
-					ShowProjectName: new(bool),
-					ShowReleaseName: new(bool),
-					ShowChangelog:   new(bool),
-					ShowDeployments: new(bool),
-					ShowSourceCode:  new(bool),
+					Message:          new(string),
+					ShowProjectName:  new(bool),
+					ShowReleaseTitle: new(bool),
+					ShowReleaseNotes: new(bool),
+					ShowDeployments:  new(bool),
+					ShowSourceCode:   new(bool),
 				},
 			},
 			mockSetup: func(auth *svc.AuthService, projectRepo *repo.ProjectRepository) {
