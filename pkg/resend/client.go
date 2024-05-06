@@ -2,9 +2,9 @@ package resend
 
 import (
 	"context"
+	"fmt"
 
 	"release-manager/config"
-	"release-manager/pkg/emailerrors"
 
 	"github.com/resend/resend-go/v2"
 	"go.strv.io/background"
@@ -41,7 +41,7 @@ func (c *Client) SendEmailAsync(ctx context.Context, subject, text, html string,
 		Fn: func(ctx context.Context) error {
 			_, err := c.client.Emails.SendWithContext(ctx, req)
 			if err != nil {
-				return emailerrors.NewEmailSendingFailedError().Wrap(err)
+				return fmt.Errorf("failed to send email via Resend: %w", err)
 			}
 
 			return nil
