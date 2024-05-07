@@ -370,6 +370,48 @@ func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token
 	return s.repo.DeleteInvitation(ctx, invitation.ID)
 }
 
+func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectMember, error) {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+		return nil, err
+	}
+
+	exists, err := s.projectExists(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, apierrors.NewProjectNotFoundError()
+	}
+
+	return s.repo.ReadMembersForProject(ctx, projectID)
+}
+
+func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+		return err
+	}
+
+	exists, err := s.projectExists(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return apierrors.NewProjectNotFoundError()
+	}
+
+	_, err = s.repo.ReadMember(ctx, projectID, userID)
+	if err != nil {
+		switch {
+		case dberrors.IsNotFoundError(err):
+			return apierrors.NewProjectMemberNotFoundError().Wrap(err)
+		default:
+			return err
+		}
+	}
+
+	return s.repo.DeleteMember(ctx, projectID, userID)
+}
+
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
 	_, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {

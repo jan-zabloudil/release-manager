@@ -51,6 +51,15 @@ func (h *Handler) setupRoutes() {
 					r.Delete("/", middleware.RequireAuthUser(h.cancelInvitation))
 				})
 			})
+
+			r.Route("/members", func(r chi.Router) {
+				r.Get("/", middleware.RequireAuthUser(h.listMembers))
+				r.Route("/{user_id}", func(r chi.Router) {
+					r.Use(middleware.HandleResourceID("user_id", util.ContextSetUserID))
+					r.Delete("/", middleware.RequireAuthUser(h.deleteMember))
+				})
+			})
+
 			r.Get("/repository/tags", middleware.RequireAuthUser(h.listGithubRepositoryTags))
 		})
 	})

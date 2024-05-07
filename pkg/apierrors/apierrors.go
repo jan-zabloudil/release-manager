@@ -23,6 +23,7 @@ var (
 	errCodeGithubIntegrationForbidden              = "ERR_GITHUB_INTEGRATION_FORBIDDEN"
 	errCodeGithubRepositoryNotConfiguredForProject = "ERR_GITHUB_REPOSITORY_NOT_CONFIGURED_FOR_PROJECT"
 	errCodeGithubRepositoryNotFound                = "ERR_GITHUB_REPOSITORY_NOT_FOUND"
+	errCodeProjectMemberNotFound                   = "ERR_PROJECT_MEMBER_NOT_FOUND"
 )
 
 type APIError struct {
@@ -167,6 +168,13 @@ func NewGithubRepositoryNotFoundError() *APIError {
 	}
 }
 
+func NewProjectMemberNotFoundError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectMemberNotFound,
+		Message: "Project member not found",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -183,7 +191,8 @@ func IsNotFoundError(err error) bool {
 		IsErrorWithCode(err, errCodeProjectInvitationNotFound) ||
 		IsErrorWithCode(err, errCodeGithubRepositoryNotFound) ||
 		IsErrorWithCode(err, errCodeGithubRepositoryNotConfiguredForProject) ||
-		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled)
+		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled) ||
+		IsErrorWithCode(err, errCodeProjectMemberNotFound)
 }
 
 func IsUnprocessableModelError(err error) bool {

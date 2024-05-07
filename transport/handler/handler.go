@@ -30,6 +30,9 @@ type projectService interface {
 	CancelInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error
 	AcceptInvitation(ctx context.Context, tkn cryptox.Token) error
 	RejectInvitation(ctx context.Context, tkn cryptox.Token) error
+
+	ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectMember, error)
+	DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error
 }
 
 type userService interface {
