@@ -297,7 +297,14 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 		return model.ProjectInvitation{}, apierrors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	// TODO check if the user is already a member of the project
+	memberExists, err := s.memberExists(ctx, i.ProjectID, i.Email)
+	if err != nil {
+		return model.ProjectInvitation{}, err
+	}
+
+	if memberExists {
+		return model.ProjectInvitation{}, apierrors.NewProjectMemberAlreadyExistsError()
+	}
 
 	invitationExists, err := s.invitationExists(ctx, i.Email, c.ProjectID)
 	if err != nil {
@@ -489,4 +496,27 @@ func (s *ProjectService) isEnvironmentNameUnique(ctx context.Context, projectID 
 	}
 
 	return false, nil
+}
+
+func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {
+	// TODO: Check in one query once Postgres is accessed directly.
+	u, err := s.userGetter.GetByEmail(ctx, email)
+	if err != nil {
+		if apierrors.IsNotFoundError(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	_, err = s.repo.ReadMember(ctx, projectID, u.ID)
+	if err != nil {
+		if dberrors.IsNotFoundError(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }

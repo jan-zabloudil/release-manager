@@ -730,13 +730,13 @@ func TestProjectService_Invite(t *testing.T) {
 	testCases := []struct {
 		name      string
 		creation  model.CreateProjectInvitationInput
-		mockSetup func(*svc.AuthService, *svc.EmailService, *repo.ProjectRepository)
+		mockSetup func(*svc.AuthService, *svc.UserService, *svc.EmailService, *repo.ProjectRepository)
 		wantErr   bool
 	}{
 		{
 			name:     "Unknown project",
 			creation: model.CreateProjectInvitationInput{},
-			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
@@ -749,7 +749,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "editor",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
@@ -762,9 +762,24 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "new",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name: "Member already exists",
+			creation: model.CreateProjectInvitationInput{
+				Email:       "test@test.tt",
+				ProjectRole: "viewer",
+				ProjectID:   uuid.New(),
+			},
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, nil)
 			},
 			wantErr: true,
 		},
@@ -775,9 +790,10 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "viewer",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, apierrors.NewUserNotFoundError()) // case when user do not exist at all
 				projectRepo.On("ReadInvitationByEmailForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, nil)
 			},
 			wantErr: true,
@@ -789,9 +805,11 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "viewer",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, nil) // case when even user does not exist
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
 				projectRepo.On("ReadInvitationByEmailForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
 				projectRepo.On("CreateInvitation", mock.Anything, mock.Anything).Return(nil)
 				email.On("SendProjectInvitation", mock.Anything, mock.Anything)
@@ -810,7 +828,7 @@ func TestProjectService_Invite(t *testing.T) {
 			authSvc := new(svc.AuthService)
 			service := NewProjectService(authSvc, settingsSvc, userSvc, githubClient, emailSvc, projectRepo)
 
-			tc.mockSetup(authSvc, emailSvc, projectRepo)
+			tc.mockSetup(authSvc, userSvc, emailSvc, projectRepo)
 
 			_, err := service.Invite(context.Background(), tc.creation, uuid.New())
 
