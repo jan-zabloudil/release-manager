@@ -19,6 +19,8 @@ const (
 	environmentDBEntity   = "environments"
 	invitationDBEntity    = "project_invitations"
 	projectMemberDBEntity = "project_members"
+
+	createMemberPostgresFunction = "create_project_member_and_delete_invitation"
 )
 
 type ProjectRepository struct {
@@ -300,6 +302,21 @@ func (r *ProjectRepository) DeleteInvitation(ctx context.Context, id uuid.UUID) 
 	err := r.client.
 		DB.From(invitationDBEntity).
 		Delete().Eq("id", id.String()).
+		ExecuteWithContext(ctx, nil)
+	if err != nil {
+		return util.ToDBError(err)
+	}
+
+	return nil
+}
+
+// CreateMember creates a project member and deletes the invitation
+func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.ProjectMember) error {
+	data := model.ToCreateProjectMemberInput(m)
+
+	// Calls the stored function in order to create a project member and delete the invitation in a single transaction
+	err := r.client.
+		DB.Rpc(createMemberPostgresFunction, data).
 		ExecuteWithContext(ctx, nil)
 	if err != nil {
 		return util.ToDBError(err)
