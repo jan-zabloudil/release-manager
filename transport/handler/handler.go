@@ -33,6 +33,7 @@ type projectService interface {
 
 	ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error
+	UpdateMemberRole(ctx context.Context, newRole svcmodel.ProjectRole, projectID, userID, authUserID uuid.UUID) (svcmodel.ProjectMember, error)
 }
 
 type userService interface {

@@ -30,7 +30,8 @@ var (
 		ProjectRoleViewer: projectRoleViewerPriority,
 	}
 
-	errProjectRoleInvalid = errors.New("invalid project role")
+	errProjectRoleInvalid            = errors.New("invalid project role")
+	errProjectMemberCannotGrantOwner = errors.New("cannot grant owner role")
 )
 
 type ProjectRole string
@@ -94,6 +95,11 @@ func (m *ProjectMember) Validate() error {
 }
 
 func (m *ProjectMember) UpdateProjectRole(role ProjectRole) error {
+	// Cannot grant owner role, it can only be granted when creating a new project
+	if role == ProjectRoleOwner {
+		return errProjectMemberCannotGrantOwner
+	}
+
 	m.ProjectRole = role
 	m.UpdatedAt = time.Now()
 

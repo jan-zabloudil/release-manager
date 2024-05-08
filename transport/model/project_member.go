@@ -17,6 +17,10 @@ type ProjectMember struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type UpdateProjectMemberRoleInput struct {
+	ProjectRole string `json:"project_role"`
+}
+
 func ToProjectMember(p svcmodel.ProjectMember) ProjectMember {
 	return ProjectMember{
 		UserID:      p.User.ID,

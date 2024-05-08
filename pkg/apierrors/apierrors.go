@@ -26,6 +26,7 @@ var (
 	errCodeGithubRepositoryNotConfiguredForProject = "ERR_GITHUB_REPOSITORY_NOT_CONFIGURED_FOR_PROJECT"
 	errCodeGithubRepositoryNotFound                = "ERR_GITHUB_REPOSITORY_NOT_FOUND"
 	errCodeProjectMemberNotFound                   = "ERR_PROJECT_MEMBER_NOT_FOUND"
+	errCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
 )
 
 type APIError struct {
@@ -191,6 +192,13 @@ func NewProjectMemberNotFoundError() *APIError {
 	}
 }
 
+func NewProjectMemberUnprocessableError() *APIError {
+	return &APIError{
+		Code:    errCodeProjectMemberUnprocessable,
+		Message: "Project member unprocessable",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -215,7 +223,8 @@ func IsUnprocessableModelError(err error) bool {
 	return IsErrorWithCode(err, errCodeProjectUnprocessable) ||
 		IsErrorWithCode(err, errCodeEnvironmentUnprocessable) ||
 		IsErrorWithCode(err, errCodeSettingsUnprocessable) ||
-		IsErrorWithCode(err, errCodeProjectInvitationUnprocessable)
+		IsErrorWithCode(err, errCodeProjectInvitationUnprocessable) ||
+		IsErrorWithCode(err, errCodeProjectMemberUnprocessable)
 }
 
 func IsUnauthorizedError(err error) bool {
