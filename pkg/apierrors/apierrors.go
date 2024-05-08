@@ -27,6 +27,7 @@ var (
 	errCodeGithubRepositoryNotFound                = "ERR_GITHUB_REPOSITORY_NOT_FOUND"
 	errCodeProjectMemberNotFound                   = "ERR_PROJECT_MEMBER_NOT_FOUND"
 	errCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
+	errCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
 )
 
 type APIError struct {
@@ -199,6 +200,13 @@ func NewProjectMemberUnprocessableError() *APIError {
 	}
 }
 
+func NewReleaseUnprocessableError() *APIError {
+	return &APIError{
+		Code:    errCodeReleaseUnprocessable,
+		Message: "Release unprocessable",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -224,7 +232,8 @@ func IsUnprocessableModelError(err error) bool {
 		IsErrorWithCode(err, errCodeEnvironmentUnprocessable) ||
 		IsErrorWithCode(err, errCodeSettingsUnprocessable) ||
 		IsErrorWithCode(err, errCodeProjectInvitationUnprocessable) ||
-		IsErrorWithCode(err, errCodeProjectMemberUnprocessable)
+		IsErrorWithCode(err, errCodeProjectMemberUnprocessable) ||
+		IsErrorWithCode(err, errCodeReleaseUnprocessable)
 }
 
 func IsUnauthorizedError(err error) bool {

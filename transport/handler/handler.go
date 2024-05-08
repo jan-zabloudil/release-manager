@@ -51,26 +51,33 @@ type settingsService interface {
 	Get(ctx context.Context, authUserID uuid.UUID) (svcmodel.Settings, error)
 }
 
+type releaseService interface {
+	Create(ctx context.Context, input svcmodel.CreateReleaseInput, projectID, authorUserID uuid.UUID) (svcmodel.Release, error)
+}
+
 type Handler struct {
 	Mux         *chi.Mux
 	AuthSvc     authService
 	UserSvc     userService
 	ProjectSvc  projectService
 	SettingsSvc settingsService
+	ReleaseSvc  releaseService
 }
 
 func NewHandler(
-	as authService,
-	us userService,
-	ps projectService,
-	ss settingsService,
+	authSvc authService,
+	userSvc userService,
+	projectSvc projectService,
+	settingsSvc settingsService,
+	releaseSvc releaseService,
 ) *Handler {
 	h := &Handler{
 		Mux:         chi.NewRouter(),
-		AuthSvc:     as,
-		UserSvc:     us,
-		ProjectSvc:  ps,
-		SettingsSvc: ss,
+		AuthSvc:     authSvc,
+		UserSvc:     userSvc,
+		ProjectSvc:  projectSvc,
+		SettingsSvc: settingsSvc,
+		ReleaseSvc:  releaseSvc,
 	}
 
 	h.setupRoutes()

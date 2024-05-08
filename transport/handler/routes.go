@@ -60,6 +60,9 @@ func (h *Handler) setupRoutes() {
 				})
 			})
 			r.Get("/repository/tags", middleware.RequireAuthUser(h.listGithubRepositoryTags))
+			r.Route("/releases", func(r chi.Router) {
+				r.Post("/", middleware.RequireAuthUser(h.createRelease))
+			})
 		})
 	})
 
