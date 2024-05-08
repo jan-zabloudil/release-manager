@@ -23,7 +23,7 @@ func NewUserService(guard authGuard, repo userRepository) *UserService {
 }
 
 func (s *UserService) Get(ctx context.Context, id uuid.UUID, authUserID uuid.UUID) (model.User, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.User{}, err
 	}
 
@@ -55,7 +55,7 @@ func (s *UserService) GetByEmail(ctx context.Context, email string) (model.User,
 }
 
 func (s *UserService) Delete(ctx context.Context, id uuid.UUID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (s *UserService) Delete(ctx context.Context, id uuid.UUID, authUserID uuid.
 }
 
 func (s *UserService) ListAll(ctx context.Context, authUserID uuid.UUID) ([]model.User, error) {
-	if err := s.authGuard.AuthorizeAdminRole(ctx, authUserID); err != nil {
+	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return nil, err
 	}
 

@@ -44,7 +44,7 @@ func TestSettingsService_Update(t *testing.T) {
 				},
 			},
 			mockSetup: func(authSvc *svc.AuthService, settingsRepo *repo.SettingsRepository) {
-				authSvc.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
 				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
@@ -61,7 +61,7 @@ func TestSettingsService_Update(t *testing.T) {
 				},
 			},
 			mockSetup: func(authSvc *svc.AuthService, settingsRepo *repo.SettingsRepository) {
-				authSvc.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
 			},
 			expectErr: true,
@@ -73,7 +73,7 @@ func TestSettingsService_Update(t *testing.T) {
 				OrganizationName: &invalidName,
 			},
 			mockSetup: func(authSvc *svc.AuthService, settingsRepo *repo.SettingsRepository) {
-				authSvc.On("AuthorizeAdminRole", mock.Anything, mock.Anything).Return(nil)
+				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
 			},
 			expectErr: true,

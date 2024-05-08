@@ -8,6 +8,7 @@ import (
 var (
 	errCodeUnauthorizedInvalidToken                = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
 	errCodeForbiddenInsufficientUserRole           = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
+	errCodeForbiddenInsufficientProjectRole        = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
 	errCodeUserNotFound                            = "ERR_USER_NOT_FOUND"
 	errCodeProjectNotFound                         = "ERR_PROJECT_NOT_FOUND"
 	errCodeEnvironmentNotFound                     = "ERR_ENVIRONMENT_NOT_FOUND"
@@ -112,6 +113,13 @@ func NewForbiddenInsufficientUserRoleError() *APIError {
 	}
 }
 
+func NewForbiddenInsufficientProjectRoleError() *APIError {
+	return &APIError{
+		Code:    errCodeForbiddenInsufficientUserRole,
+		Message: "Forbidden access, insufficient project role.",
+	}
+}
+
 func NewProjectInvitationUnprocessableError() *APIError {
 	return &APIError{
 		Code:    errCodeProjectInvitationUnprocessable,
@@ -209,7 +217,8 @@ func IsUnauthorizedError(err error) bool {
 
 func IsForbiddenError(err error) bool {
 	return IsErrorWithCode(err, errCodeForbiddenInsufficientUserRole) ||
-		IsErrorWithCode(err, errCodeGithubIntegrationForbidden)
+		IsErrorWithCode(err, errCodeGithubIntegrationForbidden) ||
+		IsErrorWithCode(err, errCodeForbiddenInsufficientProjectRole)
 }
 
 func IsConflictError(err error) bool {
