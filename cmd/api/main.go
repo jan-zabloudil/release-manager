@@ -13,6 +13,7 @@ import (
 	"release-manager/service"
 	"release-manager/transport/handler"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nedpals/supabase-go"
 	"go.strv.io/background"
 	"go.strv.io/background/observer"
@@ -21,6 +22,13 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		slog.Error("running the app", "error", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	ctx := context.Background()
 	cfg := config.Load(ctx)
 
@@ -31,11 +39,21 @@ func main() {
 		Observer: observer.Slog{},
 	})
 
-	supaClient := supabase.CreateClient(cfg.Supabase.APIURL, cfg.Supabase.SecretKey)
+	supaClient := supabase.CreateClient(cfg.Supabase.APIURL, cfg.Supabase.APISecretKey)
 	githubClient := githubx.NewClient()
 	resendClient := resendx.NewClient(taskManager, cfg.Resend)
 
-	repo := repository.NewRepository(supaClient)
+	dbpool, err := pgxpool.New(ctx, cfg.Supabase.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("creating db pool: %w", err)
+	}
+	defer dbpool.Close()
+
+	if err := dbpool.Ping(ctx); err != nil {
+		return fmt.Errorf("pinging db: %w", err)
+	}
+
+	repo := repository.NewRepository(supaClient, dbpool)
 	svc := service.NewService(
 		repo.Auth,
 		repo.User,
@@ -71,7 +89,8 @@ func main() {
 	server := httpx.NewServer(&serverConfig)
 	slog.Info("starting server", "addr", serverConfig.Addr)
 	if err := server.Run(ctx); err != nil {
-		slog.Error("running server", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("running server: %w", err)
 	}
+
+	return nil
 }

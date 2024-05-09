@@ -1,6 +1,9 @@
 package repository
 
-import "github.com/nedpals/supabase-go"
+import (
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nedpals/supabase-go"
+)
 
 type Repository struct {
 	Auth     *AuthRepository
@@ -10,12 +13,12 @@ type Repository struct {
 	Release  *ReleaseRepository
 }
 
-func NewRepository(client *supabase.Client) *Repository {
+func NewRepository(client *supabase.Client, pool *pgxpool.Pool) *Repository {
 	return &Repository{
 		Auth:     NewAuthRepository(client),
 		User:     NewUserRepository(client),
 		Project:  NewProjectRepository(client),
 		Settings: NewSettingsRepository(client),
-		Release:  NewReleaseRepository(client),
+		Release:  NewReleaseRepository(pool),
 	}
 }
