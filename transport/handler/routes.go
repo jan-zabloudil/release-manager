@@ -16,7 +16,7 @@ func (h *Handler) setupRoutes() {
 	h.Mux.Use(httpx.RequestIDMiddleware(util.RequestID))
 	h.Mux.Use(httpx.LoggingMiddleware(slog.Default().WithGroup("logger")))
 	h.Mux.Use(httpx.RecoverMiddleware(slog.Default().WithGroup("recover")))
-	h.Mux.Use(middleware.Auth(h.AuthSvc))
+	h.Mux.Use(middleware.Auth(h.AuthClient))
 
 	h.Mux.Get("/admin/users", middleware.RequireAuthUser(h.listUsers))
 	h.Mux.Route("/admin/users/{id}", func(r chi.Router) {

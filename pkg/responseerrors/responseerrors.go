@@ -9,7 +9,9 @@ import (
 
 var (
 	// #nosec G101 This is a constant error code, no security risk.
-	errCodeNotBearerTokenFormat       = "ERR_TOKEN_NOT_BEARER_FORMAT"
+	errCodeNotBearerTokenFormat = "ERR_TOKEN_NOT_BEARER_FORMAT"
+	// #nosec G101 This is a constant error code, no security risk.
+	errCodeExpiredOrInvalidToken      = "ERR_EXPIRED_OR_INVALID_TOKEN"
 	errCodeMissingBearerToken         = "ERR_MISSING_BEARER_TOKEN"
 	errCodeDefaultNotFound            = "ERR_NOT_FOUND"
 	errCodeDefaultForbidden           = "ERR_FORBIDDEN"
@@ -71,6 +73,13 @@ func NewMissingBearerTokenError() *ResponseError {
 	return &ResponseError{
 		StatusCode: http.StatusUnauthorized,
 		Code:       errCodeMissingBearerToken,
+	}
+}
+
+func NewExpiredOrInvalidTokenError() *ResponseError {
+	return &ResponseError{
+		StatusCode: http.StatusUnauthorized,
+		Code:       errCodeExpiredOrInvalidToken,
 	}
 }
 

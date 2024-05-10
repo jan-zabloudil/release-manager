@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	errCodeUnauthorizedInvalidToken                = "ERR_UNAUTHORIZED_ACCESS_INVALID_TOKEN"
+	errCodeUnauthorizedUnknownUser                 = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
 	errCodeForbiddenInsufficientUserRole           = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
 	errCodeForbiddenInsufficientProjectRole        = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
 	errCodeUserNotFound                            = "ERR_USER_NOT_FOUND"
@@ -104,10 +104,10 @@ func NewSettingsUnprocessableError() *APIError {
 	}
 }
 
-func NewUnauthorizedError() *APIError {
+func NewUnauthorizedUnknownUserError() *APIError {
 	return &APIError{
-		Code:    errCodeUnauthorizedInvalidToken,
-		Message: "Unauthorized access, invalid or expired token provided.",
+		Code:    errCodeUnauthorizedUnknownUser,
+		Message: "Unauthorized access, unknown user.",
 	}
 }
 
@@ -256,7 +256,7 @@ func IsUnprocessableModelError(err error) bool {
 }
 
 func IsUnauthorizedError(err error) bool {
-	return IsErrorWithCode(err, errCodeUnauthorizedInvalidToken) ||
+	return IsErrorWithCode(err, errCodeUnauthorizedUnknownUser) ||
 		IsErrorWithCode(err, errCodeGithubClientUnauthorized)
 }
 

@@ -42,10 +42,6 @@ type userService interface {
 	Delete(ctx context.Context, id, authUserID uuid.UUID) error
 }
 
-type authService interface {
-	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
-}
-
 type settingsService interface {
 	Update(ctx context.Context, u svcmodel.UpdateSettingsInput, authUserID uuid.UUID) (svcmodel.Settings, error)
 	Get(ctx context.Context, authUserID uuid.UUID) (svcmodel.Settings, error)
@@ -55,9 +51,13 @@ type releaseService interface {
 	Create(ctx context.Context, input svcmodel.CreateReleaseInput, projectID, authorUserID uuid.UUID) (svcmodel.Release, error)
 }
 
+type authClient interface {
+	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
+}
+
 type Handler struct {
 	Mux         *chi.Mux
-	AuthSvc     authService
+	AuthClient  authClient
 	UserSvc     userService
 	ProjectSvc  projectService
 	SettingsSvc settingsService
@@ -65,7 +65,7 @@ type Handler struct {
 }
 
 func NewHandler(
-	authSvc authService,
+	authClient authClient,
 	userSvc userService,
 	projectSvc projectService,
 	settingsSvc settingsService,
@@ -73,7 +73,7 @@ func NewHandler(
 ) *Handler {
 	h := &Handler{
 		Mux:         chi.NewRouter(),
-		AuthSvc:     authSvc,
+		AuthClient:  authClient,
 		UserSvc:     userSvc,
 		ProjectSvc:  projectSvc,
 		SettingsSvc: settingsSvc,

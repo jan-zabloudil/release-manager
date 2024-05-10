@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
+	"release-manager/auth"
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/responseerrors"
 	"release-manager/transport/util"
@@ -13,11 +15,11 @@ import (
 	httpx "go.strv.io/net/http"
 )
 
-type authService interface {
+type authClient interface {
 	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
 }
 
-func Auth(authSvc authService) func(next http.Handler) http.Handler {
+func Auth(authClient authClient) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authorizationHeader := r.Header.Get(httpx.Header.Authorization)
@@ -36,9 +38,14 @@ func Auth(authSvc authService) func(next http.Handler) http.Handler {
 
 			tokenString := headerParts[1]
 
-			id, err := authSvc.Authenticate(r.Context(), tokenString)
+			id, err := authClient.Authenticate(r.Context(), tokenString)
 			if err != nil {
-				util.WriteResponseError(w, responseerrors.NewUnauthorizedError().Wrap(err))
+				if errors.Is(err, auth.ErrInvalidOrExpiredToken) {
+					util.WriteResponseError(w, responseerrors.NewExpiredOrInvalidTokenError().Wrap(err))
+					return
+				}
+
+				util.WriteResponseError(w, responseerrors.NewServerError().Wrap(err))
 				return
 			}
 
