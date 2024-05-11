@@ -81,7 +81,7 @@ func TestUserService_GetAll(t *testing.T) {
 				mockAuthSvc := new(svcmock.AuthorizeService)
 				mockUserRepo := new(repomock.UserRepository)
 				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
-				mockUserRepo.On("ReadAll", mock.Anything).Return(users, nil)
+				mockUserRepo.On("ListAll", mock.Anything).Return(users, nil)
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: false,

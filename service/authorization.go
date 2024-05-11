@@ -30,7 +30,7 @@ func (s *AuthorizationService) AuthorizeUserRole(ctx context.Context, userID uui
 	user, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {
-		case dberrors.IsNotFoundError(err):
+		case apierrors.IsNotFoundError(err):
 			return apierrors.NewUnauthorizedUnknownUserError().Wrap(err)
 		default:
 			return err
@@ -56,7 +56,7 @@ func (s *AuthorizationService) AuthorizeProjectRole(ctx context.Context, project
 	user, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {
-		case dberrors.IsNotFoundError(err):
+		case apierrors.IsNotFoundError(err):
 			return apierrors.NewUnauthorizedUnknownUserError().Wrap(err)
 		default:
 			return err

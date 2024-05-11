@@ -42,7 +42,7 @@ type projectRepository interface {
 type userRepository interface {
 	Read(ctx context.Context, id uuid.UUID) (model.User, error)
 	ReadByEmail(ctx context.Context, email string) (model.User, error)
-	ReadAll(ctx context.Context) ([]model.User, error)
+	ListAll(ctx context.Context) ([]model.User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
