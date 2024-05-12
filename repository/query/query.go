@@ -16,4 +16,9 @@ var (
 	ReadUserByEmail string
 	//go:embed scripts/list_users.sql
 	ListUsers string
+
+	//go:embed scripts/read_settings.sql
+	ReadSettings string
+	//go:embed scripts/upsert_settings.sql
+	UpsertSettings string
 )

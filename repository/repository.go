@@ -16,7 +16,7 @@ func NewRepository(client *supabase.Client, pool *pgxpool.Pool) *Repository {
 	return &Repository{
 		User:     NewUserRepository(client, pool),
 		Project:  NewProjectRepository(client),
-		Settings: NewSettingsRepository(client),
+		Settings: NewSettingsRepository(pool),
 		Release:  NewReleaseRepository(pool),
 	}
 }
