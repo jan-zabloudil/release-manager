@@ -10,10 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type authRepository interface {
-	ReadUserIDForToken(ctx context.Context, token string) (uuid.UUID, error)
-}
-
 type projectRepository interface {
 	CreateProject(ctx context.Context, p model.Project, owner model.ProjectMember) error
 	ReadProject(ctx context.Context, id uuid.UUID) (model.Project, error)
@@ -93,15 +89,14 @@ type emailSender interface {
 }
 
 type Service struct {
-	Auth     *AuthService
-	User     *UserService
-	Project  *ProjectService
-	Settings *SettingsService
-	Release  *ReleaseService
+	Authorization *AuthorizationService
+	User          *UserService
+	Project       *ProjectService
+	Settings      *SettingsService
+	Release       *ReleaseService
 }
 
 func NewService(
-	authRepo authRepository,
 	userRepo userRepository,
 	projectRepo projectRepository,
 	settingsRepo settingsRepository,
@@ -109,7 +104,7 @@ func NewService(
 	githubClient githubClient,
 	emailSender emailSender,
 ) *Service {
-	authSvc := NewAuthService(authRepo, userRepo, projectRepo)
+	authSvc := NewAuthorizationService(userRepo, projectRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	emailSvc := NewEmailService(emailSender)
@@ -117,10 +112,10 @@ func NewService(
 	releaseSvc := NewReleaseService(projectSvc, releaseRepo)
 
 	return &Service{
-		Auth:     authSvc,
-		User:     userSvc,
-		Project:  projectSvc,
-		Settings: settingsSvc,
-		Release:  releaseSvc,
+		Authorization: authSvc,
+		User:          userSvc,
+		Project:       projectSvc,
+		Settings:      settingsSvc,
+		Release:       releaseSvc,
 	}
 }

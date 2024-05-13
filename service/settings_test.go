@@ -30,7 +30,7 @@ func TestSettingsService_Update(t *testing.T) {
 		name      string
 		userID    uuid.UUID
 		update    model.UpdateSettingsInput
-		mockSetup func(*svc.AuthService, *repo.SettingsRepository)
+		mockSetup func(*svc.AuthorizeService, *repo.SettingsRepository)
 		expectErr bool
 	}{
 		{
@@ -43,7 +43,7 @@ func TestSettingsService_Update(t *testing.T) {
 					Token:   &validToken,
 				},
 			},
-			mockSetup: func(authSvc *svc.AuthService, settingsRepo *repo.SettingsRepository) {
+			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
 				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(nil)
@@ -60,7 +60,7 @@ func TestSettingsService_Update(t *testing.T) {
 					Token:   &invalidToken,
 				},
 			},
-			mockSetup: func(authSvc *svc.AuthService, settingsRepo *repo.SettingsRepository) {
+			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
 			},
@@ -72,7 +72,7 @@ func TestSettingsService_Update(t *testing.T) {
 			update: model.UpdateSettingsInput{
 				OrganizationName: &invalidName,
 			},
-			mockSetup: func(authSvc *svc.AuthService, settingsRepo *repo.SettingsRepository) {
+			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
 			},
@@ -82,7 +82,7 @@ func TestSettingsService_Update(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			authSvc := new(svc.AuthService)
+			authSvc := new(svc.AuthorizeService)
 			settingsRepo := new(repo.SettingsRepository)
 			settingsSvc := NewSettingsService(authSvc, settingsRepo)
 

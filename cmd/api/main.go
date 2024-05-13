@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 
+	"release-manager/auth"
 	"release-manager/config"
 	githubx "release-manager/github"
 	"release-manager/repository"
@@ -42,6 +43,7 @@ func run() error {
 	supaClient := supabase.CreateClient(cfg.Supabase.APIURL, cfg.Supabase.APISecretKey)
 	githubClient := githubx.NewClient()
 	resendClient := resendx.NewClient(taskManager, cfg.Resend)
+	authClient := auth.NewClient(supaClient)
 
 	dbpool, err := pgxpool.New(ctx, cfg.Supabase.DatabaseURL)
 	if err != nil {
@@ -55,7 +57,6 @@ func run() error {
 
 	repo := repository.NewRepository(supaClient, dbpool)
 	svc := service.NewService(
-		repo.Auth,
 		repo.User,
 		repo.Project,
 		repo.Settings,
@@ -63,7 +64,7 @@ func run() error {
 		githubClient,
 		resendClient,
 	)
-	h := handler.NewHandler(svc.Auth, svc.User, svc.Project, svc.Settings, svc.Release)
+	h := handler.NewHandler(authClient, svc.User, svc.Project, svc.Settings, svc.Release)
 
 	serverConfig := httpx.ServerConfig{
 		Addr: fmt.Sprintf(":%d", cfg.Port),

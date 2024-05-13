@@ -19,26 +19,26 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		mockSetup func(*repo.AuthRepository, *repo.UserRepository)
+		mockSetup func(*repo.UserRepository)
 		wantErr   bool
 	}{
 		{
 			name: "User role admin",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository) {
+			mockSetup: func(userRepo *repo.UserRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "User role user",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository) {
+			mockSetup: func(userRepo *repo.UserRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 			},
 			wantErr: true,
 		},
 		{
 			name: "User not found",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository) {
+			mockSetup: func(userRepo *repo.UserRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -47,12 +47,11 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			authRepo := new(repo.AuthRepository)
 			userRepo := new(repo.UserRepository)
 			projectRepo := new(repo.ProjectRepository)
-			service := NewAuthService(authRepo, userRepo, projectRepo)
+			service := NewAuthorizationService(userRepo, projectRepo)
 
-			tc.mockSetup(authRepo, userRepo)
+			tc.mockSetup(userRepo)
 
 			err := service.AuthorizeUserRoleAdmin(context.Background(), uuid.New())
 
@@ -63,7 +62,6 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 			}
 
 			userRepo.AssertExpectations(t)
-			authRepo.AssertExpectations(t)
 		})
 	}
 }
@@ -76,12 +74,12 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		mockSetup func(*repo.AuthRepository, *repo.UserRepository, *repo.ProjectRepository)
+		mockSetup func(*repo.UserRepository, *repo.ProjectRepository)
 		wantErr   bool
 	}{
 		{
 			name: "Project member editor",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(editorProjectMember, nil)
 			},
@@ -89,7 +87,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 		},
 		{
 			name: "Project member viewer",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(viewerProjectMember, nil)
 			},
@@ -97,7 +95,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 		},
 		{
 			name: "User not project member",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
 			},
@@ -105,14 +103,14 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 		},
 		{
 			name: "User admin",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "User not found",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -121,12 +119,11 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			authRepo := new(repo.AuthRepository)
 			userRepo := new(repo.UserRepository)
 			projectRepo := new(repo.ProjectRepository)
-			service := NewAuthService(authRepo, userRepo, projectRepo)
+			service := NewAuthorizationService(userRepo, projectRepo)
 
-			tc.mockSetup(authRepo, userRepo, projectRepo)
+			tc.mockSetup(userRepo, projectRepo)
 
 			err := service.AuthorizeProjectRoleEditor(context.Background(), uuid.New(), uuid.New())
 
@@ -138,7 +135,6 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 
 			projectRepo.AssertExpectations(t)
 			userRepo.AssertExpectations(t)
-			authRepo.AssertExpectations(t)
 		})
 	}
 }
@@ -151,12 +147,12 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		mockSetup func(*repo.AuthRepository, *repo.UserRepository, *repo.ProjectRepository)
+		mockSetup func(*repo.UserRepository, *repo.ProjectRepository)
 		wantErr   bool
 	}{
 		{
 			name: "Project member editor",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(editorProjectMember, nil)
 			},
@@ -164,7 +160,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 		},
 		{
 			name: "Project member viewer",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(viewerProjectMember, nil)
 			},
@@ -172,7 +168,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 		},
 		{
 			name: "User not project member",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
 			},
@@ -180,14 +176,14 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 		},
 		{
 			name: "User admin",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "User not found",
-			mockSetup: func(authRepo *repo.AuthRepository, userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -196,12 +192,11 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			authRepo := new(repo.AuthRepository)
 			userRepo := new(repo.UserRepository)
 			projectRepo := new(repo.ProjectRepository)
-			service := NewAuthService(authRepo, userRepo, projectRepo)
+			service := NewAuthorizationService(userRepo, projectRepo)
 
-			tc.mockSetup(authRepo, userRepo, projectRepo)
+			tc.mockSetup(userRepo, projectRepo)
 
 			err := service.AuthorizeProjectRoleViewer(context.Background(), uuid.New(), uuid.New())
 
@@ -213,7 +208,6 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 
 			projectRepo.AssertExpectations(t)
 			userRepo.AssertExpectations(t)
-			authRepo.AssertExpectations(t)
 		})
 	}
 }
