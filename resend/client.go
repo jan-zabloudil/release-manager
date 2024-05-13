@@ -2,31 +2,31 @@ package resend
 
 import (
 	"context"
+	"fmt"
 
 	"release-manager/config"
-	"release-manager/pkg/emailerrors"
 
 	"github.com/resend/resend-go/v2"
 	"go.strv.io/background"
 	"go.strv.io/background/task"
 )
 
-type Resend struct {
+type Client struct {
 	taskManager *background.Manager
 	client      *resend.Client
 	reqBuilder  *EmailRequestBuilder
 }
 
-func NewClient(manager *background.Manager, cfg config.ResendConfig) *Resend {
-	return &Resend{
+func NewClient(manager *background.Manager, cfg config.ResendConfig) *Client {
+	return &Client{
 		taskManager: manager,
 		client:      resend.NewClient(cfg.APIKey),
 		reqBuilder:  NewEmailRequestBuilder(cfg),
 	}
 }
 
-func (r *Resend) SendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string) {
-	req := r.reqBuilder.
+func (c *Client) SendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string) {
+	req := c.reqBuilder.
 		SetRecipients(recipients).
 		SetSubject(subject).
 		SetText(text).
@@ -39,14 +39,14 @@ func (r *Resend) SendEmailAsync(ctx context.Context, subject, text, html string,
 			"task": "sending email",
 		},
 		Fn: func(ctx context.Context) error {
-			_, err := r.client.Emails.SendWithContext(ctx, req)
+			_, err := c.client.Emails.SendWithContext(ctx, req)
 			if err != nil {
-				return emailerrors.NewEmailSendingFailedError().Wrap(err)
+				return fmt.Errorf("failed to send email via Resend: %w", err)
 			}
 
 			return nil
 		},
 	}
 
-	r.taskManager.RunTask(ctx, t)
+	c.taskManager.RunTask(ctx, t)
 }
