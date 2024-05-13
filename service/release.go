@@ -36,7 +36,7 @@ func (s *ReleaseService) Create(ctx context.Context, input model.CreateReleaseIn
 	}
 
 	// TODO check if release name is unique per project
-
+	// TODO send slack notification
 	if err := s.repo.Create(ctx, rls); err != nil {
 		return model.Release{}, err
 	}

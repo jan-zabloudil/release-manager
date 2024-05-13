@@ -38,21 +38,21 @@ type UpdateProjectInput struct {
 }
 
 type ReleaseNotificationConfig struct {
-	Message         string
-	ShowProjectName bool
-	ShowReleaseName bool
-	ShowChangelog   bool
-	ShowDeployments bool
-	ShowSourceCode  bool
+	Message          string
+	ShowProjectName  bool
+	ShowReleaseTitle bool
+	ShowReleaseNotes bool
+	ShowDeployments  bool
+	ShowSourceCode   bool
 }
 
 type UpdateReleaseNotificationConfigInput struct {
-	Message         *string
-	ShowProjectName *bool
-	ShowReleaseName *bool
-	ShowChangelog   *bool
-	ShowDeployments *bool
-	ShowSourceCode  *bool
+	Message          *string
+	ShowProjectName  *bool
+	ShowReleaseTitle *bool
+	ShowReleaseNotes *bool
+	ShowDeployments  *bool
+	ShowSourceCode   *bool
 }
 
 func NewProject(c CreateProjectInput) (Project, error) {
@@ -124,11 +124,11 @@ func (c *ReleaseNotificationConfig) Update(u UpdateReleaseNotificationConfigInpu
 	if u.ShowProjectName != nil {
 		c.ShowProjectName = *u.ShowProjectName
 	}
-	if u.ShowReleaseName != nil {
-		c.ShowReleaseName = *u.ShowReleaseName
+	if u.ShowReleaseTitle != nil {
+		c.ShowReleaseTitle = *u.ShowReleaseTitle
 	}
-	if u.ShowChangelog != nil {
-		c.ShowChangelog = *u.ShowChangelog
+	if u.ShowReleaseNotes != nil {
+		c.ShowReleaseNotes = *u.ShowReleaseNotes
 	}
 	if u.ShowDeployments != nil {
 		c.ShowDeployments = *u.ShowDeployments

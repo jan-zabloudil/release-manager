@@ -983,10 +983,10 @@ components:
             show_project_name:
               type: boolean
               default: false
-            show_release_name:
+            show_release_title:
               type: boolean
               default: false
-            show_changelog:
+            show_release_notes:
               type: boolean
               default: false
             show_deployments:

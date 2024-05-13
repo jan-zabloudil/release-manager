@@ -53,3 +53,28 @@ func (r *Release) Validate() error {
 
 	return nil
 }
+
+type ReleaseNotification struct {
+	Message      string
+	ProjectName  *string
+	ReleaseTitle *string
+	ReleaseNotes *string
+}
+
+func NewReleaseNotification(p Project, r Release) ReleaseNotification {
+	n := ReleaseNotification{
+		Message: p.ReleaseNotificationConfig.Message,
+	}
+
+	if p.ReleaseNotificationConfig.ShowProjectName {
+		n.ProjectName = &p.Name
+	}
+	if p.ReleaseNotificationConfig.ShowReleaseTitle {
+		n.ReleaseTitle = &r.ReleaseTitle
+	}
+	if p.ReleaseNotificationConfig.ShowReleaseNotes {
+		n.ReleaseNotes = &r.ReleaseNotes
+	}
+
+	return n
+}
