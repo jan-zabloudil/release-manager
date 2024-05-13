@@ -2,41 +2,39 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"release-manager/pkg/apierrors"
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/dberrors"
-	"release-manager/pkg/githuberrors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
 )
 
 type ProjectService struct {
-	authGuard               authGuard
-	settingsGetter          settingsGetter
-	userGetter              userGetter
-	githubRepositoryManager githubRepositoryManager
-	invitationSender        projectInvitationSender
-	repo                    projectRepository
+	authGuard        authGuard
+	settingsGetter   settingsGetter
+	userGetter       userGetter
+	invitationSender projectInvitationSender
+	githubClient     githubClient
+	repo             projectRepository
 }
 
 func NewProjectService(
 	guard authGuard,
 	settingsGetter settingsGetter,
 	userGetter userGetter,
-	githubRepoManager githubRepositoryManager,
 	invitationSender projectInvitationSender,
+	githubClient githubClient,
 	repo projectRepository,
 ) *ProjectService {
 	return &ProjectService{
-		authGuard:               guard,
-		settingsGetter:          settingsGetter,
-		userGetter:              userGetter,
-		githubRepositoryManager: githubRepoManager,
-		invitationSender:        invitationSender,
-		repo:                    repo,
+		authGuard:        guard,
+		settingsGetter:   settingsGetter,
+		userGetter:       userGetter,
+		invitationSender: invitationSender,
+		githubClient:     githubClient,
+		repo:             repo,
 	}
 }
 
@@ -245,36 +243,16 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 		return nil, err
 	}
 
-	github, err := s.settingsGetter.GetGithubSettings(ctx)
+	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
 		return nil, err
-	}
-	if !github.Enabled {
-		return nil, apierrors.NewGithubIntegrationNotEnabledError()
 	}
 
 	if !project.IsGithubConfigured() {
 		return nil, apierrors.NewGithubRepositoryNotConfiguredForProjectError()
 	}
 
-	s.githubRepositoryManager.SetToken(github.Token)
-
-	t, err := s.githubRepositoryManager.ListTagsForRepository(ctx, project.GithubRepository)
-	if err != nil {
-		switch {
-		case githuberrors.IsUnauthorizedError(err):
-			return nil, apierrors.NewGithubIntegrationUnauthorizedError().Wrap(err)
-		case githuberrors.IsForbiddenError(err):
-			return nil, apierrors.NewGithubIntegrationForbiddenError().Wrap(err)
-		case githuberrors.IsNotFoundError(err):
-			return nil, apierrors.NewGithubRepositoryNotFoundError().Wrap(err).
-				WithMessage(fmt.Sprintf("%s not found among accessible repositories.", project.GithubRepository.URL.String()))
-		default:
-			return nil, err
-		}
-	}
-
-	return t, nil
+	return s.githubClient.ReadTagsForRepository(ctx, tkn, project.GithubRepositoryURL)
 }
 
 func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvitationInput, authUserID uuid.UUID) (model.ProjectInvitation, error) {

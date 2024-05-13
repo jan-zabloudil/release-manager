@@ -74,7 +74,7 @@ func ToProject(p svcmodel.Project) Project {
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepository:          p.GithubRepository.URL.String(),
+		GithubRepository:          p.GithubRepositoryURL.String(),
 		CreatedAt:                 p.CreatedAt.Local(),
 		UpdatedAt:                 p.UpdatedAt.Local(),
 	}
@@ -87,17 +87,4 @@ func ToProjects(projects []svcmodel.Project) []Project {
 	}
 
 	return p
-}
-
-type GitTag struct {
-	Name string `json:"name"`
-}
-
-func ToGitTags(tags []svcmodel.GitTag) []GitTag {
-	t := make([]GitTag, 0, len(tags))
-	for _, tag := range tags {
-		t = append(t, GitTag{Name: tag.Name})
-	}
-
-	return t
 }

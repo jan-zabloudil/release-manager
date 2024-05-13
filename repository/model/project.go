@@ -14,7 +14,7 @@ type Project struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepository          GithubRepository          `json:"github_repository"`
+	GithubRepositoryURL       string                    `json:"github_repository_url"`
 	CreatedAt                 time.Time                 `json:"created_at"`
 	UpdatedAt                 time.Time                 `json:"updated_at"`
 }
@@ -25,7 +25,7 @@ type CreateProjectInput struct {
 	Name                      string                    `json:"p_name"`
 	SlackChannelID            string                    `json:"p_slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"p_release_notification_config"`
-	GithubRepository          GithubRepository          `json:"p_github_repository"`
+	GithubRepositoryURL       string                    `json:"p_github_repository"`
 	OwnerUserID               uuid.UUID                 `json:"p_user_id"`
 	OwnerProjectRole          string                    `json:"p_project_role"`
 	CreatedAt                 time.Time                 `json:"p_created_at"`
@@ -36,7 +36,7 @@ type UpdateProjectInput struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepository          GithubRepository          `json:"github_repository"`
+	GithubRepositoryURL       string                    `json:"github_repository_url"`
 	UpdatedAt                 time.Time                 `json:"updated_at"`
 }
 
@@ -61,7 +61,7 @@ func ToCreateProjectInput(p svcmodel.Project, owner svcmodel.ProjectMember) Crea
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepository:          ToGithubRepository(p.GithubRepository),
+		GithubRepositoryURL:       p.GithubRepositoryURL.String(),
 		OwnerUserID:               owner.User.ID,
 		OwnerProjectRole:          string(owner.ProjectRole),
 		CreatedAt:                 p.CreatedAt,
@@ -74,13 +74,13 @@ func ToUpdateProjectInput(p svcmodel.Project) UpdateProjectInput {
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepository:          ToGithubRepository(p.GithubRepository),
+		GithubRepositoryURL:       p.GithubRepositoryURL.String(),
 		UpdatedAt:                 p.UpdatedAt,
 	}
 }
 
 func ToSvcProject(p Project) (svcmodel.Project, error) {
-	repo, err := ToSvcGithubRepository(p.GithubRepository)
+	u, err := url.Parse(p.GithubRepositoryURL)
 	if err != nil {
 		return svcmodel.Project{}, err
 	}
@@ -90,7 +90,7 @@ func ToSvcProject(p Project) (svcmodel.Project, error) {
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepository:          repo,
+		GithubRepositoryURL:       *u,
 		CreatedAt:                 p.CreatedAt,
 		UpdatedAt:                 p.UpdatedAt,
 	}, nil
@@ -108,25 +108,4 @@ func ToSvcProjects(projects []Project) ([]svcmodel.Project, error) {
 	}
 
 	return p, nil
-}
-
-func ToGithubRepository(r svcmodel.GithubRepository) GithubRepository {
-	return GithubRepository{
-		URL:            r.URL.String(),
-		OwnerSlug:      r.OwnerSlug,
-		RepositorySlug: r.RepositorySlug,
-	}
-}
-
-func ToSvcGithubRepository(r GithubRepository) (svcmodel.GithubRepository, error) {
-	u, err := url.Parse(r.URL)
-	if err != nil {
-		return svcmodel.GithubRepository{}, err
-	}
-
-	return svcmodel.GithubRepository{
-		URL:            *u,
-		OwnerSlug:      r.OwnerSlug,
-		RepositorySlug: r.RepositorySlug,
-	}, nil
 }

@@ -23,7 +23,7 @@ func (m *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInpu
 	return args.Get(0).(model.Settings), args.Error(1)
 }
 
-func (m *SettingsService) GetGithubSettings(ctx context.Context) (model.GithubSettings, error) {
+func (m *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
 	args := m.Called(ctx)
-	return args.Get(0).(model.GithubSettings), args.Error(1)
+	return args.Get(0).(string), args.Error(1)
 }
