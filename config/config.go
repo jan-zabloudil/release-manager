@@ -23,8 +23,9 @@ type ServerConfig struct {
 }
 
 type SupabaseConfig struct {
-	APIURL    string `env:"API_URL, required"`
-	SecretKey string `env:"SECRET_KEY, required"`
+	DatabaseURL  string `env:"DATABASE_URL, required"`
+	APIURL       string `env:"API_URL, required"`
+	APISecretKey string `env:"API_SECRET_KEY, required"`
 }
 
 type ServiceConfig struct {

@@ -29,6 +29,7 @@ var (
 	errCodeProjectMemberNotFound                   = "ERR_PROJECT_MEMBER_NOT_FOUND"
 	errCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
 	errCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
+	errCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
 )
 
 type APIError struct {
@@ -215,6 +216,13 @@ func NewReleaseUnprocessableError() *APIError {
 	}
 }
 
+func NewReleaseNotFoundError() *APIError {
+	return &APIError{
+		Code:    errCodeReleaseNotFound,
+		Message: "Release not found",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -234,7 +242,8 @@ func IsNotFoundError(err error) bool {
 		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled) ||
 		IsErrorWithCode(err, errCodeProjectMemberNotFound) ||
 		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled) ||
-		IsErrorWithCode(err, errCodeGithubRepositoryInvalidURL)
+		IsErrorWithCode(err, errCodeGithubRepositoryInvalidURL) ||
+		IsErrorWithCode(err, errCodeReleaseNotFound)
 }
 
 func IsUnprocessableModelError(err error) bool {
