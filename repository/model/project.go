@@ -10,13 +10,13 @@ import (
 )
 
 type Project struct {
-	ID                        uuid.UUID                 `json:"id"`
-	Name                      string                    `json:"name"`
-	SlackChannelID            string                    `json:"slack_channel_id"`
-	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepositoryURL       string                    `json:"github_repository_url"`
-	CreatedAt                 time.Time                 `json:"created_at"`
-	UpdatedAt                 time.Time                 `json:"updated_at"`
+	ID                        uuid.UUID                 `db:"id"`
+	Name                      string                    `db:"name"`
+	SlackChannelID            string                    `db:"slack_channel_id"`
+	ReleaseNotificationConfig ReleaseNotificationConfig `db:"release_notification_config"`
+	GithubRepositoryURL       string                    `db:"github_repository_url"`
+	CreatedAt                 time.Time                 `db:"created_at"`
+	UpdatedAt                 time.Time                 `db:"updated_at"`
 }
 
 // CreateProjectInput is the input used for creating a project and adding an owner as a project member
@@ -47,12 +47,6 @@ type ReleaseNotificationConfig struct {
 	ShowReleaseNotes bool   `json:"show_release_notes"`
 	ShowDeployments  bool   `json:"show_deployments"`
 	ShowSourceCode   bool   `json:"show_source_code"`
-}
-
-type GithubRepository struct {
-	URL            string `json:"url"`
-	OwnerSlug      string `json:"owner_slug"`
-	RepositorySlug string `json:"repository_slug"`
 }
 
 func ToCreateProjectInput(p svcmodel.Project, owner svcmodel.ProjectMember) CreateProjectInput {
