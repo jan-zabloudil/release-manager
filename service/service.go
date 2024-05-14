@@ -25,7 +25,6 @@ type projectRepository interface {
 	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
-	ReadInvitation(ctx context.Context, invitationID uuid.UUID) (model.ProjectInvitation, error)
 	ReadAllInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
 	ReadInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) (model.ProjectInvitation, error)
 	ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (model.ProjectInvitation, error)

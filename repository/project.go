@@ -270,20 +270,6 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) ReadInvitation(ctx context.Context, id uuid.UUID) (svcmodel.ProjectInvitation, error) {
-	var resp model.ProjectInvitation
-	err := r.client.
-		DB.From(invitationDBEntity).
-		Select("*").Single().
-		Eq("id", id.String()).
-		ExecuteWithContext(ctx, &resp)
-	if err != nil {
-		return svcmodel.ProjectInvitation{}, util.ToDBError(err)
-	}
-
-	return model.ToSvcProjectInvitation(resp), nil
-}
-
 func (r *ProjectRepository) ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
 	var resp model.ProjectInvitation
 	err := r.client.
