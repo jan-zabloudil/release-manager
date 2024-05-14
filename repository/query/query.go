@@ -26,4 +26,9 @@ var (
 	ReadProject string
 	//go:embed scripts/delete_project.sql
 	DeleteProject string
+	//go:embed scripts/create_project.sql
+	CreateProject string
+
+	//go:embed scripts/create_project_member.sql
+	CreateProjectMember string
 )

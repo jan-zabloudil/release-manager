@@ -19,19 +19,6 @@ type Project struct {
 	UpdatedAt                 time.Time                 `db:"updated_at"`
 }
 
-// CreateProjectInput is the input used for creating a project and adding an owner as a project member
-type CreateProjectInput struct {
-	ID                        uuid.UUID                 `json:"p_id"`
-	Name                      string                    `json:"p_name"`
-	SlackChannelID            string                    `json:"p_slack_channel_id"`
-	ReleaseNotificationConfig ReleaseNotificationConfig `json:"p_release_notification_config"`
-	GithubRepositoryURL       string                    `json:"p_github_repository"`
-	OwnerUserID               uuid.UUID                 `json:"p_user_id"`
-	OwnerProjectRole          string                    `json:"p_project_role"`
-	CreatedAt                 time.Time                 `json:"p_created_at"`
-	UpdatedAt                 time.Time                 `json:"p_updated_at"`
-}
-
 type UpdateProjectInput struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
@@ -47,20 +34,6 @@ type ReleaseNotificationConfig struct {
 	ShowReleaseNotes bool   `json:"show_release_notes"`
 	ShowDeployments  bool   `json:"show_deployments"`
 	ShowSourceCode   bool   `json:"show_source_code"`
-}
-
-func ToCreateProjectInput(p svcmodel.Project, owner svcmodel.ProjectMember) CreateProjectInput {
-	return CreateProjectInput{
-		ID:                        p.ID,
-		Name:                      p.Name,
-		SlackChannelID:            p.SlackChannelID,
-		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepositoryURL:       p.GithubRepositoryURL.String(),
-		OwnerUserID:               owner.User.ID,
-		OwnerProjectRole:          string(owner.ProjectRole),
-		CreatedAt:                 p.CreatedAt,
-		UpdatedAt:                 p.UpdatedAt,
-	}
 }
 
 func ToUpdateProjectInput(p svcmodel.Project) UpdateProjectInput {

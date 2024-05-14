@@ -36,7 +36,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
-				projectRepo.On("CreateProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},

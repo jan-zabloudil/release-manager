@@ -58,7 +58,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 		return model.Project{}, err
 	}
 
-	if err := s.repo.CreateProject(ctx, p, owner); err != nil {
+	if err := s.repo.CreateProjectWithOwner(ctx, p, owner); err != nil {
 		return model.Project{}, err
 	}
 
