@@ -21,4 +21,7 @@ var (
 	ReadSettings string
 	//go:embed scripts/upsert_settings.sql
 	UpsertSettings string
+
+	//go:embed scripts/delete_project.sql
+	DeleteProject string
 )

@@ -157,7 +157,6 @@ func TestProjectService_DeleteProject(t *testing.T) {
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("DeleteProject", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -167,7 +166,7 @@ func TestProjectService_DeleteProject(t *testing.T) {
 			projectID: uuid.Nil,
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
+				projectRepo.On("DeleteProject", mock.Anything, mock.Anything).Return(apierrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},

@@ -93,12 +93,12 @@ func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID,
 		return err
 	}
 
-	_, err := s.GetProject(ctx, projectID, authUserID)
+	err := s.repo.DeleteProject(ctx, projectID)
 	if err != nil {
 		return err
 	}
 
-	return s.repo.DeleteProject(ctx, projectID)
+	return nil
 }
 
 func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
