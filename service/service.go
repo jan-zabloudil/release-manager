@@ -11,7 +11,7 @@ import (
 )
 
 type projectRepository interface {
-	CreateProject(ctx context.Context, p model.Project, owner model.ProjectMember) error
+	CreateProjectWithOwner(ctx context.Context, p model.Project, owner model.ProjectMember) error
 	ReadProject(ctx context.Context, id uuid.UUID) (model.Project, error)
 	ReadAllProjects(ctx context.Context) ([]model.Project, error)
 	DeleteProject(ctx context.Context, id uuid.UUID) error
