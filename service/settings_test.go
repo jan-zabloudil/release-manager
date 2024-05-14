@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"release-manager/pkg/apierrors"
 	repo "release-manager/repository/mock"
 	svc "release-manager/service/mock"
 	"release-manager/service/model"
@@ -14,14 +15,7 @@ import (
 )
 
 func TestSettingsService_Update(t *testing.T) {
-	settings := model.Settings{
-		OrganizationName:      "Old Organization",
-		DefaultReleaseMessage: "Old Message",
-	}
-
 	validName := "new name"
-	invalidName := ""
-
 	enabled := true
 	validToken := "valid token"
 	invalidToken := ""
@@ -45,13 +39,12 @@ func TestSettingsService_Update(t *testing.T) {
 			},
 			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
-				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(nil)
+				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(model.Settings{}, nil)
 			},
 			expectErr: false,
 		},
 		{
-			name:   "Error - missing slack token",
+			name:   "Error - invalid update input",
 			userID: uuid.New(),
 			update: model.UpdateSettingsInput{
 				OrganizationName: &validName,
@@ -62,19 +55,7 @@ func TestSettingsService_Update(t *testing.T) {
 			},
 			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
-			},
-			expectErr: true,
-		},
-		{
-			name:   "Error - missing name",
-			userID: uuid.New(),
-			update: model.UpdateSettingsInput{
-				OrganizationName: &invalidName,
-			},
-			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
-				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				settingsRepo.On("Read", mock.Anything, mock.Anything).Return(settings, nil)
+				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(model.Settings{}, apierrors.NewSettingsUnprocessableError())
 			},
 			expectErr: true,
 		},

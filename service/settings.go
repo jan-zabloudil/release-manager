@@ -34,16 +34,14 @@ func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInpu
 		return model.Settings{}, err
 	}
 
-	settings, err := s.Get(ctx, authUserID)
+	settings, err := s.repository.Update(ctx, func(s model.Settings) (model.Settings, error) {
+		if err := s.Update(u); err != nil {
+			return model.Settings{}, apierrors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
+		}
+
+		return s, nil
+	})
 	if err != nil {
-		return model.Settings{}, err
-	}
-
-	if err := settings.Update(u); err != nil {
-		return model.Settings{}, apierrors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
-	}
-
-	if err := s.repository.Update(ctx, settings); err != nil {
 		return model.Settings{}, err
 	}
 

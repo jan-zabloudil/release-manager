@@ -47,7 +47,7 @@ type userRepository interface {
 }
 
 type settingsRepository interface {
-	Update(ctx context.Context, c model.Settings) error
+	Update(ctx context.Context, fn model.UpdateSettingsFunc) (model.Settings, error)
 	Read(ctx context.Context) (model.Settings, error)
 }
 
