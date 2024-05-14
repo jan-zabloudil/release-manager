@@ -23,7 +23,7 @@ func (m *UserRepository) ReadByEmail(ctx context.Context, email string) (svcmode
 	return args.Get(0).(svcmodel.User), args.Error(1)
 }
 
-func (m *UserRepository) ReadAll(ctx context.Context) ([]svcmodel.User, error) {
+func (m *UserRepository) ListAll(ctx context.Context) ([]svcmodel.User, error) {
 	args := m.Called(ctx)
 	return args.Get(0).([]svcmodel.User), args.Error(1)
 }

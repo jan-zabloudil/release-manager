@@ -43,12 +43,7 @@ func (s *UserService) Get(ctx context.Context, id uuid.UUID, authUserID uuid.UUI
 func (s *UserService) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	u, err := s.repository.ReadByEmail(ctx, email)
 	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return model.User{}, apierrors.NewUserNotFoundError().Wrap(err)
-		default:
-			return model.User{}, err
-		}
+		return model.User{}, err
 	}
 
 	return u, nil
@@ -72,7 +67,7 @@ func (s *UserService) ListAll(ctx context.Context, authUserID uuid.UUID) ([]mode
 		return nil, err
 	}
 
-	u, err := s.repository.ReadAll(ctx)
+	u, err := s.repository.ListAll(ctx)
 	if err != nil {
 		return nil, err
 	}
