@@ -76,9 +76,13 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 }
 
 func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcmodel.Project, error) {
+	return r.readProject(ctx, r.dbpool, query.ReadProject, id)
+}
+
+func (r *ProjectRepository) readProject(ctx context.Context, q pgxscan.Querier, query string, id uuid.UUID) (svcmodel.Project, error) {
 	var p model.Project
 
-	err := pgxscan.Get(ctx, r.dbpool, &p, query.ReadProject, pgx.NamedArgs{"id": id})
+	err := pgxscan.Get(ctx, q, &p, query, pgx.NamedArgs{"id": id})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return svcmodel.Project{}, apierrors.NewProjectNotFoundError().Wrap(err)
@@ -121,19 +125,38 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	return nil
 }
 
-func (r *ProjectRepository) UpdateProject(ctx context.Context, p svcmodel.Project) error {
-	data := model.ToUpdateProjectInput(p)
-
-	err := r.client.
-		DB.From(projectDBEntity).
-		Update(&data).
-		Eq("id", (p.ID).String()).
-		ExecuteWithContext(ctx, nil)
+func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) (p svcmodel.Project, err error) {
+	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return util.ToDBError(err)
+		return svcmodel.Project{}, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		err = util.FinishTransaction(ctx, tx, err)
+	}()
+
+	p, err = r.readProject(ctx, tx, query.ReadProjectForUpdate, projectID)
+	if err != nil {
+		return svcmodel.Project{}, fmt.Errorf("failed to read project: %w", err)
 	}
 
-	return nil
+	p, err = fn(p)
+	if err != nil {
+		return svcmodel.Project{}, err
+	}
+
+	_, err = tx.Exec(ctx, query.UpdateProject, pgx.NamedArgs{
+		"id":                        p.ID,
+		"name":                      p.Name,
+		"slackChannelID":            p.SlackChannelID,
+		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig), // converted to the struct with json tags (the field is saved as json in the database)
+		"githubRepositoryURL":       p.GithubRepositoryURL.String(),
+		"updatedAt":                 p.UpdatedAt,
+	})
+	if err != nil {
+		return svcmodel.Project{}, fmt.Errorf("failed to update project: %w", err)
+	}
+
+	return p, nil
 }
 
 func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.Environment) error {

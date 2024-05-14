@@ -200,7 +200,6 @@ func TestProjectService_DeleteProject(t *testing.T) {
 
 func TestProjectService_UpdateProject(t *testing.T) {
 	validProjectName := "projectGetter name"
-	invalidProjectName := ""
 	slackChannelID := "channelID"
 
 	testCases := []struct {
@@ -224,26 +223,22 @@ func TestProjectService_UpdateProject(t *testing.T) {
 				},
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("UpdateProject", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: false,
 		},
 		{
-			name: "Invalid project update - missing name",
-			update: model.UpdateProjectInput{
-				Name: &invalidProjectName,
-			},
+			name: "Invalid project update",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectUnprocessableError())
 			},
 			wantErr: true,
 		},
 		{
-			name:   "Non-existing project",
+			name:   "Non-existing-project",
 			update: model.UpdateProjectInput{},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},
