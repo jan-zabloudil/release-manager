@@ -119,7 +119,7 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	}
 
 	if result.RowsAffected() == 0 {
-		return apierrors.NewProjectNotFoundError().Wrap(err)
+		return apierrors.NewProjectNotFoundError()
 	}
 
 	return nil
