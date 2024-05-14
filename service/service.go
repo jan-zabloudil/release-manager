@@ -76,7 +76,7 @@ type projectGetter interface {
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
 }
 
-type githubClient interface {
+type githubManager interface {
 	ReadTagsForRepository(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
 }
 
@@ -97,13 +97,13 @@ func NewService(
 	projectRepo projectRepository,
 	settingsRepo settingsRepository,
 	releaseRepo releaseRepository,
-	githubClient githubClient,
+	githubManager githubManager,
 	emailSender emailSender,
 ) *Service {
 	authSvc := NewAuthorizationService(userRepo, projectRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
-	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubClient, projectRepo)
+	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)
 	releaseSvc := NewReleaseService(projectSvc, releaseRepo)
 
 	return &Service{

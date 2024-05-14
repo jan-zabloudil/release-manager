@@ -16,7 +16,7 @@ type ProjectService struct {
 	settingsGetter settingsGetter
 	userGetter     userGetter
 	emailSender    emailSender
-	githubClient   githubClient
+	githubManager  githubManager
 	repo           projectRepository
 }
 
@@ -25,7 +25,7 @@ func NewProjectService(
 	settingsGetter settingsGetter,
 	userGetter userGetter,
 	emailSender emailSender,
-	githubClient githubClient,
+	githubManager githubManager,
 	repo projectRepository,
 ) *ProjectService {
 	return &ProjectService{
@@ -33,7 +33,7 @@ func NewProjectService(
 		settingsGetter: settingsGetter,
 		userGetter:     userGetter,
 		emailSender:    emailSender,
-		githubClient:   githubClient,
+		githubManager:  githubManager,
 		repo:           repo,
 	}
 }
@@ -247,7 +247,7 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 		return nil, apierrors.NewGithubRepositoryNotConfiguredForProjectError()
 	}
 
-	return s.githubClient.ReadTagsForRepository(ctx, tkn, project.GithubRepositoryURL)
+	return s.githubManager.ReadTagsForRepository(ctx, tkn, project.GithubRepositoryURL)
 }
 
 func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvitationInput, authUserID uuid.UUID) (model.ProjectInvitation, error) {
