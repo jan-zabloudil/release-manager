@@ -4,13 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	"release-manager/pkg/apierrors"
 	"release-manager/pkg/crypto"
 	"release-manager/pkg/dberrors"
 	"release-manager/repository/model"
+	"release-manager/repository/query"
 	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nedpals/supabase-go"
 )
 
@@ -26,11 +30,13 @@ const (
 
 type ProjectRepository struct {
 	client *supabase.Client
+	dbpool *pgxpool.Pool
 }
 
-func NewProjectRepository(c *supabase.Client) *ProjectRepository {
+func NewProjectRepository(c *supabase.Client, pool *pgxpool.Pool) *ProjectRepository {
 	return &ProjectRepository{
 		client: c,
+		dbpool: pool,
 	}
 }
 
@@ -88,12 +94,13 @@ func (r *ProjectRepository) ReadAllProjects(ctx context.Context) ([]svcmodel.Pro
 }
 
 func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
-	err := r.client.
-		DB.From(projectDBEntity).
-		Delete().Eq("id", id.String()).
-		ExecuteWithContext(ctx, nil)
+	result, err := r.dbpool.Exec(ctx, query.DeleteProject, pgx.NamedArgs{"id": id})
 	if err != nil {
-		return util.ToDBError(err)
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apierrors.NewProjectNotFoundError().Wrap(err)
 	}
 
 	return nil

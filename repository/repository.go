@@ -15,7 +15,7 @@ type Repository struct {
 func NewRepository(client *supabase.Client, pool *pgxpool.Pool) *Repository {
 	return &Repository{
 		User:     NewUserRepository(client, pool),
-		Project:  NewProjectRepository(client),
+		Project:  NewProjectRepository(client, pool),
 		Settings: NewSettingsRepository(pool),
 		Release:  NewReleaseRepository(pool),
 	}
