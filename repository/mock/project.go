@@ -99,8 +99,13 @@ func (m *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) DeleteInvitation(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
+func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
+	args := m.Called(ctx, projectID, invitationID)
+	return args.Error(0)
+}
+
+func (m *ProjectRepository) DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash crypto.Hash, status svcmodel.ProjectInvitationStatus) error {
+	args := m.Called(ctx, hash, status)
 	return args.Error(0)
 }
 

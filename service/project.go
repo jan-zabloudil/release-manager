@@ -315,25 +315,12 @@ func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invita
 		return err
 	}
 
-	exists, err := s.projectExists(ctx, projectID)
+	err := s.repo.DeleteInvitation(ctx, projectID, invitationID)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		return apierrors.NewProjectNotFoundError()
-	}
 
-	_, err = s.repo.ReadInvitation(ctx, invitationID)
-	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return apierrors.NewProjectInvitationNotFoundError().Wrap(err)
-		default:
-			return err
-		}
-	}
-
-	return s.repo.DeleteInvitation(ctx, invitationID)
+	return nil
 }
 
 func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token) error {
@@ -365,12 +352,13 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 }
 
 func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token) error {
-	invitation, err := s.getPendingInvitationByToken(ctx, tkn)
+	// Only pending invitations can be rejected
+	err := s.repo.DeleteInvitationByTokenHashAndStatus(ctx, tkn.ToHash(), model.InvitationStatusPending)
 	if err != nil {
 		return err
 	}
 
-	return s.repo.DeleteInvitation(ctx, invitation.ID)
+	return nil
 }
 
 func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectMember, error) {

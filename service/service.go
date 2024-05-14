@@ -29,7 +29,8 @@ type projectRepository interface {
 	ReadAllInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
 	ReadInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) (model.ProjectInvitation, error)
 	ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (model.ProjectInvitation, error)
-	DeleteInvitation(ctx context.Context, invitationID uuid.UUID) error
+	DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error
+	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
 	UpdateInvitation(ctx context.Context, i model.ProjectInvitation) error
 
 	CreateMember(ctx context.Context, member model.ProjectMember) error

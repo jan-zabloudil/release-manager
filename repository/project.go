@@ -343,13 +343,37 @@ func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) DeleteInvitation(ctx context.Context, id uuid.UUID) error {
-	err := r.client.
-		DB.From(invitationDBEntity).
-		Delete().Eq("id", id.String()).
-		ExecuteWithContext(ctx, nil)
+func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
+	result, err := r.dbpool.Exec(ctx, query.DeleteInvitationForProject, pgx.NamedArgs{
+		"projectID":    projectID,
+		"invitationID": invitationID,
+	})
 	if err != nil {
-		return util.ToDBError(err)
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apierrors.NewProjectInvitationNotFoundError()
+	}
+
+	return nil
+}
+
+func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
+	ctx context.Context,
+	hash crypto.Hash,
+	status svcmodel.ProjectInvitationStatus,
+) error {
+	result, err := r.dbpool.Exec(ctx, query.DeleteProjectInvitationByHashAndStatus, pgx.NamedArgs{
+		"hash":   hash.ToBase64(),
+		"status": string(status),
+	})
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apierrors.NewProjectInvitationNotFoundError()
 	}
 
 	return nil
