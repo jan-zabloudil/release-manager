@@ -12,29 +12,29 @@ import (
 )
 
 type ProjectService struct {
-	authGuard        authGuard
-	settingsGetter   settingsGetter
-	userGetter       userGetter
-	invitationSender projectInvitationSender
-	githubClient     githubClient
-	repo             projectRepository
+	authGuard      authGuard
+	settingsGetter settingsGetter
+	userGetter     userGetter
+	emailSender    emailSender
+	githubClient   githubClient
+	repo           projectRepository
 }
 
 func NewProjectService(
 	guard authGuard,
 	settingsGetter settingsGetter,
 	userGetter userGetter,
-	invitationSender projectInvitationSender,
+	emailSender emailSender,
 	githubClient githubClient,
 	repo projectRepository,
 ) *ProjectService {
 	return &ProjectService{
-		authGuard:        guard,
-		settingsGetter:   settingsGetter,
-		userGetter:       userGetter,
-		invitationSender: invitationSender,
-		githubClient:     githubClient,
-		repo:             repo,
+		authGuard:      guard,
+		settingsGetter: settingsGetter,
+		userGetter:     userGetter,
+		emailSender:    emailSender,
+		githubClient:   githubClient,
+		repo:           repo,
 	}
 }
 
@@ -296,11 +296,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 		return model.ProjectInvitation{}, err
 	}
 
-	s.invitationSender.SendProjectInvitation(ctx, model.ProjectInvitationInput{
-		ProjectName:    p.Name,
-		RecipientEmail: i.Email,
-		Token:          tkn,
-	})
+	s.emailSender.SendEmailAsync(ctx, model.NewProjectInvitationEmail(p, tkn, i.Email))
 
 	return i, nil
 }
