@@ -48,7 +48,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	_, err = r.dbpool.Exec(ctx, query.CreateProject, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, query.CreateProject, pgx.NamedArgs{
 		"id":                        p.ID,
 		"name":                      p.Name,
 		"slackChannelID":            p.SlackChannelID,
@@ -61,7 +61,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		return fmt.Errorf("failed to create project: %w", err)
 	}
 
-	_, err = r.dbpool.Exec(ctx, query.CreateProjectMember, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, query.CreateProjectMember, pgx.NamedArgs{
 		"userID":      owner.User.ID,
 		"projectID":   p.ID,
 		"projectRole": owner.ProjectRole,
