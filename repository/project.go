@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"release-manager/pkg/apierrors"
@@ -12,6 +13,7 @@ import (
 	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -57,22 +59,18 @@ func (r *ProjectRepository) CreateProject(ctx context.Context, p svcmodel.Projec
 }
 
 func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcmodel.Project, error) {
-	var resp model.Project
-	err := r.client.
-		DB.From(projectDBEntity).
-		Select("*").Single().
-		Eq("id", id.String()).
-		ExecuteWithContext(ctx, &resp)
+	var p model.Project
+
+	err := pgxscan.Get(ctx, r.dbpool, &p, query.ReadProject, pgx.NamedArgs{"id": id})
 	if err != nil {
-		return svcmodel.Project{}, util.ToDBError(err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return svcmodel.Project{}, apierrors.NewProjectNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.Project{}, err
 	}
 
-	p, err := model.ToSvcProject(resp)
-	if err != nil {
-		return svcmodel.Project{}, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return p, nil
+	return model.ToSvcProject(p)
 }
 
 func (r *ProjectRepository) ReadAllProjects(ctx context.Context) ([]svcmodel.Project, error) {

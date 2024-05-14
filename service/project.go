@@ -70,12 +70,7 @@ func (s *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, au
 
 	p, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return model.Project{}, apierrors.NewProjectNotFoundError().Wrap(err)
-		default:
-			return model.Project{}, err
-		}
+		return model.Project{}, err
 	}
 
 	return p, nil
@@ -459,7 +454,7 @@ func (s *ProjectService) UpdateMemberRole(ctx context.Context, newRole model.Pro
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
 	_, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
-		if dberrors.IsNotFoundError(err) {
+		if apierrors.IsNotFoundError(err) {
 			return false, nil
 		}
 
