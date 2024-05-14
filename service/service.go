@@ -76,16 +76,12 @@ type projectGetter interface {
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
 }
 
-type projectInvitationSender interface {
-	SendProjectInvitation(ctx context.Context, input model.ProjectInvitationInput)
-}
-
 type githubClient interface {
 	ReadTagsForRepository(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
 }
 
 type emailSender interface {
-	SendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string)
+	SendEmailAsync(ctx context.Context, email model.Email)
 }
 
 type Service struct {
@@ -107,8 +103,7 @@ func NewService(
 	authSvc := NewAuthorizationService(userRepo, projectRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
-	emailSvc := NewEmailService(emailSender)
-	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, githubClient, projectRepo)
+	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubClient, projectRepo)
 	releaseSvc := NewReleaseService(projectSvc, releaseRepo)
 
 	return &Service{

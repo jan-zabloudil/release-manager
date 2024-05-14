@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"release-manager/config"
+	"release-manager/service/model"
 
 	"github.com/resend/resend-go/v2"
 	"go.strv.io/background"
@@ -25,12 +26,12 @@ func NewClient(manager *background.Manager, cfg config.ResendConfig) *Client {
 	}
 }
 
-func (c *Client) SendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string) {
+func (c *Client) SendEmailAsync(ctx context.Context, email model.Email) {
 	req := c.reqBuilder.
-		SetRecipients(recipients).
-		SetSubject(subject).
-		SetText(text).
-		SetHTML(html).
+		SetRecipients(email.Recipients).
+		SetSubject(email.Subject).
+		SetText(email.Text).
+		SetHTML(email.HTML).
 		Build()
 
 	t := task.Task{

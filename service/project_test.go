@@ -10,6 +10,7 @@ import (
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/dberrors"
 	repo "release-manager/repository/mock"
+	resendmock "release-manager/resend/mock"
 	svc "release-manager/service/mock"
 	"release-manager/service/model"
 
@@ -70,11 +71,11 @@ func TestProjectService_CreateProject(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, userSvc, projectRepo)
 
@@ -122,11 +123,11 @@ func TestProjectService_GetProject(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -176,11 +177,11 @@ func TestProjectService_DeleteProject(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -253,11 +254,11 @@ func TestProjectService_UpdateProject(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -343,11 +344,11 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -408,11 +409,11 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -499,11 +500,11 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -551,11 +552,11 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -620,11 +621,11 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -682,11 +683,11 @@ func TestProjectService_validateEnvironmentNameUnique(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -709,13 +710,13 @@ func TestProjectService_Invite(t *testing.T) {
 	testCases := []struct {
 		name      string
 		creation  model.CreateProjectInvitationInput
-		mockSetup func(*svc.AuthorizeService, *svc.UserService, *svc.EmailService, *repo.ProjectRepository)
+		mockSetup func(*svc.AuthorizeService, *svc.UserService, *resendmock.Client, *repo.ProjectRepository)
 		wantErr   bool
 	}{
 		{
 			name:     "Unknown project",
 			creation: model.CreateProjectInvitationInput{},
-			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
@@ -728,7 +729,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "editor",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
@@ -741,7 +742,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "new",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
@@ -754,7 +755,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "viewer",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, nil)
@@ -769,7 +770,7 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "viewer",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, apierrors.NewUserNotFoundError()) // case when user do not exist at all
@@ -784,14 +785,14 @@ func TestProjectService_Invite(t *testing.T) {
 				ProjectRole: "viewer",
 				ProjectID:   uuid.New(),
 			},
-			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *svc.EmailService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, nil) // case when even user does not exist
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
 				projectRepo.On("ReadInvitationByEmailForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
 				projectRepo.On("CreateInvitation", mock.Anything, mock.Anything).Return(nil)
-				email.On("SendProjectInvitation", mock.Anything, mock.Anything)
+				email.On("SendEmailAsync", mock.Anything, mock.Anything)
 			},
 			wantErr: false,
 		},
@@ -801,13 +802,13 @@ func TestProjectService_Invite(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
-			tc.mockSetup(authSvc, userSvc, emailSvc, projectRepo)
+			tc.mockSetup(authSvc, userSvc, email, projectRepo)
 
 			_, err := service.Invite(context.Background(), tc.creation, uuid.New())
 
@@ -818,7 +819,7 @@ func TestProjectService_Invite(t *testing.T) {
 			}
 
 			projectRepo.AssertExpectations(t)
-			emailSvc.AssertExpectations(t)
+			email.AssertExpectations(t)
 			authSvc.AssertExpectations(t)
 		})
 	}
@@ -858,11 +859,11 @@ func TestProjectService_GetInvitations(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -919,11 +920,11 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -988,11 +989,11 @@ func TestProjectService_AcceptInvitation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(userSvc, projectRepo)
 
@@ -1047,11 +1048,11 @@ func TestProjectService_RejectInvitation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(projectRepo)
 
@@ -1105,11 +1106,11 @@ func TestProjectService_ListMembers(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -1169,11 +1170,11 @@ func TestProjectService_DeleteMember(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
@@ -1257,11 +1258,11 @@ func TestProjectService_UpdateMemberRole(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			projectRepo := new(repo.ProjectRepository)
 			github := new(githubmock.Client)
-			emailSvc := new(svc.EmailService)
+			email := new(resendmock.Client)
 			userSvc := new(svc.UserService)
 			settingsSvc := new(svc.SettingsService)
 			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, emailSvc, github, projectRepo)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
 			tc.mockSetup(authSvc, projectRepo)
 
