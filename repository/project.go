@@ -25,8 +25,6 @@ const (
 	environmentDBEntity   = "environments"
 	invitationDBEntity    = "project_invitations"
 	projectMemberDBEntity = "project_members"
-
-	createMemberPostgresFunction = "create_project_member_and_delete_invitation"
 )
 
 type ProjectRepository struct {
@@ -50,7 +48,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	_, err = r.dbpool.Exec(ctx, query.CreateProject, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, query.CreateProject, pgx.NamedArgs{
 		"id":                        p.ID,
 		"name":                      p.Name,
 		"slackChannelID":            p.SlackChannelID,
@@ -63,7 +61,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		return fmt.Errorf("failed to create project: %w", err)
 	}
 
-	_, err = r.dbpool.Exec(ctx, query.CreateProjectMember, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, query.CreateProjectMember, pgx.NamedArgs{
 		"userID":      owner.User.ID,
 		"projectID":   p.ID,
 		"projectRole": owner.ProjectRole,
@@ -338,15 +336,32 @@ func (r *ProjectRepository) DeleteInvitation(ctx context.Context, id uuid.UUID) 
 }
 
 // CreateMember creates a project member and deletes the invitation
-func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.ProjectMember) error {
-	data := model.ToCreateProjectMemberInput(m)
-
-	// Calls the stored function in order to create a project member and delete the invitation in a single transaction
-	err := r.client.
-		DB.Rpc(createMemberPostgresFunction, data).
-		ExecuteWithContext(ctx, nil)
+func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.ProjectMember) (err error) {
+	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return util.ToDBError(err)
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		err = util.FinishTransaction(ctx, tx, err)
+	}()
+
+	_, err = tx.Exec(ctx, query.CreateProjectMember, pgx.NamedArgs{
+		"userID":      m.User.ID,
+		"projectID":   m.ProjectID,
+		"projectRole": m.ProjectRole,
+		"createdAt":   m.CreatedAt,
+		"updatedAt":   m.UpdatedAt,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create project member: %w", err)
+	}
+
+	_, err = tx.Exec(ctx, query.DeleteProjectInvitationByEmailAndProjectID, pgx.NamedArgs{
+		"email":     m.User.Email,
+		"projectID": m.ProjectID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete project invitation: %w", err)
 	}
 
 	return nil

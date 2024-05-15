@@ -29,6 +29,9 @@ var (
 	//go:embed scripts/create_project.sql
 	CreateProject string
 
+	//go:embed scripts/delete_project_invitation_by_email_and_project_id.sql
+	DeleteProjectInvitationByEmailAndProjectID string
+
 	//go:embed scripts/create_project_member.sql
 	CreateProjectMember string
 )
