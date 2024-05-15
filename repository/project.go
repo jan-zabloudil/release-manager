@@ -400,14 +400,16 @@ func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID,
 }
 
 func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
-	err := r.client.
-		DB.From(projectMemberDBEntity).
-		Delete().
-		Eq("project_id", projectID.String()).
-		Eq("user_id", userID.String()).
-		ExecuteWithContext(ctx, nil)
+	result, err := r.dbpool.Exec(ctx, query.DeleteProjectMember, pgx.NamedArgs{
+		"projectID": projectID,
+		"userID":    userID,
+	})
 	if err != nil {
-		return util.ToDBError(err)
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apierrors.NewProjectMemberNotFoundError()
 	}
 
 	return nil

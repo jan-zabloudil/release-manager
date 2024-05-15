@@ -396,25 +396,12 @@ func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID, au
 		return err
 	}
 
-	exists, err := s.projectExists(ctx, projectID)
+	err := s.repo.DeleteMember(ctx, projectID, userID)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		return apierrors.NewProjectNotFoundError()
-	}
 
-	_, err = s.repo.ReadMember(ctx, projectID, userID)
-	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return apierrors.NewProjectMemberNotFoundError().Wrap(err)
-		default:
-			return err
-		}
-	}
-
-	return s.repo.DeleteMember(ctx, projectID, userID)
+	return nil
 }
 
 func (s *ProjectService) UpdateMemberRole(ctx context.Context, newRole model.ProjectRole, projectID, userID, authUserID uuid.UUID) (model.ProjectMember, error) {
