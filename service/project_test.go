@@ -532,8 +532,19 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 			name:      "Success",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadAllEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{}, nil)
+				projectRepo.On("ListEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{
+					{ID: uuid.New()},
+					{ID: uuid.New()},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name:      "no environments",
+			projectID: uuid.New(),
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				projectRepo.On("ListEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{}, nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: false,
 		},
@@ -541,7 +552,8 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 			name:      "project not found",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
+				projectRepo.On("ListEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{}, nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},

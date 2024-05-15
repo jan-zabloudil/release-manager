@@ -22,7 +22,7 @@ type projectRepository interface {
 	ReadEnvironmentByNameForProject(ctx context.Context, projectID uuid.UUID, name string) (model.Environment, error)
 	UpdateEnvironment(ctx context.Context, env model.Environment) error
 	DeleteEnvironment(ctx context.Context, envID uuid.UUID) error
-	ReadAllEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
+	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
 	ReadInvitation(ctx context.Context, invitationID uuid.UUID) (model.ProjectInvitation, error)

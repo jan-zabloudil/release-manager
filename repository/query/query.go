@@ -39,4 +39,6 @@ var (
 
 	//go:embed scripts/create_environment.sql
 	CreateEnvironment string
+	//go:embed scripts/list_environments_for_project.sql
+	ListEnvironmentsForProject string
 )

@@ -54,7 +54,7 @@ func (m *ProjectRepository) ReadEnvironmentByNameForProject(ctx context.Context,
 	return args.Get(0).(svcmodel.Environment), args.Error(1)
 }
 
-func (m *ProjectRepository) ReadAllEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
+func (m *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.Environment), args.Error(1)
 }

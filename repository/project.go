@@ -191,23 +191,15 @@ func (r *ProjectRepository) ReadEnvironmentByNameForProject(ctx context.Context,
 	return env, nil
 }
 
-func (r *ProjectRepository) ReadAllEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
-	var resp []model.Environment
-	err := r.client.
-		DB.From(environmentDBEntity).
-		Select("*").
-		Eq("project_id", projectID.String()).
-		ExecuteWithContext(ctx, &resp)
+func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
+	var e []model.Environment
+
+	err := pgxscan.Select(ctx, r.dbpool, &e, query.ListEnvironmentsForProject, pgx.NamedArgs{"projectID": projectID})
 	if err != nil {
-		return nil, util.ToDBError(err)
+		return nil, err
 	}
 
-	envs, err := model.ToSvcEnvironments(resp)
-	if err != nil {
-		return nil, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return envs, nil
+	return model.ToSvcEnvironments(e)
 }
 
 func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, envID uuid.UUID) error {
