@@ -387,18 +387,40 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 	return nil
 }
 
-func (r *ProjectRepository) ReadMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
-	var resp []model.ProjectMember
-	err := r.client.
-		DB.From(projectMemberDBEntity).
-		Select(fmt.Sprintf("*,%s(*)", userDBEntity)). // docs https://supabase.com/docs/guides/database/joins-and-nesting
-		Eq("project_id", projectID.String()).
-		ExecuteWithContext(ctx, &resp)
+func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+	var m []svcmodel.ProjectMember
+
+	rows, err := r.dbpool.Query(ctx, query.ListMembersForProject, pgx.NamedArgs{"projectID": projectID})
 	if err != nil {
-		return nil, util.ToDBError(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var member model.ProjectMember
+		if err := rows.Scan(
+			&member.User.ID,
+			&member.User.Email,
+			&member.User.Name,
+			&member.User.AvatarURL,
+			&member.User.Role,
+			&member.User.CreatedAt,
+			&member.User.UpdatedAt,
+			&member.ProjectID,
+			&member.ProjectRole,
+			&member.CreatedAt,
+			&member.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		m = append(m, model.ToSvcProjectMember(member))
 	}
 
-	return model.ToSvcProjectMembers(resp), nil
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }
 
 func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {

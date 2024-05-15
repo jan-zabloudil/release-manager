@@ -31,14 +31,6 @@ func ToSvcProjectMember(p ProjectMember) svcmodel.ProjectMember {
 	}
 }
 
-func ToSvcProjectMembers(members []ProjectMember) []svcmodel.ProjectMember {
-	m := make([]svcmodel.ProjectMember, 0, len(members))
-	for _, member := range members {
-		m = append(m, ToSvcProjectMember(member))
-	}
-	return m
-}
-
 func ToUpdateProjectMemberInput(p svcmodel.ProjectMember) UpdateProjectMemberInput {
 	return UpdateProjectMemberInput{
 		ProjectRole: string(p.ProjectRole),
