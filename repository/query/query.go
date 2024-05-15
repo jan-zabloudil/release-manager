@@ -41,4 +41,6 @@ var (
 	CreateEnvironment string
 	//go:embed scripts/list_environments_for_project.sql
 	ListEnvironmentsForProject string
+	//go:embed scripts/delete_environment_for_project.sql
+	DeleteEnvironmentForProject string
 )

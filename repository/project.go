@@ -202,14 +202,17 @@ func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, proj
 	return model.ToSvcEnvironments(e)
 }
 
-func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, envID uuid.UUID) error {
-	err := r.client.
-		DB.From(environmentDBEntity).
-		Delete().
-		Eq("id", envID.String()).
-		ExecuteWithContext(ctx, nil)
+func (r *ProjectRepository) DeleteEnvironmentForProject(ctx context.Context, projectID, envID uuid.UUID) error {
+	result, err := r.dbpool.Exec(ctx, query.DeleteEnvironmentForProject, pgx.NamedArgs{
+		"envID":     envID,
+		"projectID": projectID,
+	})
 	if err != nil {
-		return util.ToDBError(err)
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apierrors.NewEnvironmentNotFoundError()
 	}
 
 	return nil

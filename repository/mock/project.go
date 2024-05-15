@@ -59,8 +59,8 @@ func (m *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, proj
 	return args.Get(0).([]svcmodel.Environment), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, envID uuid.UUID) error {
-	args := m.Called(ctx, envID)
+func (m *ProjectRepository) DeleteEnvironmentForProject(ctx context.Context, projectID, envID uuid.UUID) error {
+	args := m.Called(ctx, projectID, envID)
 	return args.Error(0)
 }
 

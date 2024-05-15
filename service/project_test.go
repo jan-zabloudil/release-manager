@@ -599,21 +599,9 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
-				projectRepo.On("DeleteEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("DeleteEnvironmentForProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
-		},
-		{
-			name:      "project not found",
-			projectID: uuid.New(),
-			envID:     uuid.New(),
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
-			},
-			wantErr: true,
 		},
 		{
 			name:      "env not found",
@@ -621,8 +609,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, errors.New("env not found"))
+				projectRepo.On("DeleteEnvironmentForProject", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
 		},

@@ -222,17 +222,12 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 		return err
 	}
 
-	_, err := s.GetProject(ctx, projectID, authUserID)
+	err := s.repo.DeleteEnvironmentForProject(ctx, projectID, envID)
 	if err != nil {
 		return err
 	}
 
-	_, err = s.GetEnvironment(ctx, projectID, envID, authUserID)
-	if err != nil {
-		return err
-	}
-
-	return s.repo.DeleteEnvironment(ctx, envID)
+	return nil
 }
 
 func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
