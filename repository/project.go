@@ -329,7 +329,7 @@ func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
+func (r *ProjectRepository) DeleteInvitationForProject(ctx context.Context, projectID, invitationID uuid.UUID) error {
 	result, err := r.dbpool.Exec(ctx, query.DeleteInvitationForProject, pgx.NamedArgs{
 		"projectID":    projectID,
 		"invitationID": invitationID,

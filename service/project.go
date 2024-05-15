@@ -315,7 +315,7 @@ func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invita
 		return err
 	}
 
-	err := s.repo.DeleteInvitation(ctx, projectID, invitationID)
+	err := s.repo.DeleteInvitationForProject(ctx, projectID, invitationID)
 	if err != nil {
 		return err
 	}
