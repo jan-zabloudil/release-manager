@@ -199,14 +199,19 @@ func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.UpdateEn
 func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Environment, error) {
 	// TODO add project member authorization
 
-	_, err := s.GetProject(ctx, projectID, authUserID)
+	envs, err := s.repo.ListEnvironmentsForProject(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
 
-	envs, err := s.repo.ReadAllEnvironmentsForProject(ctx, projectID)
-	if err != nil {
-		return nil, err
+	if len(envs) == 0 {
+		exists, err := s.projectExists(ctx, projectID)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, apierrors.NewProjectNotFoundError()
+		}
 	}
 
 	return envs, nil

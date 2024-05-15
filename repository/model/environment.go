@@ -9,13 +9,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// Environment TODO once all functions are using db pool, remove json tags
 type Environment struct {
-	ID         uuid.UUID `json:"id"`
-	ProjectID  uuid.UUID `json:"project_id"`
-	Name       string    `json:"name"`
-	ServiceURL string    `json:"service_url"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID         uuid.UUID `json:"id" db:"id"`
+	ProjectID  uuid.UUID `json:"project_id" db:"project_id"`
+	Name       string    `json:"name" db:"name"`
+	ServiceURL string    `json:"service_url" db:"service_url"`
+	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type UpdateEnvironmentInput struct {
