@@ -24,17 +24,6 @@ type UpdateEnvironmentInput struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-func ToEnvironment(e svcmodel.Environment) Environment {
-	return Environment{
-		ID:         e.ID,
-		ProjectID:  e.ProjectID,
-		Name:       e.Name,
-		ServiceURL: e.ServiceURL.String(),
-		CreatedAt:  e.CreatedAt,
-		UpdatedAt:  e.UpdatedAt,
-	}
-}
-
 func ToUpdateEnvironmentInput(e svcmodel.Environment) UpdateEnvironmentInput {
 	return UpdateEnvironmentInput{
 		Name:       e.Name,

@@ -34,4 +34,7 @@ var (
 
 	//go:embed scripts/create_project_member.sql
 	CreateProjectMember string
+
+	//go:embed scripts/create_environment.sql
+	CreateEnvironment string
 )
