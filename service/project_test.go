@@ -1134,21 +1134,11 @@ func TestProjectService_DeleteMember(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name:      "Non existing project",
-			projectID: uuid.New(),
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
-			},
-			wantErr: true,
-		},
-		{
 			name:      "Non existing member",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, dberrors.NewNotFoundError())
+				projectRepo.On("DeleteMember", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewProjectMemberNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -1157,8 +1147,6 @@ func TestProjectService_DeleteMember(t *testing.T) {
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, nil)
 				projectRepo.On("DeleteMember", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
