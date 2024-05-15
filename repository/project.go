@@ -139,14 +139,16 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, p svcmodel.Projec
 }
 
 func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.Environment) error {
-	data := model.ToEnvironment(e)
-
-	err := r.client.
-		DB.From(environmentDBEntity).
-		Insert(&data).
-		ExecuteWithContext(ctx, nil)
+	_, err := r.dbpool.Exec(ctx, query.CreateEnvironment, pgx.NamedArgs{
+		"id":         e.ID,
+		"projectID":  e.ProjectID,
+		"name":       e.Name,
+		"serviceURL": e.ServiceURL.String(),
+		"createdAt":  e.CreatedAt,
+		"updatedAt":  e.UpdatedAt,
+	})
 	if err != nil {
-		return util.ToDBError(err)
+		return err
 	}
 
 	return nil
