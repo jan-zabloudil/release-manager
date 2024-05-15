@@ -330,19 +330,10 @@ func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 }
 
 func (r *ProjectRepository) DeleteInvitationForProject(ctx context.Context, projectID, invitationID uuid.UUID) error {
-	result, err := r.dbpool.Exec(ctx, query.DeleteInvitationForProject, pgx.NamedArgs{
+	return r.deleteInvitation(ctx, query.DeleteInvitationForProject, pgx.NamedArgs{
 		"projectID":    projectID,
 		"invitationID": invitationID,
 	})
-	if err != nil {
-		return err
-	}
-
-	if result.RowsAffected() == 0 {
-		return apierrors.NewProjectInvitationNotFoundError()
-	}
-
-	return nil
 }
 
 func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
@@ -350,10 +341,14 @@ func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
 	hash crypto.Hash,
 	status svcmodel.ProjectInvitationStatus,
 ) error {
-	result, err := r.dbpool.Exec(ctx, query.DeleteProjectInvitationByHashAndStatus, pgx.NamedArgs{
+	return r.deleteInvitation(ctx, query.DeleteProjectInvitationByHashAndStatus, pgx.NamedArgs{
 		"hash":   hash.ToBase64(),
 		"status": string(status),
 	})
+}
+
+func (r *ProjectRepository) deleteInvitation(ctx context.Context, deleteQuery string, args pgx.NamedArgs) error {
+	result, err := r.dbpool.Exec(ctx, deleteQuery, args)
 	if err != nil {
 		return err
 	}
