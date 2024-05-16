@@ -402,23 +402,11 @@ func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID
 	defer rows.Close()
 
 	for rows.Next() {
-		var member model.ProjectMember
-		if err := rows.Scan(
-			&member.User.ID,
-			&member.User.Email,
-			&member.User.Name,
-			&member.User.AvatarURL,
-			&member.User.Role,
-			&member.User.CreatedAt,
-			&member.User.UpdatedAt,
-			&member.ProjectID,
-			&member.ProjectRole,
-			&member.CreatedAt,
-			&member.UpdatedAt,
-		); err != nil {
+		member, err := model.ScanToSvcProjectMember(rows)
+		if err != nil {
 			return nil, err
 		}
-		m = append(m, model.ToSvcProjectMember(member))
+		m = append(m, member)
 	}
 
 	if err = rows.Err(); err != nil {
