@@ -417,19 +417,21 @@ func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID
 }
 
 func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
-	var resp model.ProjectMember
-	err := r.client.
-		DB.From(projectMemberDBEntity).
-		Select(fmt.Sprintf("*,%s(*)", userDBEntity)). // docs https://supabase.com/docs/guides/database/joins-and-nesting
-		Single().
-		Eq("project_id", projectID.String()).
-		Eq("user_id", userID.String()).
-		ExecuteWithContext(ctx, &resp)
+	row := r.dbpool.QueryRow(ctx, query.ReadMember, pgx.NamedArgs{
+		"projectID": projectID,
+		"userID":    userID,
+	})
+
+	m, err := model.ScanToSvcProjectMember(row)
 	if err != nil {
-		return svcmodel.ProjectMember{}, util.ToDBError(err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return svcmodel.ProjectMember{}, apierrors.NewProjectMemberNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.ProjectMember{}, err
 	}
 
-	return model.ToSvcProjectMember(resp), nil
+	return m, nil
 }
 
 func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {

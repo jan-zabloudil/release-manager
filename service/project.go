@@ -412,12 +412,7 @@ func (s *ProjectService) UpdateMemberRole(ctx context.Context, newRole model.Pro
 
 	m, err := s.repo.ReadMember(ctx, projectID, userID)
 	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return model.ProjectMember{}, apierrors.NewProjectMemberNotFoundError().Wrap(err)
-		default:
-			return model.ProjectMember{}, err
-		}
+		return model.ProjectMember{}, err
 	}
 
 	if err := m.UpdateProjectRole(newRole); err != nil {
