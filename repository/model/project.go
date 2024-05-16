@@ -19,14 +19,6 @@ type Project struct {
 	UpdatedAt                 time.Time                 `db:"updated_at"`
 }
 
-type UpdateProjectInput struct {
-	Name                      string                    `json:"name"`
-	SlackChannelID            string                    `json:"slack_channel_id"`
-	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepositoryURL       string                    `json:"github_repository_url"`
-	UpdatedAt                 time.Time                 `json:"updated_at"`
-}
-
 type ReleaseNotificationConfig struct {
 	Message          string `json:"message"`
 	ShowProjectName  bool   `json:"show_project_name"`
@@ -34,16 +26,6 @@ type ReleaseNotificationConfig struct {
 	ShowReleaseNotes bool   `json:"show_release_notes"`
 	ShowDeployments  bool   `json:"show_deployments"`
 	ShowSourceCode   bool   `json:"show_source_code"`
-}
-
-func ToUpdateProjectInput(p svcmodel.Project) UpdateProjectInput {
-	return UpdateProjectInput{
-		Name:                      p.Name,
-		SlackChannelID:            p.SlackChannelID,
-		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepositoryURL:       p.GithubRepositoryURL.String(),
-		UpdatedAt:                 p.UpdatedAt,
-	}
 }
 
 func ToSvcProject(p Project) (svcmodel.Project, error) {

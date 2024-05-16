@@ -24,10 +24,14 @@ var (
 
 	//go:embed scripts/read_project.sql
 	ReadProject string
+	//go:embed scripts/read_project_for_update.sql
+	ReadProjectForUpdate string
 	//go:embed scripts/delete_project.sql
 	DeleteProject string
 	//go:embed scripts/create_project.sql
 	CreateProject string
+	//go:embed scripts/update_project.sql
+	UpdateProject string
 
 	//go:embed scripts/delete_project_invitation_by_email_and_project_id.sql
 	DeleteProjectInvitationByEmailAndProjectID string

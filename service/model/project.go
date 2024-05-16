@@ -79,6 +79,8 @@ func NewProject(c CreateProjectInput) (Project, error) {
 	return p, nil
 }
 
+type UpdateProjectFunc func(p Project) (Project, error)
+
 func (p *Project) Update(u UpdateProjectInput) error {
 	if u.GithubRepositoryRawURL != nil {
 		u, err := url.Parse(*u.GithubRepositoryRawURL)

@@ -99,16 +99,14 @@ func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID,
 func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
 	// TODO add project member authorization
 
-	p, err := s.GetProject(ctx, projectID, authUserID)
+	p, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
+		if err := p.Update(u); err != nil {
+			return model.Project{}, apierrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
+		}
+
+		return p, nil
+	})
 	if err != nil {
-		return model.Project{}, err
-	}
-
-	if err := p.Update(u); err != nil {
-		return model.Project{}, apierrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
-	}
-
-	if err := s.repo.UpdateProject(ctx, p); err != nil {
 		return model.Project{}, err
 	}
 
