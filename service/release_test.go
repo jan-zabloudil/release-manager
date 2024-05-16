@@ -9,6 +9,7 @@ import (
 	repo "release-manager/repository/mock"
 	svc "release-manager/service/mock"
 	"release-manager/service/model"
+	slack "release-manager/slack/mock"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,19 +18,69 @@ import (
 
 func TestReleaseService_Create(t *testing.T) {
 	testCases := []struct {
-		name      string
-		release   model.CreateReleaseInput
-		mockSetup func(*svc.ProjectService, *repo.ReleaseRepository)
-		wantErr   bool
+		name                    string
+		release                 model.CreateReleaseInput
+		sendReleaseNotification bool
+		mockSetup               func(*svc.ProjectService, *svc.SettingsService, *slack.Client, *repo.ReleaseRepository)
+		wantErr                 bool
 	}{
 		{
-			name: "Valid release",
+			name: "Create release without sending notification",
 			release: model.CreateReleaseInput{
 				ReleaseTitle: "Test release",
 				ReleaseNotes: "Test release notes",
 			},
-			mockSetup: func(projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+			sendReleaseNotification: false,
+			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Create release with notification",
+			release: model.CreateReleaseInput{
+				ReleaseTitle: "Test release",
+				ReleaseNotes: "Test release notes",
+			},
+			sendReleaseNotification: true,
+			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					SlackChannelID: "channel",
+				}, nil)
+				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
+				slackClient.On("SendReleaseNotification", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+			},
+			wantErr: false,
+		},
+		{
+			name: "Create release (slack integration not enabled)",
+			release: model.CreateReleaseInput{
+				ReleaseTitle: "Test release",
+				ReleaseNotes: "Test release notes",
+			},
+			sendReleaseNotification: true,
+			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					SlackChannelID: "channel",
+				}, nil)
+				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", apierrors.NewSlackIntegrationNotEnabledError())
+			},
+			wantErr: false,
+		},
+		{
+			name: "Create release (project has no slack channel)",
+			release: model.CreateReleaseInput{
+				ReleaseTitle: "Test release",
+				ReleaseNotes: "Test release notes",
+			},
+			sendReleaseNotification: true,
+			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					SlackChannelID: "",
+				}, nil)
 				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -40,7 +91,7 @@ func TestReleaseService_Create(t *testing.T) {
 				ReleaseTitle: "Release",
 				ReleaseNotes: "Test release notes",
 			},
-			mockSetup: func(projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
 			},
 			wantErr: true,
@@ -51,7 +102,7 @@ func TestReleaseService_Create(t *testing.T) {
 				ReleaseTitle: "",
 				ReleaseNotes: "Test release notes",
 			},
-			mockSetup: func(projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: true,
@@ -61,12 +112,14 @@ func TestReleaseService_Create(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
 			releaseRepo := new(repo.ReleaseRepository)
-			service := NewReleaseService(projectSvc, releaseRepo)
+			slackClient := new(slack.Client)
+			service := NewReleaseService(projectSvc, settingsSvc, slackClient, releaseRepo)
 
-			tc.mockSetup(projectSvc, releaseRepo)
+			tc.mockSetup(projectSvc, settingsSvc, slackClient, releaseRepo)
 
-			_, err := service.Create(context.TODO(), tc.release, uuid.New(), uuid.New())
+			_, err := service.Create(context.TODO(), tc.release, tc.sendReleaseNotification, uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -75,6 +128,8 @@ func TestReleaseService_Create(t *testing.T) {
 			}
 
 			projectSvc.AssertExpectations(t)
+			settingsSvc.AssertExpectations(t)
+			slackClient.AssertExpectations(t)
 			releaseRepo.AssertExpectations(t)
 		})
 	}

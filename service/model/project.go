@@ -111,7 +111,7 @@ func (p *Project) Validate() error {
 	return nil
 }
 
-func (p *Project) IsSlackConfigured() bool {
+func (p *Project) IsSlackChannelSet() bool {
 	return p.SlackChannelID != ""
 }
 

@@ -68,6 +68,7 @@ type authGuard interface {
 
 type settingsGetter interface {
 	GetGithubToken(ctx context.Context) (string, error)
+	GetSlackToken(ctx context.Context) (string, error)
 }
 
 type userGetter interface {
@@ -87,6 +88,10 @@ type emailSender interface {
 	SendEmailAsync(ctx context.Context, email model.Email)
 }
 
+type slackNotifier interface {
+	SendReleaseNotification(ctx context.Context, token, channel string, notification model.ReleaseNotification)
+}
+
 type Service struct {
 	Authorization *AuthorizationService
 	User          *UserService
@@ -102,12 +107,13 @@ func NewService(
 	releaseRepo releaseRepository,
 	githubManager githubManager,
 	emailSender emailSender,
+	slackNotifier slackNotifier,
 ) *Service {
 	authSvc := NewAuthorizationService(userRepo, projectRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)
-	releaseSvc := NewReleaseService(projectSvc, releaseRepo)
+	releaseSvc := NewReleaseService(projectSvc, settingsSvc, slackNotifier, releaseRepo)
 
 	return &Service{
 		Authorization: authSvc,

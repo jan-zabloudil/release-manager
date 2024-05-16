@@ -60,3 +60,16 @@ func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
 
 	return settings.Github.Token, nil
 }
+
+func (s *SettingsService) GetSlackToken(ctx context.Context) (string, error) {
+	settings, err := s.repository.Read(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	if !settings.Slack.Enabled {
+		return "", apierrors.NewSlackIntegrationNotEnabledError()
+	}
+
+	return settings.Slack.Token, nil
+}

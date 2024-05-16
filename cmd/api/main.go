@@ -12,6 +12,7 @@ import (
 	"release-manager/repository"
 	resendx "release-manager/resend"
 	"release-manager/service"
+	"release-manager/slack"
 	"release-manager/transport/handler"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -44,6 +45,7 @@ func run() error {
 	githubClient := githubx.NewClient()
 	resendClient := resendx.NewClient(taskManager, cfg.Resend)
 	authClient := auth.NewClient(supaClient)
+	slackClient := slack.NewClient(taskManager)
 
 	dbpool, err := pgxpool.New(ctx, cfg.Supabase.DatabaseURL)
 	if err != nil {
@@ -63,6 +65,7 @@ func run() error {
 		repo.Release,
 		githubClient,
 		resendClient,
+		slackClient,
 	)
 	h := handler.NewHandler(authClient, svc.User, svc.Project, svc.Settings, svc.Release)
 
