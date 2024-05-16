@@ -7,7 +7,6 @@ import (
 
 	"release-manager/pkg/apierrors"
 	"release-manager/pkg/crypto"
-	"release-manager/pkg/dberrors"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
 	"release-manager/repository/util"
@@ -21,7 +20,6 @@ import (
 )
 
 const (
-	projectDBEntity       = "projects"
 	environmentDBEntity   = "environments"
 	invitationDBEntity    = "project_invitations"
 	projectMemberDBEntity = "project_members"

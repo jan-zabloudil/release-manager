@@ -28,3 +28,18 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 
 	util.WriteJSONResponse(w, http.StatusCreated, model.ToRelease(rls))
 }
+
+func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
+	rls, err := h.ReleaseSvc.Get(
+		r.Context(),
+		util.ContextProjectID(r),
+		util.ContextReleaseID(r),
+		util.ContextAuthUserID(r),
+	)
+	if err != nil {
+		util.WriteResponseError(w, util.ToResponseError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, http.StatusOK, model.ToRelease(rls))
+}
