@@ -56,6 +56,7 @@ type settingsRepository interface {
 type releaseRepository interface {
 	Create(ctx context.Context, r model.Release) error
 	ReadForProject(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
+	Delete(ctx context.Context, projectID, releaseID uuid.UUID) error
 }
 
 type authGuard interface {

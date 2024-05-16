@@ -54,3 +54,13 @@ func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authorUs
 
 	return rls, nil
 }
+
+func (s *ReleaseService) Delete(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error {
+	// TODO add project member authorization
+
+	if err := s.repo.Delete(ctx, projectID, releaseID); err != nil {
+		return err
+	}
+
+	return nil
+}

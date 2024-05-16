@@ -62,3 +62,22 @@ func (r *ReleaseRepository) ReadForProject(ctx context.Context, projectID, relea
 
 	return model.ToSvcRelease(rls), nil
 }
+
+func (r *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uuid.UUID) error {
+	// Project ID is not needed in the query because releaseID is primary key
+	// But it is added for security reasons
+	// To make sure that the release belongs to the project that is passed from the service
+	result, err := r.dbpool.Exec(ctx, query.DeleteRelease, pgx.NamedArgs{
+		"projectID": projectID,
+		"releaseID": releaseID,
+	})
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apierrors.NewReleaseNotFoundError()
+	}
+
+	return nil
+}

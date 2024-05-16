@@ -123,3 +123,47 @@ func TestReleaseService_Get(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseService_Delete(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*repo.ReleaseRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Success",
+			mockSetup: func(repo *repo.ReleaseRepository) {
+				repo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Non-existing release",
+			mockSetup: func(repo *repo.ReleaseRepository) {
+				repo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewReleaseNotFoundError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectSvc := new(svc.ProjectService)
+			releaseRepo := new(repo.ReleaseRepository)
+			service := NewReleaseService(projectSvc, releaseRepo)
+
+			tc.mockSetup(releaseRepo)
+
+			err := service.Delete(context.TODO(), uuid.New(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			projectSvc.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}

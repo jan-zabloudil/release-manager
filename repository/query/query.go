@@ -7,8 +7,10 @@ import (
 var (
 	//go:embed scripts/create_release.sql
 	CreateRelease string
-	//go:embed scripts/read_release.sql
+	//go:embed scripts/read_release_for_project.sql
 	ReadReleaseForProject string
+	//go:embed scripts/delete_release.sql
+	DeleteRelease string
 
 	//go:embed scripts/read_user.sql
 	ReadUser string

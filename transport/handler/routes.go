@@ -65,6 +65,7 @@ func (h *Handler) setupRoutes() {
 				r.Route("/{release_id}", func(r chi.Router) {
 					r.Use(middleware.HandleResourceID("release_id", util.ContextSetReleaseID))
 					r.Get("/", middleware.RequireAuthUser(h.getRelease))
+					r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))
 				})
 			})
 		})
