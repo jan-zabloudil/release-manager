@@ -77,10 +77,27 @@ func (s *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, au
 }
 
 func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
-	// TODO add project member authorization
-	// TODO fetch only project where the user is a member
+	err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID)
+	switch {
+	case err == nil:
+		// Admin user can see all projects
+		p, err := s.repo.ListProjects(ctx)
+		if err != nil {
+			return nil, err
+		}
 
-	return s.repo.ReadAllProjects(ctx)
+		return p, nil
+	case err != nil && apierrors.IsForbiddenError(err):
+		// Non-admin user can see only projects they are members of
+		p, err := s.repo.ListProjectsForUser(ctx, authUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		return p, nil
+	default:
+		return nil, err
+	}
 }
 
 func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error {

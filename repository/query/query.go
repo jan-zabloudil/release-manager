@@ -32,6 +32,10 @@ var (
 	CreateProject string
 	//go:embed scripts/update_project.sql
 	UpdateProject string
+	//go:embed scripts/list_projects.sql
+	ListProjects string
+	//go:embed scripts/list_projects_for_user.sql
+	ListProjectsForUser string
 
 	//go:embed scripts/delete_invitation.sql
 	DeleteInvitation string

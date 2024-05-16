@@ -94,6 +94,63 @@ func TestProjectService_CreateProject(t *testing.T) {
 	}
 }
 
+func TestProjectService_ListProjects(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizeService, *repo.ProjectRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Non admin user",
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(apierrors.NewForbiddenInsufficientUserRoleError())
+				projectRepo.On("ListProjectsForUser", mock.Anything, mock.Anything).Return([]model.Project{}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Admin user",
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ListProjects", mock.Anything).Return([]model.Project{}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Unauthenticated user",
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(apierrors.NewUnauthorizedUnknownUserError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectRepo := new(repo.ProjectRepository)
+			github := new(githubmock.Client)
+			email := new(resendmock.Client)
+			userSvc := new(svc.UserService)
+			settingsSvc := new(svc.SettingsService)
+			authSvc := new(svc.AuthorizeService)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
+
+			tc.mockSetup(authSvc, projectRepo)
+
+			_, err := service.ListProjects(context.Background(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			projectRepo.AssertExpectations(t)
+			authSvc.AssertExpectations(t)
+		})
+	}
+}
+
 func TestProjectService_GetProject(t *testing.T) {
 	testCases := []struct {
 		name      string

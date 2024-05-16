@@ -13,7 +13,8 @@ import (
 type projectRepository interface {
 	CreateProjectWithOwner(ctx context.Context, p model.Project, owner model.ProjectMember) error
 	ReadProject(ctx context.Context, id uuid.UUID) (model.Project, error)
-	ReadAllProjects(ctx context.Context) ([]model.Project, error)
+	ListProjects(ctx context.Context) ([]model.Project, error)
+	ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
 	DeleteProject(ctx context.Context, id uuid.UUID) error
 	UpdateProject(ctx context.Context, projectID uuid.UUID, fn model.UpdateProjectFunc) (model.Project, error)
 

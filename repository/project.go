@@ -94,22 +94,23 @@ func (r *ProjectRepository) readProject(ctx context.Context, q pgxscan.Querier, 
 	return model.ToSvcProject(p)
 }
 
-func (r *ProjectRepository) ReadAllProjects(ctx context.Context) ([]svcmodel.Project, error) {
-	var resp []model.Project
-	err := r.client.
-		DB.From(projectDBEntity).
-		Select("*").
-		ExecuteWithContext(ctx, &resp)
+func (r *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Project, error) {
+	return r.listProjects(ctx, query.ListProjects, nil)
+}
+
+func (r *ProjectRepository) ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.Project, error) {
+	return r.listProjects(ctx, query.ListProjectsForUser, pgx.NamedArgs{"userID": userID})
+}
+
+func (r *ProjectRepository) listProjects(ctx context.Context, readQuery string, args pgx.NamedArgs) ([]svcmodel.Project, error) {
+	var p []model.Project
+
+	err := pgxscan.Select(ctx, r.dbpool, &p, readQuery, args)
 	if err != nil {
-		return nil, util.ToDBError(err)
+		return nil, err
 	}
 
-	p, err := model.ToSvcProjects(resp)
-	if err != nil {
-		return nil, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return p, nil
+	return model.ToSvcProjects(p)
 }
 
 func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {

@@ -24,8 +24,13 @@ func (m *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcm
 	return args.Get(0).(svcmodel.Project), args.Error(1)
 }
 
-func (m *ProjectRepository) ReadAllProjects(ctx context.Context) ([]svcmodel.Project, error) {
+func (m *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Project, error) {
 	args := m.Called(ctx)
+	return args.Get(0).([]svcmodel.Project), args.Error(1)
+}
+
+func (m *ProjectRepository) ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.Project, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).([]svcmodel.Project), args.Error(1)
 }
 
