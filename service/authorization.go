@@ -71,7 +71,7 @@ func (s *AuthorizationService) AuthorizeProjectRole(ctx context.Context, project
 	if err != nil {
 		switch {
 		case apierrors.IsNotFoundError(err):
-			return apierrors.NewForbiddenInsufficientProjectRoleError().Wrap(err)
+			return apierrors.NewForbiddenUserNotProjectMemberError().Wrap(err)
 		default:
 			return err
 		}
