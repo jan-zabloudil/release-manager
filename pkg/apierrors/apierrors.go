@@ -121,7 +121,7 @@ func NewForbiddenInsufficientUserRoleError() *APIError {
 
 func NewForbiddenInsufficientProjectRoleError() *APIError {
 	return &APIError{
-		Code:    errCodeForbiddenInsufficientUserRole,
+		Code:    errCodeForbiddenInsufficientProjectRole,
 		Message: "Forbidden access, insufficient project role.",
 	}
 }
