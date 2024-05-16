@@ -594,7 +594,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("DeleteEnvironmentForProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("DeleteEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -604,7 +604,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("DeleteEnvironmentForProject", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewEnvironmentNotFoundError())
+				projectRepo.On("DeleteEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -881,19 +881,10 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name: "Unknown project",
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
-			},
-			wantErr: true,
-		},
-		{
 			name: "Unknown invitation",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadInvitation", mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
+				projectRepo.On("DeleteInvitation", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewProjectInvitationNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -901,9 +892,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 			name: "Success",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadInvitation", mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, nil)
-				projectRepo.On("DeleteInvitation", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("DeleteInvitation", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -1018,20 +1007,16 @@ func TestProjectService_RejectInvitation(t *testing.T) {
 		{
 			name: "Unknown invitation",
 			mockSetup: func(projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadInvitationByTokenHashAndStatus", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
+				projectRepo.On("DeleteInvitationByTokenHashAndStatus", mock.Anything, mock.Anything, mock.Anything).
+					Return(apierrors.NewProjectInvitationNotFoundError())
 			},
 			wantErr: true,
 		},
 		{
 			name: "Success",
 			mockSetup: func(projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadInvitationByTokenHashAndStatus", mock.Anything, mock.Anything, mock.Anything).Return(
-					model.ProjectInvitation{
-						Email: "test@test.tt", ProjectRole: model.ProjectRoleEditor, Status: model.InvitationStatusPending, ProjectID: uuid.New(),
-					},
-					nil,
-				)
-				projectRepo.On("DeleteInvitation", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("DeleteInvitationByTokenHashAndStatus", mock.Anything, mock.Anything, mock.Anything).
+					Return(nil)
 			},
 			wantErr: false,
 		},

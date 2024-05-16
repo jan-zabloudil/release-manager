@@ -21,15 +21,15 @@ type projectRepository interface {
 	ReadEnvironment(ctx context.Context, envID uuid.UUID) (model.Environment, error)
 	ReadEnvironmentByNameForProject(ctx context.Context, projectID uuid.UUID, name string) (model.Environment, error)
 	UpdateEnvironment(ctx context.Context, env model.Environment) error
-	DeleteEnvironmentForProject(ctx context.Context, projectID, envID uuid.UUID) error
+	DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error
 	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
-	ReadInvitation(ctx context.Context, invitationID uuid.UUID) (model.ProjectInvitation, error)
 	ReadAllInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
 	ReadInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) (model.ProjectInvitation, error)
 	ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (model.ProjectInvitation, error)
-	DeleteInvitation(ctx context.Context, invitationID uuid.UUID) error
+	DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error
+	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
 	UpdateInvitation(ctx context.Context, i model.ProjectInvitation) error
 
 	CreateMember(ctx context.Context, member model.ProjectMember) error

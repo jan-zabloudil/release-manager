@@ -45,7 +45,7 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 func (r *ReleaseRepository) ReadForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
 	var rls model.Release
 
-	err := pgxscan.Get(ctx, r.dbpool, &rls, query.ReadReleaseForProject, pgx.NamedArgs{"projectID": projectID, "releaseID": releaseID})
+	err := pgxscan.Get(ctx, r.dbpool, &rls, query.ReadRelease, pgx.NamedArgs{"projectID": projectID, "releaseID": releaseID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return svcmodel.Release{}, apierrors.NewReleaseNotFoundError().Wrap(err)

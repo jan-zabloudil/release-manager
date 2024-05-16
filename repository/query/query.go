@@ -7,8 +7,8 @@ import (
 var (
 	//go:embed scripts/create_release.sql
 	CreateRelease string
-	//go:embed scripts/read_release_for_project.sql
-	ReadReleaseForProject string
+	//go:embed scripts/read_release.sql
+	ReadRelease string
 
 	//go:embed scripts/read_user.sql
 	ReadUser string
@@ -33,13 +33,17 @@ var (
 	//go:embed scripts/update_project.sql
 	UpdateProject string
 
-	//go:embed scripts/delete_project_invitation_by_email_and_project_id.sql
-	DeleteProjectInvitationByEmailAndProjectID string
+	//go:embed scripts/delete_invitation.sql
+	DeleteInvitation string
+	//go:embed scripts/delete_invitation_by_email_and_project_id.sql
+	DeleteInvitationByEmailAndProjectID string
+	//go:embed scripts/delete_invitation_by_hash_and_status.sql
+	DeleteInvitationByHashAndStatus string
 
-	//go:embed scripts/create_project_member.sql
-	CreateProjectMember string
-	//go:embed scripts/delete_project_member.sql
-	DeleteProjectMember string
+	//go:embed scripts/create_member.sql
+	CreateMember string
+	//go:embed scripts/delete_member.sql
+	DeleteMember string
 	//go:embed scripts/list_members_for_project.sql
 	ListMembersForProject string
 
@@ -47,6 +51,6 @@ var (
 	CreateEnvironment string
 	//go:embed scripts/list_environments_for_project.sql
 	ListEnvironmentsForProject string
-	//go:embed scripts/delete_environment_for_project.sql
-	DeleteEnvironmentForProject string
+	//go:embed scripts/delete_environment.sql
+	DeleteEnvironment string
 )
