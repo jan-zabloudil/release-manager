@@ -176,8 +176,19 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 }
 
 func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
+	// Project ID is not needed in the query because envID is primary key
+	// But it is added for security reasons
+	// To make sure that the environment belongs to the project that is passed from the service
 	return r.readEnvironment(ctx, query.ReadEnvironment, pgx.NamedArgs{
 		"envID":     envID,
+		"projectID": projectID,
+	})
+}
+
+func (r *ProjectRepository) ReadEnvironmentByName(ctx context.Context, projectID uuid.UUID, name string) (svcmodel.Environment, error) {
+	// Fetches the environment by name for the project
+	return r.readEnvironment(ctx, query.ReadEnvironmentByName, pgx.NamedArgs{
+		"name":      name,
 		"projectID": projectID,
 	})
 }
@@ -195,26 +206,6 @@ func (r *ProjectRepository) readEnvironment(ctx context.Context, readQuery strin
 	}
 
 	return model.ToSvcEnvironment(e)
-}
-
-func (r *ProjectRepository) ReadEnvironmentByNameForProject(ctx context.Context, projectID uuid.UUID, name string) (svcmodel.Environment, error) {
-	var resp model.Environment
-	err := r.client.
-		DB.From(environmentDBEntity).
-		Select("*").Single().
-		Eq("name", name).
-		Eq("project_id", projectID.String()).
-		ExecuteWithContext(ctx, &resp)
-	if err != nil {
-		return svcmodel.Environment{}, util.ToDBError(err)
-	}
-
-	env, err := model.ToSvcEnvironment(resp)
-	if err != nil {
-		return svcmodel.Environment{}, dberrors.NewToSvcModelError().Wrap(err)
-	}
-
-	return env, nil
 }
 
 func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {

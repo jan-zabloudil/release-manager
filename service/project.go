@@ -460,8 +460,8 @@ func (s *ProjectService) invitationExists(ctx context.Context, email string, pro
 }
 
 func (s *ProjectService) isEnvironmentNameUnique(ctx context.Context, projectID uuid.UUID, name string) (bool, error) {
-	if _, err := s.repo.ReadEnvironmentByNameForProject(ctx, projectID, name); err != nil {
-		if dberrors.IsNotFoundError(err) {
+	if _, err := s.repo.ReadEnvironmentByName(ctx, projectID, name); err != nil {
+		if apierrors.IsNotFoundError(err) {
 			return true, nil
 		}
 
