@@ -378,15 +378,22 @@ func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID 
 		return nil, err
 	}
 
-	exists, err := s.projectExists(ctx, projectID)
+	m, err := s.repo.ListMembersForProject(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		return nil, apierrors.NewProjectNotFoundError()
+
+	if len(m) == 0 {
+		exists, err := s.projectExists(ctx, projectID)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, apierrors.NewProjectNotFoundError()
+		}
 	}
 
-	return s.repo.ReadMembersForProject(ctx, projectID)
+	return m, nil
 }
 
 func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error {

@@ -109,7 +109,7 @@ func (m *ProjectRepository) CreateMember(ctx context.Context, member svcmodel.Pr
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ReadMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
 }

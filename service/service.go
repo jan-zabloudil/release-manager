@@ -33,7 +33,7 @@ type projectRepository interface {
 	UpdateInvitation(ctx context.Context, i model.ProjectInvitation) error
 
 	CreateMember(ctx context.Context, member model.ProjectMember) error
-	ReadMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
+	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
 	UpdateMember(ctx context.Context, m model.ProjectMember) error

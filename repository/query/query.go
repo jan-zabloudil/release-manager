@@ -40,6 +40,8 @@ var (
 	CreateProjectMember string
 	//go:embed scripts/delete_project_member.sql
 	DeleteProjectMember string
+	//go:embed scripts/list_members_for_project.sql
+	ListMembersForProject string
 
 	//go:embed scripts/create_environment.sql
 	CreateEnvironment string
