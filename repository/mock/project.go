@@ -44,8 +44,8 @@ func (m *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ReadEnvironment(ctx context.Context, envID uuid.UUID) (svcmodel.Environment, error) {
-	args := m.Called(ctx, envID)
+func (m *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
+	args := m.Called(ctx, projectID, envID)
 	return args.Get(0).(svcmodel.Environment), args.Error(1)
 }
 

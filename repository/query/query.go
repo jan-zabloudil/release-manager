@@ -53,4 +53,6 @@ var (
 	ListEnvironmentsForProject string
 	//go:embed scripts/delete_environment.sql
 	DeleteEnvironment string
+	//go:embed scripts/read_environment.sql
+	ReadEnvironment string
 )

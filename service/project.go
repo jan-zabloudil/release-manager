@@ -144,19 +144,9 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
 	// TODO add project member authorization
 
-	_, err := s.GetProject(ctx, projectID, authUserID)
+	env, err := s.repo.ReadEnvironment(ctx, projectID, envID)
 	if err != nil {
 		return model.Environment{}, err
-	}
-
-	env, err := s.repo.ReadEnvironment(ctx, envID)
-	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return model.Environment{}, apierrors.NewEnvironmentNotFoundError().Wrap(err)
-		default:
-			return model.Environment{}, err
-		}
 	}
 
 	return env, nil
