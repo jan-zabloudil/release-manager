@@ -11,7 +11,7 @@ SELECT
     pm.created_at,
     pm.updated_at
 FROM project_members pm
-         JOIN users u ON u.id = pm.user_id
+JOIN users u ON u.id = pm.user_id
 WHERE
-        pm.project_id = @projectID AND
-        u.email = @email
+    pm.project_id = @projectID AND
+    u.email = @email

@@ -45,16 +45,6 @@ func ScanToSvcProjectMember(row pgx.Row) (svcmodel.ProjectMember, error) {
 	return m, nil
 }
 
-func ToSvcProjectMember(p ProjectMember) svcmodel.ProjectMember {
-	return svcmodel.ProjectMember{
-		User:        ToSvcUser(p.User),
-		ProjectID:   p.ProjectID,
-		ProjectRole: svcmodel.ProjectRole(p.ProjectRole),
-		CreatedAt:   p.CreatedAt,
-		UpdatedAt:   p.UpdatedAt,
-	}
-}
-
 func ToUpdateProjectMemberInput(p svcmodel.ProjectMember) UpdateProjectMemberInput {
 	return UpdateProjectMemberInput{
 		ProjectRole: string(p.ProjectRole),
