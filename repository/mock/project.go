@@ -119,6 +119,11 @@ func (m *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID,
 	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
 }
 
+func (m *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (svcmodel.ProjectMember, error) {
+	args := m.Called(ctx, projectID, email)
+	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
+}
+
 func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
 	args := m.Called(ctx, projectID, userID)
 	return args.Error(0)

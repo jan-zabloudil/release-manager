@@ -477,19 +477,9 @@ func (s *ProjectService) isEnvironmentNameUnique(ctx context.Context, projectID 
 }
 
 func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {
-	// TODO: Check in one query once Postgres is accessed directly.
-	u, err := s.userGetter.GetByEmail(ctx, email)
+	_, err := s.repo.ReadMemberByEmail(ctx, projectID, email)
 	if err != nil {
 		if apierrors.IsNotFoundError(err) {
-			return false, nil
-		}
-
-		return false, err
-	}
-
-	_, err = s.repo.ReadMember(ctx, projectID, u.ID)
-	if err != nil {
-		if dberrors.IsNotFoundError(err) {
 			return false, nil
 		}
 

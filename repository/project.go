@@ -417,11 +417,21 @@ func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID
 }
 
 func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
-	row := r.dbpool.QueryRow(ctx, query.ReadMember, pgx.NamedArgs{
+	return r.readMember(ctx, query.ReadMember, pgx.NamedArgs{
 		"projectID": projectID,
 		"userID":    userID,
 	})
+}
 
+func (r *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (svcmodel.ProjectMember, error) {
+	return r.readMember(ctx, query.ReadMemberByEmail, pgx.NamedArgs{
+		"projectID": projectID,
+		"email":     email,
+	})
+}
+
+func (r *ProjectRepository) readMember(ctx context.Context, readQuery string, args pgx.NamedArgs) (svcmodel.ProjectMember, error) {
+	row := r.dbpool.QueryRow(ctx, readQuery, args)
 	m, err := model.ScanToSvcProjectMember(row)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
