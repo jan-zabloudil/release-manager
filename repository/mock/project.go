@@ -74,7 +74,7 @@ func (m *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
+func (m *ProjectRepository) ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
 	args := m.Called(ctx, email, projectID)
 	return args.Get(0).(svcmodel.ProjectInvitation), args.Error(1)
 }

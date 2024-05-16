@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO once all functions are using db pool, remove json tags
+// TODO remove json tags once all functions use db pool
 type ProjectInvitation struct {
 	ID            uuid.UUID `json:"id" db:"id"`
 	ProjectID     uuid.UUID `json:"project_id" db:"project_id"`

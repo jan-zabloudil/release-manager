@@ -450,8 +450,8 @@ func (s *ProjectService) getPendingInvitationByToken(ctx context.Context, tkn cr
 }
 
 func (s *ProjectService) invitationExists(ctx context.Context, email string, projectID uuid.UUID) (bool, error) {
-	if _, err := s.repo.ReadInvitationByEmailForProject(ctx, email, projectID); err != nil {
-		if dberrors.IsNotFoundError(err) {
+	if _, err := s.repo.ReadInvitationByEmail(ctx, email, projectID); err != nil {
+		if apierrors.IsNotFoundError(err) {
 			return false, nil
 		}
 
