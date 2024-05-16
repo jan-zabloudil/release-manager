@@ -61,7 +61,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		return fmt.Errorf("failed to create project: %w", err)
 	}
 
-	_, err = tx.Exec(ctx, query.CreateProjectMember, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, query.CreateMember, pgx.NamedArgs{
 		"userID":      owner.User.ID,
 		"projectID":   p.ID,
 		"projectRole": owner.ProjectRole,
@@ -225,8 +225,8 @@ func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, proj
 	return model.ToSvcEnvironments(e)
 }
 
-func (r *ProjectRepository) DeleteEnvironmentForProject(ctx context.Context, projectID, envID uuid.UUID) error {
-	result, err := r.dbpool.Exec(ctx, query.DeleteEnvironmentForProject, pgx.NamedArgs{
+func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error {
+	result, err := r.dbpool.Exec(ctx, query.DeleteEnvironment, pgx.NamedArgs{
 		"envID":     envID,
 		"projectID": projectID,
 	})
@@ -329,8 +329,8 @@ func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) DeleteInvitationForProject(ctx context.Context, projectID, invitationID uuid.UUID) error {
-	return r.deleteInvitation(ctx, query.DeleteInvitationForProject, pgx.NamedArgs{
+func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
+	return r.deleteInvitation(ctx, query.DeleteInvitation, pgx.NamedArgs{
 		"projectID":    projectID,
 		"invitationID": invitationID,
 	})
@@ -341,7 +341,7 @@ func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
 	hash crypto.Hash,
 	status svcmodel.ProjectInvitationStatus,
 ) error {
-	return r.deleteInvitation(ctx, query.DeleteProjectInvitationByHashAndStatus, pgx.NamedArgs{
+	return r.deleteInvitation(ctx, query.DeleteInvitationByHashAndStatus, pgx.NamedArgs{
 		"hash":   hash.ToBase64(),
 		"status": string(status),
 	})
@@ -370,7 +370,7 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	_, err = tx.Exec(ctx, query.CreateProjectMember, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, query.CreateMember, pgx.NamedArgs{
 		"userID":      m.User.ID,
 		"projectID":   m.ProjectID,
 		"projectRole": m.ProjectRole,
@@ -381,7 +381,7 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 		return fmt.Errorf("failed to create project member: %w", err)
 	}
 
-	_, err = tx.Exec(ctx, query.DeleteProjectInvitationByEmailAndProjectID, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, query.DeleteInvitationByEmailAndProjectID, pgx.NamedArgs{
 		"email":     m.User.Email,
 		"projectID": m.ProjectID,
 	})
@@ -445,7 +445,7 @@ func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID,
 }
 
 func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
-	result, err := r.dbpool.Exec(ctx, query.DeleteProjectMember, pgx.NamedArgs{
+	result, err := r.dbpool.Exec(ctx, query.DeleteMember, pgx.NamedArgs{
 		"projectID": projectID,
 		"userID":    userID,
 	})

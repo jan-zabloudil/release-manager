@@ -59,7 +59,7 @@ func (m *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, proj
 	return args.Get(0).([]svcmodel.Environment), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteEnvironmentForProject(ctx context.Context, projectID, envID uuid.UUID) error {
+func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error {
 	args := m.Called(ctx, projectID, envID)
 	return args.Error(0)
 }
@@ -94,7 +94,7 @@ func (m *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.Pro
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) DeleteInvitationForProject(ctx context.Context, projectID, invitationID uuid.UUID) error {
+func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
 	args := m.Called(ctx, projectID, invitationID)
 	return args.Error(0)
 }

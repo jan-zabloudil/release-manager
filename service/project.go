@@ -220,7 +220,7 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 		return err
 	}
 
-	err := s.repo.DeleteEnvironmentForProject(ctx, projectID, envID)
+	err := s.repo.DeleteEnvironment(ctx, projectID, envID)
 	if err != nil {
 		return err
 	}
@@ -315,7 +315,7 @@ func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invita
 		return err
 	}
 
-	err := s.repo.DeleteInvitationForProject(ctx, projectID, invitationID)
+	err := s.repo.DeleteInvitation(ctx, projectID, invitationID)
 	if err != nil {
 		return err
 	}

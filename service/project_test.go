@@ -594,7 +594,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("DeleteEnvironmentForProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("DeleteEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -604,7 +604,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("DeleteEnvironmentForProject", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewEnvironmentNotFoundError())
+				projectRepo.On("DeleteEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -884,7 +884,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 			name: "Unknown invitation",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("DeleteInvitationForProject", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewProjectInvitationNotFoundError())
+				projectRepo.On("DeleteInvitation", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewProjectInvitationNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -892,7 +892,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 			name: "Success",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("DeleteInvitationForProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("DeleteInvitation", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
