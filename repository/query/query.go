@@ -33,6 +33,8 @@ var (
 	//go:embed scripts/update_project.sql
 	UpdateProject string
 
+	//go:embed scripts/read_invitation_by_email.sql
+	ReadInvitationByEmail string
 	//go:embed scripts/list_invitations_for_project.sql
 	ListInvitationsForProject string
 	//go:embed scripts/delete_invitation.sql

@@ -264,19 +264,23 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) ReadInvitationByEmailForProject(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
-	var resp model.ProjectInvitation
-	err := r.client.
-		DB.From(invitationDBEntity).
-		Select("*").Single().
-		Eq("email", email).
-		Eq("project_id", projectID.String()).
-		ExecuteWithContext(ctx, &resp)
+func (r *ProjectRepository) ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
+	var i model.ProjectInvitation
+
+	// fetches the invitation by email for the project
+	err := pgxscan.Get(ctx, r.dbpool, &i, query.ReadInvitationByEmail, pgx.NamedArgs{
+		"email":     email,
+		"projectID": projectID,
+	})
 	if err != nil {
-		return svcmodel.ProjectInvitation{}, util.ToDBError(err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return svcmodel.ProjectInvitation{}, apierrors.NewProjectInvitationNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.ProjectInvitation{}, err
 	}
 
-	return model.ToSvcProjectInvitation(resp), nil
+	return model.ToSvcProjectInvitation(i), nil
 }
 
 func (r *ProjectRepository) ReadInvitationByTokenHashAndStatus(ctx context.Context, hash crypto.Hash, status svcmodel.ProjectInvitationStatus) (svcmodel.ProjectInvitation, error) {
