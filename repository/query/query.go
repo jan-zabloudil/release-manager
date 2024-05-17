@@ -48,6 +48,10 @@ var (
 	DeleteMember string
 	//go:embed scripts/list_members_for_project.sql
 	ListMembersForProject string
+	//go:embed scripts/read_member.sql
+	ReadMember string
+	//go:embed scripts/read_member_by_email.sql
+	ReadMemberByEmail string
 
 	//go:embed scripts/create_environment.sql
 	CreateEnvironment string

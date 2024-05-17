@@ -17,10 +17,6 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
-const (
-	userDBEntity = "users"
-)
-
 type UserRepository struct {
 	client *supabase.Client
 	dbpool *pgxpool.Pool

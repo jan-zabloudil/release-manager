@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"release-manager/pkg/apierrors"
-	"release-manager/pkg/dberrors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -71,7 +70,7 @@ func (s *AuthorizationService) AuthorizeProjectRole(ctx context.Context, project
 	member, err := s.projectRepo.ReadMember(ctx, projectID, userID)
 	if err != nil {
 		switch {
-		case dberrors.IsNotFoundError(err):
+		case apierrors.IsNotFoundError(err):
 			return apierrors.NewForbiddenInsufficientProjectRoleError().Wrap(err)
 		default:
 			return err
