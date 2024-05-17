@@ -300,18 +300,15 @@ func (r *ProjectRepository) ReadInvitationByTokenHashAndStatus(ctx context.Conte
 	return model.ToSvcProjectInvitation(resp), nil
 }
 
-func (r *ProjectRepository) ReadAllInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
-	var resp []model.ProjectInvitation
-	err := r.client.
-		DB.From(invitationDBEntity).
-		Select("*").
-		Eq("project_id", projectID.String()).
-		ExecuteWithContext(ctx, &resp)
+func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
+	var i []model.ProjectInvitation
+
+	err := pgxscan.Select(ctx, r.dbpool, &i, query.ListInvitationsForProject, pgx.NamedArgs{"projectID": projectID})
 	if err != nil {
-		return nil, util.ToDBError(err)
+		return nil, err
 	}
 
-	return model.ToSvcProjectInvitations(resp), nil
+	return model.ToSvcProjectInvitations(i), nil
 }
 
 func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {

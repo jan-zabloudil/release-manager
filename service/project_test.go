@@ -828,16 +828,25 @@ func TestProjectService_GetInvitations(t *testing.T) {
 			name: "Unknown project",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
+				projectRepo.On("ListInvitationsForProject", mock.Anything, mock.Anything).Return([]model.ProjectInvitation{}, nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
+		},
+		{
+			name: "No invitations",
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ListInvitationsForProject", mock.Anything, mock.Anything).Return([]model.ProjectInvitation{}, nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+			},
+			wantErr: false,
 		},
 		{
 			name: "Success",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadAllInvitationsForProject", mock.Anything, mock.Anything).Return(
+				projectRepo.On("ListInvitationsForProject", mock.Anything, mock.Anything).Return(
 					[]model.ProjectInvitation{
 						{Email: "test@test.tt", ProjectRole: model.ProjectRoleEditor, Status: model.InvitationStatusPending, ProjectID: uuid.New()},
 					},

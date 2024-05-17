@@ -8,16 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// TODO once all functions are using db pool, remove json tags
 type ProjectInvitation struct {
-	ID            uuid.UUID `json:"id"`
-	ProjectID     uuid.UUID `json:"project_id"`
-	Email         string    `json:"email"`
-	ProjectRole   string    `json:"project_role"`
-	Status        string    `json:"status"`
-	TokenHash     []byte    `json:"token_hash"`
-	InviterUserID uuid.UUID `json:"invited_by"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID            uuid.UUID `json:"id" db:"id"`
+	ProjectID     uuid.UUID `json:"project_id" db:"project_id"`
+	Email         string    `json:"email" db:"email"`
+	ProjectRole   string    `json:"project_role" db:"project_role"`
+	Status        string    `json:"status" db:"status"`
+	TokenHash     []byte    `json:"token_hash" db:"token_hash"`
+	InviterUserID uuid.UUID `json:"invited_by" db:"invited_by"`
+	CreatedAt     time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type UpdateProjectInvitationInput struct {

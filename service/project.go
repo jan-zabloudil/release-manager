@@ -299,15 +299,22 @@ func (s *ProjectService) ListInvitations(ctx context.Context, projectID, authUse
 		return nil, err
 	}
 
-	exists, err := s.projectExists(ctx, projectID)
+	invitations, err := s.repo.ListInvitationsForProject(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		return nil, apierrors.NewProjectNotFoundError()
+
+	if len(invitations) == 0 {
+		exists, err := s.projectExists(ctx, projectID)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, apierrors.NewProjectNotFoundError()
+		}
 	}
 
-	return s.repo.ReadAllInvitationsForProject(ctx, projectID)
+	return invitations, nil
 }
 
 func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invitationID, authUserID uuid.UUID) error {

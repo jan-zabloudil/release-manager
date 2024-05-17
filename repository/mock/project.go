@@ -84,7 +84,7 @@ func (m *ProjectRepository) ReadInvitationByTokenHashAndStatus(ctx context.Conte
 	return args.Get(0).(svcmodel.ProjectInvitation), args.Error(1)
 }
 
-func (m *ProjectRepository) ReadAllInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
+func (m *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.ProjectInvitation), args.Error(1)
 }
