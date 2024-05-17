@@ -144,19 +144,9 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
 	// TODO add project member authorization
 
-	_, err := s.GetProject(ctx, projectID, authUserID)
+	env, err := s.repo.ReadEnvironment(ctx, projectID, envID)
 	if err != nil {
 		return model.Environment{}, err
-	}
-
-	env, err := s.repo.ReadEnvironment(ctx, envID)
-	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return model.Environment{}, apierrors.NewEnvironmentNotFoundError().Wrap(err)
-		default:
-			return model.Environment{}, err
-		}
 	}
 
 	return env, nil
@@ -477,8 +467,8 @@ func (s *ProjectService) invitationExists(ctx context.Context, email string, pro
 }
 
 func (s *ProjectService) isEnvironmentNameUnique(ctx context.Context, projectID uuid.UUID, name string) (bool, error) {
-	if _, err := s.repo.ReadEnvironmentByNameForProject(ctx, projectID, name); err != nil {
-		if dberrors.IsNotFoundError(err) {
+	if _, err := s.repo.ReadEnvironmentByName(ctx, projectID, name); err != nil {
+		if apierrors.IsNotFoundError(err) {
 			return true, nil
 		}
 
