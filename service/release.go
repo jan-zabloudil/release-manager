@@ -43,3 +43,14 @@ func (s *ReleaseService) Create(ctx context.Context, input model.CreateReleaseIn
 
 	return rls, nil
 }
+
+func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) (model.Release, error) {
+	// TODO add project member authorization
+
+	rls, err := s.repo.ReadForProject(ctx, projectID, releaseID)
+	if err != nil {
+		return model.Release{}, err
+	}
+
+	return rls, nil
+}

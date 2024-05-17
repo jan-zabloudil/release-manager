@@ -20,8 +20,5 @@ func (m *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 
 func (m *ReleaseRepository) ReadForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
 	args := m.Called(ctx, projectID, releaseID)
-	if args.Get(0) == nil {
-		return svcmodel.Release{}, args.Error(1)
-	}
 	return args.Get(0).(svcmodel.Release), args.Error(1)
 }
