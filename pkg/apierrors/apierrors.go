@@ -9,6 +9,7 @@ var (
 	errCodeUnauthorizedUnknownUser                 = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
 	errCodeForbiddenInsufficientUserRole           = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
 	errCodeForbiddenInsufficientProjectRole        = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
+	errCodeForbiddenUserNotProjectMember           = "ERR_FORBIDDEN_USER_NOT_PROJECT_MEMBER"
 	errCodeUserNotFound                            = "ERR_USER_NOT_FOUND"
 	errCodeProjectNotFound                         = "ERR_PROJECT_NOT_FOUND"
 	errCodeEnvironmentNotFound                     = "ERR_ENVIRONMENT_NOT_FOUND"
@@ -120,8 +121,15 @@ func NewForbiddenInsufficientUserRoleError() *APIError {
 
 func NewForbiddenInsufficientProjectRoleError() *APIError {
 	return &APIError{
-		Code:    errCodeForbiddenInsufficientUserRole,
+		Code:    errCodeForbiddenInsufficientProjectRole,
 		Message: "Forbidden access, insufficient project role.",
+	}
+}
+
+func NewForbiddenUserNotProjectMemberError() *APIError {
+	return &APIError{
+		Code:    errCodeForbiddenUserNotProjectMember,
+		Message: "User is not a project member.",
 	}
 }
 
@@ -263,7 +271,8 @@ func IsUnauthorizedError(err error) bool {
 func IsForbiddenError(err error) bool {
 	return IsErrorWithCode(err, errCodeForbiddenInsufficientUserRole) ||
 		IsErrorWithCode(err, errCodeGithubClientForbidden) ||
-		IsErrorWithCode(err, errCodeForbiddenInsufficientProjectRole)
+		IsErrorWithCode(err, errCodeForbiddenInsufficientProjectRole) ||
+		IsErrorWithCode(err, errCodeForbiddenUserNotProjectMember)
 }
 
 func IsConflictError(err error) bool {
