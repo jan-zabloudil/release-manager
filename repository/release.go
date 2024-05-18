@@ -42,13 +42,13 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 	return nil
 }
 
-func (r *ReleaseRepository) ReadForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
+func (r *ReleaseRepository) Read(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
 	var rls model.Release
 
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service
-	err := pgxscan.Get(ctx, r.dbpool, &rls, query.ReadReleaseForProject, pgx.NamedArgs{
+	err := pgxscan.Get(ctx, r.dbpool, &rls, query.ReadRelease, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
 	})
@@ -61,4 +61,23 @@ func (r *ReleaseRepository) ReadForProject(ctx context.Context, projectID, relea
 	}
 
 	return model.ToSvcRelease(rls), nil
+}
+
+func (r *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uuid.UUID) error {
+	// Project ID is not needed in the query because releaseID is primary key
+	// But it is added for security reasons
+	// To make sure that the release belongs to the project that is passed from the service
+	result, err := r.dbpool.Exec(ctx, query.DeleteRelease, pgx.NamedArgs{
+		"projectID": projectID,
+		"releaseID": releaseID,
+	})
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apierrors.NewReleaseNotFoundError()
+	}
+
+	return nil
 }

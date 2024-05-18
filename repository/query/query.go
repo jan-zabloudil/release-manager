@@ -8,7 +8,9 @@ var (
 	//go:embed scripts/create_release.sql
 	CreateRelease string
 	//go:embed scripts/read_release.sql
-	ReadReleaseForProject string
+	ReadRelease string
+	//go:embed scripts/delete_release.sql
+	DeleteRelease string
 
 	//go:embed scripts/read_user.sql
 	ReadUser string

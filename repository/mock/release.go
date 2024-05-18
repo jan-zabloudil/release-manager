@@ -18,7 +18,12 @@ func (m *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 	return args.Error(0)
 }
 
-func (m *ReleaseRepository) ReadForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
+func (m *ReleaseRepository) Read(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
 	args := m.Called(ctx, projectID, releaseID)
 	return args.Get(0).(svcmodel.Release), args.Error(1)
+}
+
+func (m *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uuid.UUID) error {
+	args := m.Called(ctx, projectID, releaseID)
+	return args.Error(0)
 }

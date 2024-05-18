@@ -50,6 +50,7 @@ type settingsService interface {
 type releaseService interface {
 	Create(ctx context.Context, input svcmodel.CreateReleaseInput, projectID, authorUserID uuid.UUID) (svcmodel.Release, error)
 	Get(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) (svcmodel.Release, error)
+	Delete(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error
 }
 
 type authClient interface {
