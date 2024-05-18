@@ -349,12 +349,12 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 	// First two steps could be done in one query, but it would require mixing entities from two different repositories
 	// Based on user existence we either accept the invitation or create a project member and delete the invitation
 	//
-	// There is one possible raise condition:
+	// There is one possible race condition:
 	// 1. We check if user exists (and he does not)
 	// 2. We only accept the invitation
 	// But user would register between these two steps
 	// Resulting in a project member not being created for existing user
-	// The raise condition is handled by the PostgreSQL function check_accepted_invitations_for_registered_users()
+	// The race condition is handled by the PostgreSQL function check_accepted_invitations_for_registered_users()
 
 	invitation, err := s.repo.ReadPendingInvitationByHash(ctx, tkn.ToHash())
 	if err != nil {
