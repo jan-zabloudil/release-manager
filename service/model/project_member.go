@@ -94,6 +94,8 @@ func (m *ProjectMember) Validate() error {
 	return nil
 }
 
+type UpdateProjectMemberFunc func(m ProjectMember) (ProjectMember, error)
+
 func (m *ProjectMember) UpdateProjectRole(role ProjectRole) error {
 	// Cannot grant owner role, it can only be granted when creating a new project
 	if role == ProjectRoleOwner {
