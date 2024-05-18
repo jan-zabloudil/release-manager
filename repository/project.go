@@ -133,7 +133,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	p, err = r.readProject(ctx, tx, query.ReadProjectForUpdate, projectID)
+	p, err = r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
 	if err != nil {
 		return svcmodel.Project{}, fmt.Errorf("failed to read project: %w", err)
 	}
