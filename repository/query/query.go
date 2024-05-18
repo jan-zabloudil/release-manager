@@ -51,6 +51,8 @@ var (
 	DeleteInvitationByEmailAndProjectID string
 	//go:embed scripts/delete_invitation_by_hash_and_status.sql
 	DeleteInvitationByHashAndStatus string
+	//go:embed scripts/create_invitation.sql
+	CreateInvitation string
 	//go:embed scripts/update_invitation.sql
 	UpdateInvitation string
 
