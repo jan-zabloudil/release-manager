@@ -77,7 +77,7 @@ func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcm
 	return r.readProject(ctx, r.dbpool, query.ReadProject, id)
 }
 
-func (r *ProjectRepository) readProject(ctx context.Context, q pgxscan.Querier, query string, id uuid.UUID) (svcmodel.Project, error) {
+func (r *ProjectRepository) readProject(ctx context.Context, q querier, query string, id uuid.UUID) (svcmodel.Project, error) {
 	var p model.Project
 
 	err := pgxscan.Get(ctx, q, &p, query, pgx.NamedArgs{"id": id})
