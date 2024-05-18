@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"release-manager/pkg/apierrors"
 	"release-manager/service/model"
@@ -10,22 +11,36 @@ import (
 )
 
 type ReleaseService struct {
-	projectGetter projectGetter
-	repo          releaseRepository
+	projectGetter  projectGetter
+	settingsGetter settingsGetter
+	slackNotifier  slackNotifier
+	repo           releaseRepository
 }
 
-func NewReleaseService(projectGetter projectGetter, repo releaseRepository) *ReleaseService {
+func NewReleaseService(
+	projectGetter projectGetter,
+	settingsGetter settingsGetter,
+	notifier slackNotifier,
+	repo releaseRepository,
+) *ReleaseService {
 	return &ReleaseService{
-		projectGetter: projectGetter,
-		repo:          repo,
+		projectGetter:  projectGetter,
+		settingsGetter: settingsGetter,
+		slackNotifier:  notifier,
+		repo:           repo,
 	}
 }
 
-func (s *ReleaseService) Create(ctx context.Context, input model.CreateReleaseInput, projectID, authorUserID uuid.UUID) (model.Release, error) {
+func (s *ReleaseService) Create(
+	ctx context.Context,
+	input model.CreateReleaseInput,
+	sendReleaseNotification bool,
+	projectID,
+	authorUserID uuid.UUID,
+) (model.Release, error) {
 	// TODO add project member authorization
 
-	// More features are going to be added, project object will be needed here, therefore GetProject is called here (instead of projectExists)
-	_, err := s.projectGetter.GetProject(ctx, projectID, authorUserID)
+	p, err := s.projectGetter.GetProject(ctx, projectID, authorUserID)
 	if err != nil {
 		return model.Release{}, err
 	}
@@ -36,9 +51,12 @@ func (s *ReleaseService) Create(ctx context.Context, input model.CreateReleaseIn
 	}
 
 	// TODO check if release name is unique per project
-	// TODO send slack notification
 	if err := s.repo.Create(ctx, rls); err != nil {
 		return model.Release{}, err
+	}
+
+	if sendReleaseNotification {
+		s.sendReleaseNotification(ctx, p, rls)
 	}
 
 	return rls, nil
@@ -63,4 +81,24 @@ func (s *ReleaseService) Delete(ctx context.Context, projectID, releaseID, autho
 	}
 
 	return nil
+}
+
+func (s *ReleaseService) sendReleaseNotification(ctx context.Context, p model.Project, rls model.Release) {
+	if !p.IsSlackChannelSet() {
+		slog.Debug("notification not sent: slack channel missing for project", "project_id", p.ID)
+		return
+	}
+
+	tkn, err := s.settingsGetter.GetSlackToken(ctx)
+	if err != nil {
+		// when fetching slack token fails, just log the error
+		// fail attempt to send Slack notification should not affect the release creation
+		// two possible reasons for failure:
+		// 1. slack integration is not set (logged in debug level, as it's not an error, but possible scenario)
+		// 2. failed to fetch slack token (logged in error level)
+		slog.Log(ctx, apierrors.GetLogLevel(err), "failed to get slack token", "err", err)
+		return
+	}
+
+	s.slackNotifier.SendReleaseNotificationAsync(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls))
 }

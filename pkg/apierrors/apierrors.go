@@ -3,6 +3,7 @@ package apierrors
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 )
 
 var (
@@ -31,6 +32,7 @@ var (
 	errCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
 	errCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
 	errCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
+	errCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 )
 
 type APIError struct {
@@ -231,6 +233,13 @@ func NewReleaseNotFoundError() *APIError {
 	}
 }
 
+func NewSlackIntegrationNotEnabledError() *APIError {
+	return &APIError{
+		Code:    errCodeSlackIntegrationNotEnabled,
+		Message: "Slack integration is not enabled.",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -279,4 +288,16 @@ func IsConflictError(err error) bool {
 	return IsErrorWithCode(err, errCodeEnvironmentDuplicateName) ||
 		IsErrorWithCode(err, errCodeProjectInvitationAlreadyExists) ||
 		IsErrorWithCode(err, errCodeProjectMemberAlreadyExists)
+}
+
+func IsSlackIntegrationNotEnabledError(err error) bool {
+	return IsErrorWithCode(err, errCodeSlackIntegrationNotEnabled)
+}
+
+func GetLogLevel(err error) slog.Level {
+	if IsSlackIntegrationNotEnabledError(err) {
+		return slog.LevelDebug
+	}
+
+	return slog.LevelError
 }

@@ -12,19 +12,17 @@ import (
 )
 
 type Client struct {
-	taskManager       *background.Manager
-	msgOptionsBuilder *MsgOptionsBuilder
+	taskManager *background.Manager
 }
 
 func NewClient(manager *background.Manager) *Client {
 	return &Client{
-		taskManager:       manager,
-		msgOptionsBuilder: NewMsgOptionsBuilder(),
+		taskManager: manager,
 	}
 }
 
-func (c *Client) SendReleaseNotification(ctx context.Context, token, channelID string, n model.ReleaseNotification) {
-	msgOptions := c.msgOptionsBuilder.
+func (c *Client) SendReleaseNotificationAsync(ctx context.Context, token, channelID string, n model.ReleaseNotification) {
+	msgOptions := NewMsgOptionsBuilder().
 		SetMessage(n.Message)
 
 	if n.ProjectName != nil {

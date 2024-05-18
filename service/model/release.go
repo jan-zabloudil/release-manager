@@ -54,6 +54,7 @@ func (r *Release) Validate() error {
 	return nil
 }
 
+// TODO add more fields
 type ReleaseNotification struct {
 	Message      string
 	ProjectName  *string
