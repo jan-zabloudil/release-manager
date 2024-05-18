@@ -12,6 +12,6 @@ type Client struct {
 	mock.Mock
 }
 
-func (m *Client) SendReleaseNotification(ctx context.Context, token, channelID string, n model.ReleaseNotification) {
+func (m *Client) SendReleaseNotificationAsync(ctx context.Context, token, channelID string, n model.ReleaseNotification) {
 	m.Called(ctx, token, channelID, n)
 }

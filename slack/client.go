@@ -21,7 +21,7 @@ func NewClient(manager *background.Manager) *Client {
 	}
 }
 
-func (c *Client) SendReleaseNotification(ctx context.Context, token, channelID string, n model.ReleaseNotification) {
+func (c *Client) SendReleaseNotificationAsync(ctx context.Context, token, channelID string, n model.ReleaseNotification) {
 	msgOptions := NewMsgOptionsBuilder().
 		SetMessage(n.Message)
 

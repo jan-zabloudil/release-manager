@@ -100,5 +100,5 @@ func (s *ReleaseService) sendReleaseNotification(ctx context.Context, p model.Pr
 		return
 	}
 
-	s.slackNotifier.SendReleaseNotification(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls))
+	s.slackNotifier.SendReleaseNotificationAsync(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls))
 }

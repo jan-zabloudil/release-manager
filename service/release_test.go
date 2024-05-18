@@ -50,7 +50,7 @@ func TestReleaseService_Create(t *testing.T) {
 				}, nil)
 				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
-				slackClient.On("SendReleaseNotification", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+				slackClient.On("SendReleaseNotificationAsync", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			},
 			wantErr: false,
 		},
@@ -160,8 +160,10 @@ func TestReleaseService_Get(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
 			releaseRepo := new(repo.ReleaseRepository)
-			service := NewReleaseService(projectSvc, releaseRepo)
+			slackClient := new(slack.Client)
+			service := NewReleaseService(projectSvc, settingsSvc, slackClient, releaseRepo)
 
 			tc.mockSetup(releaseRepo)
 
@@ -204,8 +206,10 @@ func TestReleaseService_Delete(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
 			releaseRepo := new(repo.ReleaseRepository)
-			service := NewReleaseService(projectSvc, releaseRepo)
+			slackClient := new(slack.Client)
+			service := NewReleaseService(projectSvc, settingsSvc, slackClient, releaseRepo)
 
 			tc.mockSetup(releaseRepo)
 
