@@ -69,6 +69,8 @@ func NewProjectInvitation(c CreateProjectInvitationInput, tkn cryptox.Token, inv
 	return i, nil
 }
 
+type AcceptProjectInvitationFunc func(*ProjectInvitation)
+
 func (i *ProjectInvitation) Accept() {
 	i.Status = InvitationStatusAccepted
 	i.UpdatedAt = time.Now()

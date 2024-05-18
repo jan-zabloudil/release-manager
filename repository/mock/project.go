@@ -79,24 +79,24 @@ func (m *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return args.Error(0)
 }
 
+func (m *ProjectRepository) AcceptPendingInvitation(ctx context.Context, invitationID uuid.UUID, fn svcmodel.AcceptProjectInvitationFunc) error {
+	args := m.Called(ctx, invitationID, fn)
+	return args.Error(0)
+}
+
 func (m *ProjectRepository) ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
 	args := m.Called(ctx, email, projectID)
 	return args.Get(0).(svcmodel.ProjectInvitation), args.Error(1)
 }
 
-func (m *ProjectRepository) ReadInvitationByTokenHashAndStatus(ctx context.Context, hash crypto.Hash, status svcmodel.ProjectInvitationStatus) (svcmodel.ProjectInvitation, error) {
-	args := m.Called(ctx, hash, status)
+func (m *ProjectRepository) ReadPendingInvitationByHash(ctx context.Context, hash crypto.Hash) (svcmodel.ProjectInvitation, error) {
+	args := m.Called(ctx, hash)
 	return args.Get(0).(svcmodel.ProjectInvitation), args.Error(1)
 }
 
 func (m *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.ProjectInvitation), args.Error(1)
-}
-
-func (m *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {
-	args := m.Called(ctx, i)
-	return args.Error(0)
 }
 
 func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {

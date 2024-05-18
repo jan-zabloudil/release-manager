@@ -263,14 +263,65 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
-	var i model.ProjectInvitation
+func (r *ProjectRepository) AcceptPendingInvitation(
+	ctx context.Context,
+	invitationID uuid.UUID,
+	fn svcmodel.AcceptProjectInvitationFunc,
+) (err error) {
+	tx, err := r.dbpool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		err = util.FinishTransaction(ctx, tx, err)
+	}()
 
+	invitation, err := r.readPendingInvitationForUpdate(ctx, invitationID)
+	if err != nil {
+		return fmt.Errorf("failed to read project invitation: %w", err)
+	}
+
+	// Accept the invitation
+	fn(&invitation)
+
+	_, err = tx.Exec(ctx, query.UpdateInvitation, pgx.NamedArgs{
+		"invitationID": invitation.ID,
+		"status":       invitation.Status,
+		"updatedAt":    invitation.UpdatedAt,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update project invitation: %w", err)
+	}
+
+	return nil
+}
+
+func (r *ProjectRepository) ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
 	// fetches the invitation by email for the project
-	err := pgxscan.Get(ctx, r.dbpool, &i, query.ReadInvitationByEmail, pgx.NamedArgs{
+	return r.readInvitation(ctx, r.dbpool, query.ReadInvitationByEmail, pgx.NamedArgs{
 		"email":     email,
 		"projectID": projectID,
 	})
+}
+
+func (r *ProjectRepository) ReadPendingInvitationByHash(ctx context.Context, hash crypto.Hash) (svcmodel.ProjectInvitation, error) {
+	return r.readInvitation(ctx, r.dbpool, query.ReadInvitationByHashAndStatus, pgx.NamedArgs{
+		"hash":   hash.ToBase64(),
+		"status": string(svcmodel.InvitationStatusPending),
+	})
+}
+
+func (r *ProjectRepository) readPendingInvitationForUpdate(ctx context.Context, invitationID uuid.UUID) (svcmodel.ProjectInvitation, error) {
+	return r.readInvitation(ctx, r.dbpool, query.ReadInvitationByIDAndStatusForUpdate, pgx.NamedArgs{
+		"id":     invitationID,
+		"status": string(svcmodel.InvitationStatusPending),
+	})
+}
+
+func (r *ProjectRepository) readInvitation(ctx context.Context, q pgxscan.Querier, readQuery string, args pgx.NamedArgs) (svcmodel.ProjectInvitation, error) {
+	var i model.ProjectInvitation
+
+	err := pgxscan.Get(ctx, q, &i, readQuery, args)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return svcmodel.ProjectInvitation{}, apierrors.NewProjectInvitationNotFoundError().Wrap(err)
@@ -282,21 +333,6 @@ func (r *ProjectRepository) ReadInvitationByEmail(ctx context.Context, email str
 	return model.ToSvcProjectInvitation(i), nil
 }
 
-func (r *ProjectRepository) ReadInvitationByTokenHashAndStatus(ctx context.Context, hash crypto.Hash, status svcmodel.ProjectInvitationStatus) (svcmodel.ProjectInvitation, error) {
-	var resp model.ProjectInvitation
-	err := r.client.
-		DB.From(invitationDBEntity).
-		Select("*").Single().
-		Eq("token_hash", hash.ToBase64()).
-		Eq("status", string(status)).
-		ExecuteWithContext(ctx, &resp)
-	if err != nil {
-		return svcmodel.ProjectInvitation{}, util.ToDBError(err)
-	}
-
-	return model.ToSvcProjectInvitation(resp), nil
-}
-
 func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
 	var i []model.ProjectInvitation
 
@@ -306,21 +342,6 @@ func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, proje
 	}
 
 	return model.ToSvcProjectInvitations(i), nil
-}
-
-func (r *ProjectRepository) UpdateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {
-	data := model.ToUpdateProjectInvitationInput(i)
-
-	err := r.client.
-		DB.From(invitationDBEntity).
-		Update(&data).
-		Eq("id", i.ID.String()).
-		ExecuteWithContext(ctx, nil)
-	if err != nil {
-		return util.ToDBError(err)
-	}
-
-	return nil
 }
 
 func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
@@ -364,22 +385,20 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	_, err = tx.Exec(ctx, query.CreateMember, pgx.NamedArgs{
+	if _, err = tx.Exec(ctx, query.CreateMember, pgx.NamedArgs{
 		"userID":      m.User.ID,
 		"projectID":   m.ProjectID,
 		"projectRole": m.ProjectRole,
 		"createdAt":   m.CreatedAt,
 		"updatedAt":   m.UpdatedAt,
-	})
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("failed to create project member: %w", err)
 	}
 
-	_, err = tx.Exec(ctx, query.DeleteInvitationByEmailAndProjectID, pgx.NamedArgs{
+	if err = r.deleteInvitation(ctx, query.DeleteInvitationByEmailAndProjectID, pgx.NamedArgs{
 		"email":     m.User.Email,
 		"projectID": m.ProjectID,
-	})
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("failed to delete project invitation: %w", err)
 	}
 

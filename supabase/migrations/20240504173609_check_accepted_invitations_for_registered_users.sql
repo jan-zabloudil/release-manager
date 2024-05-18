@@ -2,7 +2,7 @@
 -- this race condition can happen in ProjectService -> AcceptInvitation(), scenario:
 -- 1. service checks if user exists, user does not exist yet
 -- 2. service accepts invitation, status is updated to 'accepted_awaiting_registration'
--- but the first and second steps are not executed in the same transaction, so a user with the same email can be created in the meantime
+-- user registers between 1 and 2
 -- very unlikely, but still possible
 
 CREATE OR REPLACE FUNCTION check_accepted_invitations_for_registered_users()

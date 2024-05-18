@@ -987,35 +987,35 @@ func TestProjectService_AcceptInvitation(t *testing.T) {
 		{
 			name: "Unknown invitation",
 			mockSetup: func(user *svc.UserService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadInvitationByTokenHashAndStatus", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, dberrors.NewNotFoundError())
+				projectRepo.On("ReadPendingInvitationByHash", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, apierrors.NewProjectInvitationNotFoundError())
 			},
 			wantErr: true,
 		},
 		{
 			name: "Success - invitation is accepted",
 			mockSetup: func(user *svc.UserService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadInvitationByTokenHashAndStatus", mock.Anything, mock.Anything, mock.Anything).Return(
+				projectRepo.On("ReadPendingInvitationByHash", mock.Anything, mock.Anything, mock.Anything).Return(
 					model.ProjectInvitation{
 						Email: "test@test.tt", ProjectRole: model.ProjectRoleEditor, Status: model.InvitationStatusPending, ProjectID: uuid.New(),
 					},
 					nil,
 				)
 				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, apierrors.NewUserNotFoundError())
-				projectRepo.On("UpdateInvitation", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("AcceptPendingInvitation", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "Success - project member is created",
 			mockSetup: func(user *svc.UserService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadInvitationByTokenHashAndStatus", mock.Anything, mock.Anything, mock.Anything).Return(
+				projectRepo.On("ReadPendingInvitationByHash", mock.Anything, mock.Anything, mock.Anything).Return(
 					model.ProjectInvitation{
 						Email: "test@test.tt", ProjectRole: model.ProjectRoleEditor, Status: model.InvitationStatusPending, ProjectID: uuid.New(),
 					},
 					nil,
 				)
 				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, nil)
-				projectRepo.On("CreateMember", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("CreateMember", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},

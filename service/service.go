@@ -27,11 +27,11 @@ type projectRepository interface {
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
 	ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
-	ReadInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) (model.ProjectInvitation, error)
 	ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (model.ProjectInvitation, error)
+	ReadPendingInvitationByHash(ctx context.Context, hash cryptox.Hash) (model.ProjectInvitation, error)
 	DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error
 	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
-	UpdateInvitation(ctx context.Context, i model.ProjectInvitation) error
+	AcceptPendingInvitation(ctx context.Context, invitationID uuid.UUID, fn model.AcceptProjectInvitationFunc) error
 
 	CreateMember(ctx context.Context, member model.ProjectMember) error
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
