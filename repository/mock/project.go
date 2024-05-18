@@ -69,9 +69,9 @@ func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, en
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateEnvironment(ctx context.Context, e svcmodel.Environment) error {
-	args := m.Called(ctx, e)
-	return args.Error(0)
+func (m *ProjectRepository) UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn svcmodel.UpdateEnvironmentFunc) (svcmodel.Environment, error) {
+	args := m.Called(ctx, projectID, envID, fn)
+	return args.Get(0).(svcmodel.Environment), args.Error(1)
 }
 
 func (m *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {

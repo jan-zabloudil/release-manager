@@ -73,6 +73,8 @@ func (e *Environment) Validate() error {
 	return nil
 }
 
+type UpdateEnvironmentFunc func(e Environment) (Environment, error)
+
 func (e *Environment) Update(u UpdateEnvironmentInput) error {
 	if u.ServiceRawURL != nil {
 		svcURL, err := toServiceURL(*u.ServiceRawURL)

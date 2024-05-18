@@ -474,8 +474,6 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 func TestProjectService_UpdateEnvironment(t *testing.T) {
 	validURL := "http://example.com"
 	validName := "Test Environment"
-	invalidURL := "example"
-	invalidName := ""
 
 	testCases := []struct {
 		name      string
@@ -490,10 +488,9 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 				ServiceRawURL: &validURL,
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, apierrors.NewEnvironmentNotFoundError())
-				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 			},
 			wantErr: false,
 		},
@@ -504,33 +501,16 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 				ServiceRawURL: &validURL,
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 			},
 			wantErr: true,
 		},
 		{
-			name: "Invalid environment update - not absolute service url",
-			envUpdate: model.UpdateEnvironmentInput{
-				Name:          &validName,
-				ServiceRawURL: &invalidURL,
-			},
+			name:      "Unknown environment",
+			envUpdate: model.UpdateEnvironmentInput{},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
-			},
-			wantErr: true,
-		},
-		{
-			name: "Invalid environment update - missing name",
-			envUpdate: model.UpdateEnvironmentInput{
-				Name:          &invalidName,
-				ServiceRawURL: &validURL,
-			},
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
+				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, apierrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -730,7 +710,7 @@ func TestProjectService_validateEnvironmentNameUnique(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			isUnique, err := service.isEnvironmentNameUnique(context.Background(), tc.projectID, "env")
+			isUnique, err := service.isEnvironmentNameUniqueInProject(context.Background(), tc.projectID, "env")
 
 			if tc.wantErr {
 				assert.Error(t, err)
