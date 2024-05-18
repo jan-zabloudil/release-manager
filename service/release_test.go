@@ -89,14 +89,14 @@ func TestReleaseService_Get(t *testing.T) {
 		{
 			name: "Existing release",
 			mockSetup: func(repo *repo.ReleaseRepository) {
-				repo.On("ReadForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				repo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "Non-existing release",
 			mockSetup: func(repo *repo.ReleaseRepository) {
-				repo.On("ReadForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
+				repo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
