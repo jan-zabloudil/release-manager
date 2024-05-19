@@ -29,3 +29,11 @@ func ToSvcRelease(rls Release) svcmodel.Release {
 		UpdatedAt:    rls.UpdatedAt,
 	}
 }
+
+func ToSvcReleases(releases []Release) []svcmodel.Release {
+	r := make([]svcmodel.Release, 0, len(releases))
+	for _, release := range releases {
+		r = append(r, ToSvcRelease(release))
+	}
+	return r
+}

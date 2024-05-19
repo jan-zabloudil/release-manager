@@ -83,6 +83,26 @@ func (s *ReleaseService) Delete(ctx context.Context, projectID, releaseID, autho
 	return nil
 }
 
+func (s *ReleaseService) ListForProject(ctx context.Context, projectID, authorUserID uuid.UUID) ([]model.Release, error) {
+	// TODO add project member authorization
+
+	rls, err := s.repo.ListForProject(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	if len(rls) == 0 {
+		exists, err := s.projectGetter.ProjectExists(ctx, projectID, authorUserID)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, apierrors.NewProjectNotFoundError()
+		}
+	}
+
+	return rls, nil
+}
+
 func (s *ReleaseService) sendReleaseNotification(ctx context.Context, p model.Project, rls model.Release) {
 	if !p.IsSlackChannelSet() {
 		slog.Debug("notification not sent: slack channel missing for project", "project_id", p.ID)

@@ -61,6 +61,7 @@ func (h *Handler) setupRoutes() {
 			})
 			r.Get("/repository/tags", middleware.RequireAuthUser(h.listGithubRepositoryTags))
 			r.Route("/releases", func(r chi.Router) {
+				r.Get("/", middleware.RequireAuthUser(h.listReleases))
 				r.Post("/", middleware.RequireAuthUser(h.createRelease))
 				r.Route("/{release_id}", func(r chi.Router) {
 					r.Use(middleware.HandleResourceID("release_id", util.ContextSetReleaseID))

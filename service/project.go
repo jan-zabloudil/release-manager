@@ -71,6 +71,12 @@ func (s *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, au
 	return s.getProject(ctx, projectID)
 }
 
+func (s *ProjectService) ProjectExists(ctx context.Context, projectID, authUserID uuid.UUID) (bool, error) {
+	// TODO add project member authorization
+
+	return s.projectExists(ctx, projectID)
+}
+
 func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
 	err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID)
 	switch {
