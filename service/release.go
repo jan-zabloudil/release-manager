@@ -50,7 +50,14 @@ func (s *ReleaseService) Create(
 		return model.Release{}, apierrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	// TODO check if release name is unique per project
+	unique, err := s.isReleaseTitleUniqueInProject(ctx, projectID, rls.ReleaseTitle)
+	if err != nil {
+		return model.Release{}, err
+	}
+	if !unique {
+		return model.Release{}, apierrors.NewReleaseDuplicateTitleError().Wrap(err)
+	}
+
 	if err := s.repo.Create(ctx, rls); err != nil {
 		return model.Release{}, err
 	}
@@ -121,4 +128,17 @@ func (s *ReleaseService) sendReleaseNotification(ctx context.Context, p model.Pr
 	}
 
 	s.slackNotifier.SendReleaseNotificationAsync(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls))
+}
+
+func (s *ReleaseService) isReleaseTitleUniqueInProject(ctx context.Context, projectID uuid.UUID, title string) (bool, error) {
+	_, err := s.repo.ReadByTitle(ctx, projectID, title)
+	if err != nil {
+		if apierrors.IsNotFoundError(err) {
+			return true, nil
+		}
+
+		return false, err
+	}
+
+	return false, nil
 }

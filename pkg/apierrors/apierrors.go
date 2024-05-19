@@ -32,6 +32,7 @@ var (
 	errCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
 	errCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
 	errCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
+	errCodeReleaseDuplicateTitle                   = "ERR_RELEASE_DUPLICATE_TITLE"
 	errCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 	errCodeGitTagNotFound                          = "ERR_GIT_TAG_NOT_FOUND"
 )
@@ -234,6 +235,13 @@ func NewReleaseNotFoundError() *APIError {
 	}
 }
 
+func NewReleaseDuplicateTitleError() *APIError {
+	return &APIError{
+		Code:    errCodeReleaseDuplicateTitle,
+		Message: "Release with the same title already exists",
+	}
+}
+
 func NewSlackIntegrationNotEnabledError() *APIError {
 	return &APIError{
 		Code:    errCodeSlackIntegrationNotEnabled,
@@ -296,7 +304,8 @@ func IsForbiddenError(err error) bool {
 func IsConflictError(err error) bool {
 	return IsErrorWithCode(err, errCodeEnvironmentDuplicateName) ||
 		IsErrorWithCode(err, errCodeProjectInvitationAlreadyExists) ||
-		IsErrorWithCode(err, errCodeProjectMemberAlreadyExists)
+		IsErrorWithCode(err, errCodeProjectMemberAlreadyExists) ||
+		IsErrorWithCode(err, errCodeReleaseDuplicateTitle)
 }
 
 func IsSlackIntegrationNotEnabledError(err error) bool {

@@ -56,6 +56,7 @@ type settingsRepository interface {
 type releaseRepository interface {
 	Create(ctx context.Context, r model.Release) error
 	Read(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
+	ReadByTitle(ctx context.Context, projectID uuid.UUID, name string) (model.Release, error)
 	Delete(ctx context.Context, projectID, releaseID uuid.UUID) error
 	ListForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
 }
