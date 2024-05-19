@@ -34,6 +34,7 @@ var (
 	errCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
 	errCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 	errCodeGitTagNotFound                          = "ERR_GIT_TAG_NOT_FOUND"
+	errCodeGithubReleaseNotFound                   = "ERR_GITHUB_RELEASE_NOT_FOUND"
 )
 
 type APIError struct {
@@ -248,6 +249,13 @@ func NewGitTagNotFoundError() *APIError {
 	}
 }
 
+func NewGithubReleaseNotFoundError() *APIError {
+	return &APIError{
+		Code:    errCodeGithubReleaseNotFound,
+		Message: "Github release not found",
+	}
+}
+
 func IsErrorWithCode(err error, code string) bool {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
@@ -269,7 +277,8 @@ func IsNotFoundError(err error) bool {
 		IsErrorWithCode(err, errCodeGithubIntegrationNotEnabled) ||
 		IsErrorWithCode(err, errCodeGithubRepositoryInvalidURL) ||
 		IsErrorWithCode(err, errCodeReleaseNotFound) ||
-		IsErrorWithCode(err, errCodeGitTagNotFound)
+		IsErrorWithCode(err, errCodeGitTagNotFound) ||
+		IsErrorWithCode(err, errCodeGithubReleaseNotFound)
 }
 
 func IsUnprocessableModelError(err error) bool {

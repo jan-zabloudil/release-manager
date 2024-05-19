@@ -119,6 +119,30 @@ func (c *Client) CreateRelease(
 	return model.ToSvcGithubRelease(rls)
 }
 
+func (c *Client) ReadReleaseByTag(ctx context.Context, tkn string, repoURL url.URL, tagName string) (svcmodel.GithubRelease, error) {
+	repo, err := model.ToGithubRepo(repoURL)
+	if err != nil {
+		return svcmodel.GithubRelease{}, apierrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+	}
+
+	rls, _, err := c.getGithubClient(tkn).Repositories.GetReleaseByTag(
+		ctx,
+		repo.OwnerSlug,
+		repo.RepositorySlug,
+		tagName,
+	)
+	if err != nil {
+		var githubErr *github.ErrorResponse
+		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+			return svcmodel.GithubRelease{}, apierrors.NewGithubReleaseNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.GithubRelease{}, err
+	}
+
+	return model.ToSvcGithubRelease(rls)
+}
+
 func (c *Client) getGithubClient(tkn string) *github.Client {
 	return github.NewClient(nil).WithAuthToken(tkn)
 }
