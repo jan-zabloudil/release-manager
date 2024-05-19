@@ -32,3 +32,8 @@ func (m *ReleaseRepository) ListForProject(ctx context.Context, projectID uuid.U
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.Release), args.Error(1)
 }
+
+func (m *ReleaseRepository) Update(ctx context.Context, projectID, releaseID uuid.UUID, fn svcmodel.UpdateReleaseFunc) (svcmodel.Release, error) {
+	args := m.Called(ctx, projectID, releaseID, fn)
+	return args.Get(0).(svcmodel.Release), args.Error(1)
+}

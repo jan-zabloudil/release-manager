@@ -14,6 +14,11 @@ type CreateReleaseInput struct {
 	SendReleaseNotification bool   `json:"send_release_notification"`
 }
 
+type UpdateReleaseInput struct {
+	ReleaseTitle *string `json:"release_title"`
+	ReleaseNotes *string `json:"release_notes"`
+}
+
 type Release struct {
 	ID           uuid.UUID `json:"id"`
 	ReleaseTitle string    `json:"release_title"`
@@ -24,6 +29,13 @@ type Release struct {
 
 func ToSvcCreateReleaseInput(r CreateReleaseInput) svcmodel.CreateReleaseInput {
 	return svcmodel.CreateReleaseInput{
+		ReleaseTitle: r.ReleaseTitle,
+		ReleaseNotes: r.ReleaseNotes,
+	}
+}
+
+func ToSvcUpdateReleaseInput(r UpdateReleaseInput) svcmodel.UpdateReleaseInput {
+	return svcmodel.UpdateReleaseInput{
 		ReleaseTitle: r.ReleaseTitle,
 		ReleaseNotes: r.ReleaseNotes,
 	}

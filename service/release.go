@@ -83,6 +83,31 @@ func (s *ReleaseService) Delete(ctx context.Context, projectID, releaseID, autho
 	return nil
 }
 
+func (s *ReleaseService) Update(
+	ctx context.Context,
+	input model.UpdateReleaseInput,
+	projectID,
+	releaseID,
+	authorUserID uuid.UUID,
+) (model.Release, error) {
+	// TODO add project member authorization
+
+	// TODO check if release name is unique per project
+
+	rls, err := s.repo.Update(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
+		if err := rls.Update(input); err != nil {
+			return model.Release{}, apierrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
+		}
+
+		return rls, nil
+	})
+	if err != nil {
+		return model.Release{}, err
+	}
+
+	return rls, nil
+}
+
 func (s *ReleaseService) ListForProject(ctx context.Context, projectID, authorUserID uuid.UUID) ([]model.Release, error) {
 	// TODO add project member authorization
 

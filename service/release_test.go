@@ -287,3 +287,69 @@ func TestReleaseService_ListForProject(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseService_Update(t *testing.T) {
+	validName := "Test release"
+	validNotes := "Test release notes"
+	invalidName := ""
+
+	testCases := []struct {
+		name      string
+		update    model.UpdateReleaseInput
+		mockSetup func(*repo.ReleaseRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Valid release update",
+			update: model.UpdateReleaseInput{
+				ReleaseTitle: &validName,
+				ReleaseNotes: &validNotes,
+			},
+			mockSetup: func(repo *repo.ReleaseRepository) {
+				repo.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Empty release title",
+			update: model.UpdateReleaseInput{
+				ReleaseTitle: &invalidName,
+				ReleaseNotes: &validNotes,
+			},
+			mockSetup: func(repo *repo.ReleaseRepository) {
+				repo.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseUnprocessableError())
+			},
+			wantErr: true,
+		},
+		{
+			name:   "Non existing release",
+			update: model.UpdateReleaseInput{},
+			mockSetup: func(repo *repo.ReleaseRepository) {
+				repo.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
+			releaseRepo := new(repo.ReleaseRepository)
+			slackClient := new(slack.Client)
+			service := NewReleaseService(projectSvc, settingsSvc, slackClient, releaseRepo)
+
+			tc.mockSetup(releaseRepo)
+
+			_, err := service.Update(context.Background(), tc.update, uuid.New(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}
