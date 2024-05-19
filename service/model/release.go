@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"net/url"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,7 @@ var (
 type CreateReleaseInput struct {
 	ReleaseTitle string
 	ReleaseNotes string
+	GitTagName   string // used for linking the release with a specific point in a git repository, TODO make this field required
 }
 
 type Release struct {
@@ -78,4 +80,14 @@ func NewReleaseNotification(p Project, r Release) ReleaseNotification {
 	}
 
 	return n
+}
+
+type GithubRelease struct {
+	ID          int64 // GitHub release ID
+	Name        string
+	Body        string
+	TagName     string  // Git tag associated with the release
+	HTMLURL     url.URL // URL to the release page on GitHub
+	CreatedAt   time.Time
+	PublishedAt time.Time
 }
