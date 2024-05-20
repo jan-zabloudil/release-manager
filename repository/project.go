@@ -19,12 +19,6 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
-const (
-	environmentDBEntity   = "environments"
-	invitationDBEntity    = "project_invitations"
-	projectMemberDBEntity = "project_members"
-)
-
 type ProjectRepository struct {
 	client *supabase.Client
 	dbpool *pgxpool.Pool
@@ -178,7 +172,7 @@ func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envI
 	// Project ID is not needed in the query because envID is primary key
 	// But it is added for security reasons
 	// To make sure that the environment belongs to the project that is passed from the service
-	return r.readEnvironment(ctx, query.ReadEnvironment, pgx.NamedArgs{
+	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironment, pgx.NamedArgs{
 		"envID":     envID,
 		"projectID": projectID,
 	})
@@ -186,16 +180,16 @@ func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envI
 
 func (r *ProjectRepository) ReadEnvironmentByName(ctx context.Context, projectID uuid.UUID, name string) (svcmodel.Environment, error) {
 	// Fetches the environment by name for the project
-	return r.readEnvironment(ctx, query.ReadEnvironmentByName, pgx.NamedArgs{
+	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironmentByName, pgx.NamedArgs{
 		"name":      name,
 		"projectID": projectID,
 	})
 }
 
-func (r *ProjectRepository) readEnvironment(ctx context.Context, readQuery string, args pgx.NamedArgs) (svcmodel.Environment, error) {
+func (r *ProjectRepository) readEnvironment(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.Environment, error) {
 	var e model.Environment
 
-	err := pgxscan.Get(ctx, r.dbpool, &e, readQuery, args)
+	err := pgxscan.Get(ctx, q, &e, readQuery, args)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return svcmodel.Environment{}, apierrors.NewEnvironmentNotFoundError().Wrap(err)
@@ -234,19 +228,47 @@ func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, en
 	return nil
 }
 
-func (r *ProjectRepository) UpdateEnvironment(ctx context.Context, e svcmodel.Environment) error {
-	data := model.ToUpdateEnvironmentInput(e)
-
-	err := r.client.
-		DB.From(environmentDBEntity).
-		Update(&data).
-		Eq("id", e.ID.String()).
-		ExecuteWithContext(ctx, nil)
+func (r *ProjectRepository) UpdateEnvironment(
+	ctx context.Context,
+	projectID,
+	envID uuid.UUID,
+	fn svcmodel.UpdateEnvironmentFunc,
+) (env svcmodel.Environment, err error) {
+	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return util.ToDBError(err)
+		return svcmodel.Environment{}, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		err = util.FinishTransaction(ctx, tx, err)
+	}()
+
+	// Project ID is not needed in the query because envID is primary key
+	// But it is added for security reasons
+	// To make sure that the environment belongs to the project that is passed from the service
+	env, err = r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), pgx.NamedArgs{
+		"envID":     envID,
+		"projectID": projectID,
+	})
+	if err != nil {
+		return svcmodel.Environment{}, fmt.Errorf("failed to read environment: %w", err)
 	}
 
-	return nil
+	env, err = fn(env)
+	if err != nil {
+		return svcmodel.Environment{}, err
+	}
+
+	_, err = r.dbpool.Exec(ctx, query.UpdateEnvironment, pgx.NamedArgs{
+		"envID":      env.ID,
+		"name":       env.Name,
+		"serviceURL": env.ServiceURL.String(),
+		"updatedAt":  env.UpdatedAt,
+	})
+	if err != nil {
+		return svcmodel.Environment{}, fmt.Errorf("failed to update environment: %w", err)
+	}
+
+	return env, nil
 }
 
 func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {

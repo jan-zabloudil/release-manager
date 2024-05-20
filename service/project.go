@@ -140,9 +140,11 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 		return model.Environment{}, apierrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	if isUnique, err := s.isEnvironmentNameUnique(ctx, env.ProjectID, env.Name); err != nil {
+	isUnique, err := s.isEnvironmentNameUniqueInProject(ctx, env.ProjectID, env.Name)
+	if err != nil {
 		return model.Environment{}, err
-	} else if !isUnique {
+	}
+	if !isUnique {
 		return model.Environment{}, apierrors.NewEnvironmentDuplicateNameError()
 	}
 
@@ -164,33 +166,40 @@ func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, a
 	return env, nil
 }
 
-func (s *ProjectService) UpdateEnvironment(ctx context.Context, u model.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
+func (s *ProjectService) UpdateEnvironment(
+	ctx context.Context,
+	u model.UpdateEnvironmentInput,
+	projectID,
+	envID,
+	authUserID uuid.UUID,
+) (model.Environment, error) {
 	// TODO add project member authorization
-
-	if _, err := s.GetProject(ctx, projectID, authUserID); err != nil {
-		return model.Environment{}, err
-	}
 
 	env, err := s.GetEnvironment(ctx, projectID, envID, authUserID)
 	if err != nil {
-		return model.Environment{}, err
+		return model.Environment{}, fmt.Errorf("getting the environment: %w", err)
 	}
 
-	originalName := env.Name
-	if err := env.Update(u); err != nil {
-		return model.Environment{}, apierrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
-	}
-
-	if originalName != env.Name {
-		if isUnique, err := s.isEnvironmentNameUnique(ctx, env.ProjectID, env.Name); err != nil {
-			return model.Environment{}, err
-		} else if !isUnique {
+	// if new name is provided, and it is different from the current name, check if it is unique
+	if u.Name != nil && *u.Name != env.Name {
+		isUnique, err := s.isEnvironmentNameUniqueInProject(ctx, projectID, *u.Name)
+		if err != nil {
+			return model.Environment{}, fmt.Errorf("checking if the environment name is unique: %w", err)
+		}
+		if !isUnique {
 			return model.Environment{}, apierrors.NewEnvironmentDuplicateNameError()
 		}
 	}
 
-	if err := s.repo.UpdateEnvironment(ctx, env); err != nil {
-		return model.Environment{}, err
+	env, err = s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
+		if err := e.Update(u); err != nil {
+			return model.Environment{}, apierrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+		}
+
+		return e, nil
+	})
+	if err != nil {
+		return model.Environment{}, fmt.Errorf("updating the environment: %w", err)
 	}
 
 	return env, nil
@@ -489,7 +498,7 @@ func (s *ProjectService) invitationExists(ctx context.Context, email string, pro
 	return true, nil
 }
 
-func (s *ProjectService) isEnvironmentNameUnique(ctx context.Context, projectID uuid.UUID, name string) (bool, error) {
+func (s *ProjectService) isEnvironmentNameUniqueInProject(ctx context.Context, projectID uuid.UUID, name string) (bool, error) {
 	if _, err := s.repo.ReadEnvironmentByName(ctx, projectID, name); err != nil {
 		if apierrors.IsNotFoundError(err) {
 			return true, nil
