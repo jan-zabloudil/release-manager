@@ -26,8 +26,6 @@ var (
 
 	//go:embed scripts/read_project.sql
 	ReadProject string
-	//go:embed scripts/read_project_for_update.sql
-	ReadProjectForUpdate string
 	//go:embed scripts/delete_project.sql
 	DeleteProject string
 	//go:embed scripts/create_project.sql
@@ -66,6 +64,8 @@ var (
 	ReadMember string
 	//go:embed scripts/read_member_by_email.sql
 	ReadMemberByEmail string
+	//go:embed scripts/update_member.sql
+	UpdateMember string
 
 	//go:embed scripts/create_environment.sql
 	CreateEnvironment string
@@ -78,3 +78,7 @@ var (
 	//go:embed scripts/read_environment_by_name.sql
 	ReadEnvironmentByName string
 )
+
+func AppendForUpdate(query string) string {
+	return query + "\nFOR UPDATE"
+}

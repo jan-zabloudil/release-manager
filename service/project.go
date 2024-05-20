@@ -436,29 +436,24 @@ func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID, au
 	return nil
 }
 
-func (s *ProjectService) UpdateMemberRole(ctx context.Context, newRole model.ProjectRole, projectID, userID, authUserID uuid.UUID) (model.ProjectMember, error) {
+func (s *ProjectService) UpdateMemberRole(
+	ctx context.Context,
+	newRole model.ProjectRole,
+	projectID,
+	userID, authUserID uuid.UUID,
+) (model.ProjectMember, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.ProjectMember{}, err
 	}
 
-	exists, err := s.projectExists(ctx, projectID)
+	m, err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
+		if err := m.UpdateProjectRole(newRole); err != nil {
+			return model.ProjectMember{}, apierrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
+		}
+
+		return m, nil
+	})
 	if err != nil {
-		return model.ProjectMember{}, err
-	}
-	if !exists {
-		return model.ProjectMember{}, apierrors.NewProjectNotFoundError()
-	}
-
-	m, err := s.repo.ReadMember(ctx, projectID, userID)
-	if err != nil {
-		return model.ProjectMember{}, err
-	}
-
-	if err := m.UpdateProjectRole(newRole); err != nil {
-		return model.ProjectMember{}, apierrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
-	}
-
-	if err := s.repo.UpdateMember(ctx, m); err != nil {
 		return model.ProjectMember{}, err
 	}
 

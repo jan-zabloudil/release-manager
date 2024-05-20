@@ -77,7 +77,7 @@ func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcm
 	return r.readProject(ctx, r.dbpool, query.ReadProject, id)
 }
 
-func (r *ProjectRepository) readProject(ctx context.Context, q pgxscan.Querier, query string, id uuid.UUID) (svcmodel.Project, error) {
+func (r *ProjectRepository) readProject(ctx context.Context, q querier, query string, id uuid.UUID) (svcmodel.Project, error) {
 	var p model.Project
 
 	err := pgxscan.Get(ctx, q, &p, query, pgx.NamedArgs{"id": id})
@@ -133,7 +133,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	p, err = r.readProject(ctx, tx, query.ReadProjectForUpdate, projectID)
+	p, err = r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
 	if err != nil {
 		return svcmodel.Project{}, fmt.Errorf("failed to read project: %w", err)
 	}
@@ -430,21 +430,21 @@ func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID
 }
 
 func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
-	return r.readMember(ctx, query.ReadMember, pgx.NamedArgs{
+	return r.readMember(ctx, r.dbpool, query.ReadMember, pgx.NamedArgs{
 		"projectID": projectID,
 		"userID":    userID,
 	})
 }
 
 func (r *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (svcmodel.ProjectMember, error) {
-	return r.readMember(ctx, query.ReadMemberByEmail, pgx.NamedArgs{
+	return r.readMember(ctx, r.dbpool, query.ReadMemberByEmail, pgx.NamedArgs{
 		"projectID": projectID,
 		"email":     email,
 	})
 }
 
-func (r *ProjectRepository) readMember(ctx context.Context, readQuery string, args pgx.NamedArgs) (svcmodel.ProjectMember, error) {
-	row := r.dbpool.QueryRow(ctx, readQuery, args)
+func (r *ProjectRepository) readMember(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.ProjectMember, error) {
+	row := q.QueryRow(ctx, readQuery, args)
 	m, err := model.ScanToSvcProjectMember(row)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -473,18 +473,43 @@ func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 	return nil
 }
 
-func (r *ProjectRepository) UpdateMember(ctx context.Context, m svcmodel.ProjectMember) error {
-	data := model.ToUpdateProjectMemberInput(m)
-
-	err := r.client.
-		DB.From(projectMemberDBEntity).
-		Update(&data).
-		Eq("project_id", m.ProjectID.String()).
-		Eq("user_id", m.User.ID.String()).
-		ExecuteWithContext(ctx, nil)
+func (r *ProjectRepository) UpdateMemberRole(
+	ctx context.Context,
+	projectID,
+	userID uuid.UUID,
+	fn svcmodel.UpdateProjectMemberFunc,
+) (m svcmodel.ProjectMember, err error) {
+	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return util.ToDBError(err)
+		return svcmodel.ProjectMember{}, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		err = util.FinishTransaction(ctx, tx, err)
+	}()
+
+	m, err = r.readMember(ctx, tx, query.AppendForUpdate(query.ReadMember), pgx.NamedArgs{
+		"projectID": projectID,
+		"userID":    userID,
+	})
+	if err != nil {
+		return svcmodel.ProjectMember{}, fmt.Errorf("failed to read project member: %w", err)
 	}
 
-	return nil
+	// Update member's role
+	m, err = fn(m)
+	if err != nil {
+		return svcmodel.ProjectMember{}, err
+	}
+
+	_, err = tx.Exec(ctx, query.UpdateMember, pgx.NamedArgs{
+		"projectID":   m.ProjectID,
+		"userID":      m.User.ID,
+		"projectRole": m.ProjectRole,
+		"updatedAt":   m.UpdatedAt,
+	})
+	if err != nil {
+		return svcmodel.ProjectMember{}, fmt.Errorf("failed to update project member: %w", err)
+	}
+
+	return m, err
 }
