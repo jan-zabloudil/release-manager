@@ -810,7 +810,7 @@ func TestProjectService_Invite(t *testing.T) {
 				projectRepo.On("ReadMemberByEmail", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, apierrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadInvitationByEmail", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, apierrors.NewProjectInvitationNotFoundError())
 				projectRepo.On("CreateInvitation", mock.Anything, mock.Anything).Return(nil)
-				email.On("SendEmailAsync", mock.Anything, mock.Anything)
+				email.On("SendProjectInvitationEmailAsync", mock.Anything, mock.Anything, mock.Anything)
 			},
 			wantErr: false,
 		},

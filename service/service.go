@@ -85,7 +85,7 @@ type githubManager interface {
 }
 
 type emailSender interface {
-	SendEmailAsync(ctx context.Context, email model.Email)
+	SendProjectInvitationEmailAsync(ctx context.Context, data model.ProjectInvitationEmailData, recipient string)
 }
 
 type slackNotifier interface {

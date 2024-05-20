@@ -12,6 +12,6 @@ type Client struct {
 	mock.Mock
 }
 
-func (c *Client) SendEmailAsync(ctx context.Context, email model.Email) {
-	c.Called(ctx, email)
+func (c *Client) SendProjectInvitationEmailAsync(ctx context.Context, data model.ProjectInvitationEmailData, recipient string) {
+	c.Called(ctx, data, recipient)
 }

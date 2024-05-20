@@ -300,7 +300,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 		return model.ProjectInvitation{}, err
 	}
 
-	s.emailSender.SendEmailAsync(ctx, model.NewProjectInvitationEmail(p, tkn, i.Email))
+	s.emailSender.SendProjectInvitationEmailAsync(ctx, model.NewProjectInvitationEmailData(p.Name, tkn), i.Email)
 
 	return i, nil
 }
