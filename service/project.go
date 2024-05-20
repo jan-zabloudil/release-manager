@@ -68,12 +68,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 func (s *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error) {
 	// TODO add project member authorization
 
-	p, err := s.repo.ReadProject(ctx, projectID)
-	if err != nil {
-		return model.Project{}, err
-	}
-
-	return p, nil
+	return s.getProject(ctx, projectID)
 }
 
 func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
@@ -458,6 +453,15 @@ func (s *ProjectService) UpdateMemberRole(
 	}
 
 	return m, nil
+}
+
+func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (model.Project, error) {
+	p, err := s.repo.ReadProject(ctx, projectID)
+	if err != nil {
+		return model.Project{}, err
+	}
+
+	return p, nil
 }
 
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
