@@ -19,12 +19,6 @@ import (
 	"github.com/nedpals/supabase-go"
 )
 
-const (
-	environmentDBEntity   = "environments"
-	invitationDBEntity    = "project_invitations"
-	projectMemberDBEntity = "project_members"
-)
-
 type ProjectRepository struct {
 	client *supabase.Client
 	dbpool *pgxpool.Pool
