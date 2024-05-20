@@ -43,7 +43,7 @@ func run() error {
 
 	supaClient := supabase.CreateClient(cfg.Supabase.APIURL, cfg.Supabase.APISecretKey)
 	githubClient := githubx.NewClient()
-	resendClient := resendx.NewClient(taskManager, cfg.Resend)
+	resendClient := resendx.NewClient(taskManager, cfg.Resend, cfg.ClientService)
 	authClient := auth.NewClient(supaClient)
 	slackClient := slack.NewClient(taskManager)
 

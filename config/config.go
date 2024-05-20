@@ -28,12 +28,22 @@ type SupabaseConfig struct {
 	APISecretKey string `env:"API_SECRET_KEY, required"`
 }
 
+// ClientServiceConfig contains client service deployment URL and client service routes
+// It is used for generating links to the client service (when sending a project invitation email)
+type ClientServiceConfig struct {
+	URL                   string `env:"URL, required"`
+	SignUpRoute           string `env:"SIGN_UP_ROUTE, required"`
+	AcceptInvitationRoute string `env:"ACCEPT_INVITATION_ROUTE, required"`
+	RejectInvitationRoute string `env:"REJECT_INVITATION_ROUTE, required"`
+}
+
 type ServiceConfig struct {
-	Port     uint           `env:"PORT, default=8080"`
-	LogLevel slog.Level     `env:"LOG_LEVEL, default=INFO"`
-	Supabase SupabaseConfig `env:", prefix=SUPABASE_"`
-	Server   ServerConfig   `env:", prefix=SERVER_"`
-	Resend   ResendConfig   `env:", prefix=RESEND_"`
+	Port          uint                `env:"PORT, default=8080"`
+	LogLevel      slog.Level          `env:"LOG_LEVEL, default=INFO"`
+	Supabase      SupabaseConfig      `env:", prefix=SUPABASE_"`
+	Server        ServerConfig        `env:", prefix=SERVER_"`
+	Resend        ResendConfig        `env:", prefix=RESEND_"`
+	ClientService ClientServiceConfig `env:", prefix=CLIENT_SERVICE_"`
 }
 
 func Load(ctx context.Context) ServiceConfig {

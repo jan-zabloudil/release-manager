@@ -3,6 +3,7 @@ package resend
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"release-manager/config"
 	"release-manager/service/model"
@@ -13,25 +14,41 @@ import (
 )
 
 type Client struct {
-	taskManager *background.Manager
-	client      *resend.Client
-	reqBuilder  *EmailRequestBuilder
+	taskManager  *background.Manager
+	client       *resend.Client
+	clientSvcCfg config.ClientServiceConfig
+	resendCfg    config.ResendConfig
 }
 
-func NewClient(manager *background.Manager, cfg config.ResendConfig) *Client {
+func NewClient(manager *background.Manager, resendCfg config.ResendConfig, clientSvcCfg config.ClientServiceConfig) *Client {
 	return &Client{
-		taskManager: manager,
-		client:      resend.NewClient(cfg.APIKey),
-		reqBuilder:  NewEmailRequestBuilder(cfg),
+		taskManager:  manager,
+		client:       resend.NewClient(resendCfg.APIKey),
+		clientSvcCfg: clientSvcCfg,
+		resendCfg:    resendCfg,
 	}
 }
 
-func (c *Client) SendEmailAsync(ctx context.Context, email model.Email) {
-	req := c.reqBuilder.
-		SetRecipients(email.Recipients).
-		SetSubject(email.Subject).
-		SetText(email.Text).
-		SetHTML(email.HTML).
+func (c *Client) SendProjectInvitationEmailAsync(
+	ctx context.Context,
+	data model.ProjectInvitationEmailData,
+	recipient string,
+) {
+	parsedTmpl, err := ParseProjectInvitationTemplate(data, c.clientSvcCfg)
+	if err != nil {
+		slog.Error("failed to parse project invitation email template", "error", err)
+		return
+	}
+
+	c.sendEmailAsync(ctx, parsedTmpl.Subject, parsedTmpl.Text, parsedTmpl.HTML, recipient)
+}
+
+func (c *Client) sendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string) {
+	req := NewEmailRequestBuilder(c.resendCfg).
+		SetRecipients(recipients).
+		SetSubject(subject).
+		SetText(text).
+		SetHTML(html).
 		Build()
 
 	t := task.Task{
