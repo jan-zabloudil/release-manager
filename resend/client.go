@@ -17,7 +17,7 @@ type Client struct {
 	taskManager  *background.Manager
 	client       *resend.Client
 	clientSvcCfg config.ClientServiceConfig
-	reqBuilder   *EmailRequestBuilder
+	resendCfg    config.ResendConfig
 }
 
 func NewClient(manager *background.Manager, resendCfg config.ResendConfig, clientSvcCfg config.ClientServiceConfig) *Client {
@@ -25,7 +25,7 @@ func NewClient(manager *background.Manager, resendCfg config.ResendConfig, clien
 		taskManager:  manager,
 		client:       resend.NewClient(resendCfg.APIKey),
 		clientSvcCfg: clientSvcCfg,
-		reqBuilder:   NewEmailRequestBuilder(resendCfg),
+		resendCfg:    resendCfg,
 	}
 }
 
@@ -36,7 +36,7 @@ func (c *Client) SendProjectInvitationEmailAsync(
 ) {
 	parsedTmpl, err := ParseProjectInvitationTemplate(data, c.clientSvcCfg)
 	if err != nil {
-		slog.Error("failed to parse project invitation template", "error", err)
+		slog.Error("failed to parse project invitation email template", "error", err)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (c *Client) SendProjectInvitationEmailAsync(
 }
 
 func (c *Client) sendEmailAsync(ctx context.Context, subject, text, html string, recipients ...string) {
-	req := c.reqBuilder.
+	req := NewEmailRequestBuilder(c.resendCfg).
 		SetRecipients(recipients).
 		SetSubject(subject).
 		SetText(text).

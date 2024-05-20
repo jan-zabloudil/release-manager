@@ -1,7 +1,6 @@
 {{define "subject"}}Project invitation | ReleaseManager{{end}}
 
 {{define "textBody"}}
-Hey,\n\n
 You have been invited to join project {{.projectName}} in ReleaseManager.\n\n
 Use following link to join the project:\n
 {{.acceptLink}}\n\n
@@ -24,7 +23,6 @@ ReleaseManager
         <tr>
             <td>
                 <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">Project Invitation</h1>
-                <p style="font-size: 16px; line-height: 1.5;">Hey,</p>
                 <p style="font-size: 16px; line-height: 1.5;">You have been invited to join project <strong>{{.projectName}}</strong> on <a href="{{.siteLink}}" style="color:black">ReleaseManager</a>.</p>
                 <a href="{{.acceptLink}}" style="display: block; width: 200px; margin: 20px auto; padding: 10px 20px; text-align: center; background-color: #ED0C32; color: #ffffff; text-decoration: none; border-radius: 5px;">Accept invitation</a>
                 <p style="text-align: center; margin-top: 10px;"><a href="{{.rejectLink}}" style="color: #ED0C32;">Reject invitation</a></p>
