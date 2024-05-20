@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"release-manager/pkg/apierrors"
 	cryptox "release-manager/pkg/crypto"
-	"release-manager/pkg/dberrors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -338,31 +338,56 @@ func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invita
 }
 
 func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token) error {
-	invitation, err := s.getPendingInvitationByToken(ctx, tkn)
+	// When accepting an invitation, two possible scenarios can happen:
+	// 1. User does not exist yet, in which case invitation is only accepted
+	//    When a user registers later, a project member will be created (PostgreSQL function handle_new_user() is triggered upon user creation)
+	//    Must be done via Postgres function because user registration is not controlled by this API
+	// 2. User already exists, in which case a project member is created and invitation is deleted
+	//
+	// To keep more logic in service, we first fetch the invitation to get invitation's email
+	// Then we check if user with given email exists
+	// First two steps could be done in one query, but it would require mixing entities from two different repositories
+	// Based on user existence we either accept the invitation or create a project member and delete the invitation
+	//
+	// There is one possible race condition:
+	// 1. We check if user exists (and he does not)
+	// 2. We only accept the invitation
+	// But user would register between these two steps
+	// Resulting in a project member not being created for existing user
+	// The race condition is handled by the PostgreSQL function check_accepted_invitations_for_registered_users()
+
+	invitation, err := s.repo.ReadPendingInvitationByHash(ctx, tkn.ToHash())
 	if err != nil {
-		return err
+		return fmt.Errorf("reading invitation by token hash: %w", err)
 	}
 
 	u, err := s.userGetter.GetByEmail(ctx, invitation.Email)
 	if err != nil && !apierrors.IsNotFoundError(err) {
-		return err
+		return fmt.Errorf("reading user by email: %w", err)
 	}
 
-	// User does not exist yet, just accept the invitation
-	// When a user registers, a project membership will be created;
-	// PostgreSQL function handle_new_user() is triggered upon user creation
+	// User does not exist yet
 	if apierrors.IsNotFoundError(err) {
-		invitation.Accept()
-		return s.repo.UpdateInvitation(ctx, invitation)
+		if err := s.repo.AcceptPendingInvitation(ctx, invitation.ID, func(i *model.ProjectInvitation) {
+			i.Accept()
+		}); err != nil {
+			return fmt.Errorf("accepting invitation: %w", err)
+		}
+
+		return nil
 	}
 
-	// User exists
 	member, err := model.NewProjectMember(u, invitation.ProjectID, invitation.ProjectRole)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating project member object: %w", err)
 	}
 
-	return s.repo.CreateMember(ctx, member)
+	// Creates a project member and deletes the invitation
+	if err := s.repo.CreateMember(ctx, member); err != nil {
+		return fmt.Errorf("creating project member in repo: %w", err)
+	}
+
+	return nil
 }
 
 func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token) error {
@@ -451,19 +476,6 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 	}
 
 	return true, nil
-}
-
-func (s *ProjectService) getPendingInvitationByToken(ctx context.Context, tkn cryptox.Token) (model.ProjectInvitation, error) {
-	i, err := s.repo.ReadInvitationByTokenHashAndStatus(ctx, tkn.ToHash(), model.InvitationStatusPending)
-	if err != nil {
-		if dberrors.IsNotFoundError(err) {
-			return model.ProjectInvitation{}, apierrors.NewProjectInvitationNotFoundError().Wrap(err)
-		}
-
-		return model.ProjectInvitation{}, err
-	}
-
-	return i, nil
 }
 
 func (s *ProjectService) invitationExists(ctx context.Context, email string, projectID uuid.UUID) (bool, error) {

@@ -21,11 +21,6 @@ type ProjectInvitation struct {
 	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }
 
-type UpdateProjectInvitationInput struct {
-	Status    string    `json:"status"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 func ToProjectInvitation(i svcmodel.ProjectInvitation) ProjectInvitation {
 	return ProjectInvitation{
 		ID:            i.ID,
@@ -37,13 +32,6 @@ func ToProjectInvitation(i svcmodel.ProjectInvitation) ProjectInvitation {
 		InviterUserID: i.InviterUserID,
 		CreatedAt:     i.CreatedAt,
 		UpdatedAt:     i.UpdatedAt,
-	}
-}
-
-func ToUpdateProjectInvitationInput(u svcmodel.ProjectInvitation) UpdateProjectInvitationInput {
-	return UpdateProjectInvitationInput{
-		Status:    string(u.Status),
-		UpdatedAt: u.UpdatedAt,
 	}
 }
 
