@@ -250,14 +250,17 @@ func (r *ProjectRepository) UpdateEnvironment(ctx context.Context, e svcmodel.En
 }
 
 func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {
-	data := model.ToProjectInvitation(i)
-
-	err := r.client.
-		DB.From(invitationDBEntity).
-		Insert(&data).
-		ExecuteWithContext(ctx, nil)
-	if err != nil {
-		return util.ToDBError(err)
+	if _, err := r.dbpool.Exec(ctx, query.CreateInvitation, pgx.NamedArgs{
+		"invitationID": i.ID,
+		"projectID":    i.ProjectID,
+		"email":        i.Email,
+		"projectRole":  i.ProjectRole,
+		"tokenHash":    i.TokenHash.ToBase64(),
+		"status":       i.Status,
+		"createdAt":    i.CreatedAt,
+		"updatedAt":    i.UpdatedAt,
+	}); err != nil {
+		return err
 	}
 
 	return nil

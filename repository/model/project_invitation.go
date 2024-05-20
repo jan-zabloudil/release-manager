@@ -21,20 +21,6 @@ type ProjectInvitation struct {
 	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }
 
-func ToProjectInvitation(i svcmodel.ProjectInvitation) ProjectInvitation {
-	return ProjectInvitation{
-		ID:            i.ID,
-		ProjectID:     i.ProjectID,
-		Email:         i.Email,
-		ProjectRole:   string(i.ProjectRole),
-		Status:        string(i.Status),
-		TokenHash:     i.TokenHash,
-		InviterUserID: i.InviterUserID,
-		CreatedAt:     i.CreatedAt,
-		UpdatedAt:     i.UpdatedAt,
-	}
-}
-
 func ToSvcProjectInvitation(i ProjectInvitation) svcmodel.ProjectInvitation {
 	return svcmodel.ProjectInvitation{
 		ID:            i.ID,
