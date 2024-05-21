@@ -58,6 +58,7 @@ type releaseRepository interface {
 	Read(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
 	Delete(ctx context.Context, projectID, releaseID uuid.UUID) error
 	ListForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
+	Update(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
 }
 
 type authGuard interface {

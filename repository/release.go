@@ -3,10 +3,12 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"release-manager/pkg/apierrors"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
+	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -43,15 +45,19 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 }
 
 func (r *ReleaseRepository) Read(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
-	var rls model.Release
-
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service
-	err := pgxscan.Get(ctx, r.dbpool, &rls, query.ReadRelease, pgx.NamedArgs{
+	return r.read(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
 	})
+}
+
+func (r *ReleaseRepository) read(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.Release, error) {
+	var rls model.Release
+
+	err := pgxscan.Get(ctx, q, &rls, readQuery, args)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return svcmodel.Release{}, apierrors.NewReleaseNotFoundError().Wrap(err)
@@ -61,6 +67,50 @@ func (r *ReleaseRepository) Read(ctx context.Context, projectID, releaseID uuid.
 	}
 
 	return model.ToSvcRelease(rls), nil
+}
+
+func (r *ReleaseRepository) Update(
+	ctx context.Context,
+	projectID,
+	releaseID uuid.UUID,
+	fn svcmodel.UpdateReleaseFunc,
+) (rls svcmodel.Release, err error) {
+	tx, err := r.dbpool.Begin(ctx)
+	if err != nil {
+		return svcmodel.Release{}, fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer func() {
+		err = util.FinishTransaction(ctx, tx, err)
+	}()
+
+	// Project ID is not needed in the query because releaseID is primary key
+	// But it is added for security reasons
+	// To make sure that the release belongs to the project that is passed from the service
+	rls, err = r.read(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
+		"projectID": projectID,
+		"releaseID": releaseID,
+	})
+	if err != nil {
+		return svcmodel.Release{}, fmt.Errorf("failed to read release: %w", err)
+	}
+
+	// Update the release
+	rls, err = fn(rls)
+	if err != nil {
+		return svcmodel.Release{}, err
+	}
+
+	_, err = tx.Exec(ctx, query.UpdateRelease, pgx.NamedArgs{
+		"releaseID":    rls.ID,
+		"releaseTitle": rls.ReleaseTitle,
+		"releaseNotes": rls.ReleaseNotes,
+		"updatedAt":    rls.UpdatedAt,
+	})
+	if err != nil {
+		return svcmodel.Release{}, fmt.Errorf("failed to update release: %w", err)
+	}
+
+	return rls, nil
 }
 
 func (r *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uuid.UUID) error {

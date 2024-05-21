@@ -18,6 +18,11 @@ type CreateReleaseInput struct {
 	GitTagName   string // used for linking the release with a specific point in a git repository, TODO make this field required
 }
 
+type UpdateReleaseInput struct {
+	ReleaseTitle *string
+	ReleaseNotes *string
+}
+
 type Release struct {
 	ID           uuid.UUID
 	ProjectID    uuid.UUID
@@ -46,6 +51,21 @@ func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Re
 	}
 
 	return r, nil
+}
+
+type UpdateReleaseFunc func(r Release) (Release, error)
+
+func (r *Release) Update(input UpdateReleaseInput) error {
+	if input.ReleaseTitle != nil {
+		r.ReleaseTitle = *input.ReleaseTitle
+	}
+	if input.ReleaseNotes != nil {
+		r.ReleaseNotes = *input.ReleaseNotes
+	}
+
+	r.UpdatedAt = time.Now()
+
+	return r.Validate()
 }
 
 func (r *Release) Validate() error {

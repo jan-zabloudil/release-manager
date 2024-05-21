@@ -72,3 +72,25 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 
 	util.WriteJSONResponse(w, http.StatusOK, model.ToReleases(rls))
 }
+
+func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
+	var input model.UpdateReleaseInput
+	if err := util.UnmarshalRequest(r, &input); err != nil {
+		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	rls, err := h.ReleaseSvc.Update(
+		r.Context(),
+		model.ToSvcUpdateReleaseInput(input),
+		util.ContextProjectID(r),
+		util.ContextReleaseID(r),
+		util.ContextAuthUserID(r),
+	)
+	if err != nil {
+		util.WriteResponseError(w, util.ToResponseError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, http.StatusOK, model.ToRelease(rls))
+}
