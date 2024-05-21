@@ -136,7 +136,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 		return model.Environment{}, err
 	}
 
-	_, err := s.GetProject(ctx, c.ProjectID, authUserID)
+	_, err := s.getProject(ctx, c.ProjectID)
 	if err != nil {
 		return model.Environment{}, err
 	}
@@ -248,7 +248,7 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
 	// TODO add project member authorization
 
-	project, err := s.GetProject(ctx, projectID, authUserID)
+	project, err := s.getProject(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 		return model.ProjectInvitation{}, err
 	}
 
-	p, err := s.GetProject(ctx, c.ProjectID, authUserID)
+	p, err := s.getProject(ctx, c.ProjectID)
 	if err != nil {
 		return model.ProjectInvitation{}, err
 	}
