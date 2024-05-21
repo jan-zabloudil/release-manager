@@ -32,8 +32,3 @@ func (m *ReleaseRepository) ListForProject(ctx context.Context, projectID uuid.U
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.Release), args.Error(1)
 }
-
-func (m *ReleaseRepository) ReadByTitle(ctx context.Context, projectID uuid.UUID, name string) (svcmodel.Release, error) {
-	args := m.Called(ctx, projectID, name)
-	return args.Get(0).(svcmodel.Release), args.Error(1)
-}

@@ -33,7 +33,6 @@ func TestReleaseService_Create(t *testing.T) {
 			sendReleaseNotification: false,
 			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				releaseRepo.On("ReadByTitle", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
 				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -49,7 +48,6 @@ func TestReleaseService_Create(t *testing.T) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					SlackChannelID: "channel",
 				}, nil)
-				releaseRepo.On("ReadByTitle", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
 				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
 				slackClient.On("SendReleaseNotificationAsync", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
@@ -67,7 +65,6 @@ func TestReleaseService_Create(t *testing.T) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					SlackChannelID: "channel",
 				}, nil)
-				releaseRepo.On("ReadByTitle", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
 				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", apierrors.NewSlackIntegrationNotEnabledError())
 			},
@@ -84,7 +81,6 @@ func TestReleaseService_Create(t *testing.T) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					SlackChannelID: "",
 				}, nil)
-				releaseRepo.On("ReadByTitle", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
 				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -108,18 +104,6 @@ func TestReleaseService_Create(t *testing.T) {
 			},
 			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-			},
-			wantErr: true,
-		},
-		{
-			name: "Duplicate release title",
-			release: model.CreateReleaseInput{
-				ReleaseTitle: "Release",
-				ReleaseNotes: "Test release notes",
-			},
-			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				releaseRepo.On("ReadByTitle", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 			},
 			wantErr: true,
 		},

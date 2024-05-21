@@ -7,12 +7,17 @@ import (
 	"release-manager/pkg/apierrors"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
+	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+const (
+	uniqueReleaseTitlePerProjectConstraintName = "unique_release_title_per_project"
 )
 
 type ReleaseRepository struct {
@@ -36,6 +41,10 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 		"updatedAt":    rls.UpdatedAt,
 	})
 	if err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueReleaseTitlePerProjectConstraintName) {
+			return apierrors.NewReleaseDuplicateTitleError().Wrap(err)
+		}
+
 		return err
 	}
 
@@ -43,26 +52,15 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 }
 
 func (r *ReleaseRepository) Read(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
+	var rls model.Release
+
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service
-	return r.read(ctx, query.ReadRelease, pgx.NamedArgs{
+	err := pgxscan.Get(ctx, r.dbpool, &rls, query.ReadRelease, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
 	})
-}
-
-func (r *ReleaseRepository) ReadByTitle(ctx context.Context, projectID uuid.UUID, name string) (svcmodel.Release, error) {
-	return r.read(ctx, query.ReadReleaseByTitle, pgx.NamedArgs{
-		"projectID":    projectID,
-		"releaseTitle": name,
-	})
-}
-
-func (r *ReleaseRepository) read(ctx context.Context, readQuery string, args pgx.NamedArgs) (svcmodel.Release, error) {
-	var rls model.Release
-
-	err := pgxscan.Get(ctx, r.dbpool, &rls, readQuery, args)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return svcmodel.Release{}, apierrors.NewReleaseNotFoundError().Wrap(err)
