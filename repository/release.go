@@ -17,6 +17,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const (
+	uniqueReleaseTitlePerProjectConstraintName = "unique_release_title_per_project"
+)
+
 type ReleaseRepository struct {
 	dbpool *pgxpool.Pool
 }
@@ -38,6 +42,10 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 		"updatedAt":    rls.UpdatedAt,
 	})
 	if err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueReleaseTitlePerProjectConstraintName) {
+			return apierrors.NewReleaseDuplicateTitleError().Wrap(err)
+		}
+
 		return err
 	}
 

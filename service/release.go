@@ -50,7 +50,6 @@ func (s *ReleaseService) Create(
 		return model.Release{}, apierrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	// TODO check if release name is unique per project
 	if err := s.repo.Create(ctx, rls); err != nil {
 		return model.Release{}, err
 	}
