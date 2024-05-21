@@ -57,6 +57,7 @@ type releaseRepository interface {
 	Create(ctx context.Context, r model.Release) error
 	Read(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
 	Delete(ctx context.Context, projectID, releaseID uuid.UUID) error
+	ListForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
 }
 
 type authGuard interface {
@@ -78,6 +79,7 @@ type userGetter interface {
 
 type projectGetter interface {
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
+	ProjectExists(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (bool, error)
 }
 
 type githubManager interface {

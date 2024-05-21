@@ -27,3 +27,8 @@ func (m *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uui
 	args := m.Called(ctx, projectID, releaseID)
 	return args.Error(0)
 }
+
+func (m *ReleaseRepository) ListForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
+	args := m.Called(ctx, projectID)
+	return args.Get(0).([]svcmodel.Release), args.Error(1)
+}

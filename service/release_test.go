@@ -226,3 +226,64 @@ func TestReleaseService_Delete(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseService_ListForProject(t *testing.T) {
+	testCases := []struct {
+		name      string
+		projectID uuid.UUID
+		mockSetup func(projectSvc *svc.ProjectService, repository *repo.ReleaseRepository)
+		wantErr   bool
+	}{
+		{
+			name:      "Success",
+			projectID: uuid.New(),
+			mockSetup: func(projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ListForProject", mock.Anything, mock.Anything).Return([]model.Release{
+					{ID: uuid.New()},
+					{ID: uuid.New()},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name:      "no releases",
+			projectID: uuid.New(),
+			mockSetup: func(projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ListForProject", mock.Anything, mock.Anything).Return([]model.Release{}, nil)
+				projectSvc.On("ProjectExists", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name:      "project not found",
+			projectID: uuid.New(),
+			mockSetup: func(projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ListForProject", mock.Anything, mock.Anything).Return([]model.Release{}, nil)
+				projectSvc.On("ProjectExists", mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
+			releaseRepo := new(repo.ReleaseRepository)
+			slackClient := new(slack.Client)
+			service := NewReleaseService(projectSvc, settingsSvc, slackClient, releaseRepo)
+
+			tc.mockSetup(projectSvc, releaseRepo)
+
+			_, err := service.ListForProject(context.Background(), tc.projectID, uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}

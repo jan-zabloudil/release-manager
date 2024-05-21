@@ -81,3 +81,16 @@ func (r *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uui
 
 	return nil
 }
+
+func (r *ReleaseRepository) ListForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
+	var rls []model.Release
+
+	err := pgxscan.Select(ctx, r.dbpool, &rls, query.ListReleasesForProject, pgx.NamedArgs{
+		"projectID": projectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.ToSvcReleases(rls), nil
+}

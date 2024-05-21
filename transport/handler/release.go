@@ -58,3 +58,17 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
+	rls, err := h.ReleaseSvc.ListForProject(
+		r.Context(),
+		util.ContextProjectID(r),
+		util.ContextAuthUserID(r),
+	)
+	if err != nil {
+		util.WriteResponseError(w, util.ToResponseError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, http.StatusOK, model.ToReleases(rls))
+}

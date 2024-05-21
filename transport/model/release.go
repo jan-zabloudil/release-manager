@@ -38,3 +38,11 @@ func ToRelease(r svcmodel.Release) Release {
 		UpdatedAt:    r.UpdatedAt,
 	}
 }
+
+func ToReleases(releases []svcmodel.Release) []Release {
+	r := make([]Release, 0, len(releases))
+	for _, release := range releases {
+		r = append(r, ToRelease(release))
+	}
+	return r
+}

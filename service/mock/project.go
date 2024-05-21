@@ -17,3 +17,8 @@ func (m *ProjectService) GetProject(ctx context.Context, projectID, authUserID u
 	args := m.Called(ctx, projectID, authUserID)
 	return args.Get(0).(model.Project), args.Error(1)
 }
+
+func (m *ProjectService) ProjectExists(ctx context.Context, projectID, authUserID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, projectID, authUserID)
+	return args.Bool(0), args.Error(1)
+}

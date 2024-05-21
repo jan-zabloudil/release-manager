@@ -11,6 +11,8 @@ var (
 	ReadRelease string
 	//go:embed scripts/delete_release.sql
 	DeleteRelease string
+	//go:embed scripts/list_releases_for_project.sql
+	ListReleasesForProject string
 
 	//go:embed scripts/read_user.sql
 	ReadUser string
