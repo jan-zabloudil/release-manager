@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -55,6 +56,37 @@ func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL 
 	}
 
 	return model.ToSvcGitTags(t), nil
+}
+
+func (c *Client) ReadTagByName(ctx context.Context, tkn string, repoURL url.URL, tagName string) (svcmodel.GitTag, error) {
+	repo, err := model.ToGithubRepo(repoURL)
+	if err != nil {
+		return svcmodel.GitTag{}, apierrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+	}
+
+	// Git tag can be fetched only by its SHA, using GET /repos/{owner}/{repo}/git/tags/{tag_sha}
+	// Another limitation is that only annotated tags can be fetched by /repos/{owner}/{repo}/git/tags/{tag_sha}
+	// Because lightweight tags do not have their own SHA, they only reference a commit
+	// Docs https://docs.github.com/rest/git/tags#get-a-tag
+	//
+	// So in order to check if a tag exists by name (both lightweights and annotated tags), GET /repos/{owner}/{repo}/git/ref/{ref} is used
+	// Docs https://docs.github.com/rest/git/refs#get-a-reference
+	_, _, err = c.getGithubClient(tkn).Git.GetRef(
+		ctx,
+		repo.OwnerSlug,
+		repo.RepositorySlug,
+		fmt.Sprintf("tags/%s", tagName),
+	)
+	if err != nil {
+		var githubErr *github.ErrorResponse
+		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+			return svcmodel.GitTag{}, apierrors.NewGitTagNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.GitTag{}, err
+	}
+
+	return svcmodel.GitTag{Name: tagName}, nil
 }
 
 func (c *Client) CreateRelease(
