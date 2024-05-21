@@ -19,11 +19,12 @@ type UpdateEnvironmentInput struct {
 }
 
 type Environment struct {
-	ID         uuid.UUID `json:"id"`
-	Name       string    `json:"name"`
-	ServiceURL string    `json:"service_url"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID              uuid.UUID `json:"id"`
+	Name            string    `json:"name"`
+	ServiceURL      string    `json:"service_url"`
+	DeployedRelease *Release  `json:"deployed_release,omitempty"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 func ToSvcCreateEnvironmentInput(c CreateEnvironmentInput, projectID uuid.UUID) svcmodel.CreateEnvironmentInput {
@@ -42,12 +43,19 @@ func ToSvcUpdateEnvironmentInput(u UpdateEnvironmentInput) svcmodel.UpdateEnviro
 }
 
 func ToEnvironment(e svcmodel.Environment) Environment {
+	var rlsPtr *Release
+	if e.DeployedRelease != nil {
+		rls := ToRelease(*e.DeployedRelease)
+		rlsPtr = &rls
+	}
+
 	return Environment{
-		ID:         e.ID,
-		Name:       e.Name,
-		ServiceURL: e.ServiceURL.String(),
-		CreatedAt:  e.CreatedAt.Local(),
-		UpdatedAt:  e.UpdatedAt.Local(),
+		ID:              e.ID,
+		Name:            e.Name,
+		ServiceURL:      e.ServiceURL.String(),
+		DeployedRelease: rlsPtr,
+		CreatedAt:       e.CreatedAt.Local(),
+		UpdatedAt:       e.UpdatedAt.Local(),
 	}
 }
 

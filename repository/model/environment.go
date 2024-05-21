@@ -1,6 +1,8 @@
 package model
 
 import (
+	"database/sql"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -9,44 +11,61 @@ import (
 	"github.com/google/uuid"
 )
 
-// Environment TODO once all functions are using db pool, remove json tags
 type Environment struct {
-	ID         uuid.UUID `json:"id" db:"id"`
-	ProjectID  uuid.UUID `json:"project_id" db:"project_id"`
-	Name       string    `json:"name" db:"name"`
-	ServiceURL string    `json:"service_url" db:"service_url"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
-}
-
-type UpdateEnvironmentInput struct {
-	Name       string    `json:"name"`
-	ServiceURL string    `json:"service_url"`
-	UpdatedAt  time.Time `json:"updated_at"`
-}
-
-func ToUpdateEnvironmentInput(e svcmodel.Environment) UpdateEnvironmentInput {
-	return UpdateEnvironmentInput{
-		Name:       e.Name,
-		ServiceURL: e.ServiceURL.String(),
-		UpdatedAt:  e.UpdatedAt,
-	}
+	ID         uuid.UUID `db:"id"`
+	ProjectID  uuid.UUID `db:"project_id"`
+	Name       string    `db:"name"`
+	ServiceURL string    `db:"service_url"`
+	CreatedAt  time.Time `db:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
+	// release is optional, one or no release can be deployed to an environment
+	ReleaseID        sql.NullString `db:"release_id"`
+	ReleaseTitle     sql.NullString `db:"release_title"`
+	ReleaseNotes     sql.NullString `db:"release_notes"`
+	ReleaseCreatedBy sql.NullString `db:"release_created_by"`
+	ReleaseCreatedAt sql.NullTime   `db:"release_created_at"`
+	ReleaseUpdatedAt sql.NullTime   `db:"release_updated_at"`
 }
 
 func ToSvcEnvironment(e Environment) (svcmodel.Environment, error) {
 	u, err := url.Parse(e.ServiceURL)
 	if err != nil {
-		return svcmodel.Environment{}, err
+		return svcmodel.Environment{}, fmt.Errorf("parsing service URL: %w", err)
 	}
 
-	return svcmodel.Environment{
+	env := svcmodel.Environment{
 		ID:         e.ID,
 		ProjectID:  e.ProjectID,
 		Name:       e.Name,
 		ServiceURL: *u,
 		CreatedAt:  e.CreatedAt,
 		UpdatedAt:  e.UpdatedAt,
-	}, nil
+	}
+
+	if e.ReleaseID.Valid {
+		rlsID, err := uuid.Parse(e.ReleaseID.String)
+		if err != nil {
+			return svcmodel.Environment{}, fmt.Errorf("parsing release ID: %w", err)
+		}
+		rlsCreatedByID, err := uuid.Parse(e.ReleaseCreatedBy.String)
+		if err != nil {
+			return svcmodel.Environment{}, fmt.Errorf("parsing release created by ID: %w", err)
+		}
+
+		rls := svcmodel.Release{
+			ID:           rlsID,
+			ProjectID:    e.ProjectID,
+			ReleaseTitle: e.ReleaseTitle.String,
+			ReleaseNotes: e.ReleaseNotes.String,
+			AuthorUserID: rlsCreatedByID,
+			CreatedAt:    e.ReleaseCreatedAt.Time,
+			UpdatedAt:    e.ReleaseUpdatedAt.Time,
+		}
+
+		env.DeployedRelease = &rls
+	}
+
+	return env, nil
 }
 
 func ToSvcEnvironments(envs []Environment) ([]svcmodel.Environment, error) {

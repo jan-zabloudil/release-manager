@@ -17,14 +17,13 @@ var (
 )
 
 type Environment struct {
-	ID         uuid.UUID
-	ProjectID  uuid.UUID
-	Name       string
-	ServiceURL url.URL
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-
-	// TODO add release id once releases are implemented
+	ID              uuid.UUID
+	ProjectID       uuid.UUID
+	Name            string
+	ServiceURL      url.URL
+	DeployedRelease *Release // optional field, one or no release can be deployed to an environment
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 type CreateEnvironmentInput struct {
