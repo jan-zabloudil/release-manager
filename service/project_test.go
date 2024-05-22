@@ -8,7 +8,6 @@ import (
 	githubmock "release-manager/github/mock"
 	"release-manager/pkg/apierrors"
 	cryptox "release-manager/pkg/crypto"
-	"release-manager/pkg/dberrors"
 	repo "release-manager/repository/mock"
 	resendmock "release-manager/resend/mock"
 	svc "release-manager/service/mock"
@@ -750,7 +749,7 @@ func TestProjectService_Invite(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},

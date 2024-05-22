@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"release-manager/pkg/apierrors"
-	"release-manager/pkg/dberrors"
 	repo "release-manager/repository/mock"
 	svc "release-manager/service/mock"
 	"release-manager/service/model"
@@ -92,7 +91,7 @@ func TestReleaseService_Create(t *testing.T) {
 				ReleaseNotes: "Test release notes",
 			},
 			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, dberrors.NewNotFoundError())
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},
