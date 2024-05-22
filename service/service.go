@@ -20,7 +20,6 @@ type projectRepository interface {
 
 	CreateEnvironment(ctx context.Context, env model.Environment) error
 	ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (model.Environment, error)
-	ReadEnvironmentByName(ctx context.Context, projectID uuid.UUID, name string) (model.Environment, error)
 	UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn model.UpdateEnvironmentFunc) (model.Environment, error)
 	DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error
 	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
