@@ -115,6 +115,10 @@ func (r *ReleaseRepository) Update(
 		"updatedAt":    rls.UpdatedAt,
 	})
 	if err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueReleaseTitlePerProjectConstraintName) {
+			return svcmodel.Release{}, apierrors.NewReleaseDuplicateTitleError().Wrap(err)
+		}
+
 		return svcmodel.Release{}, fmt.Errorf("failed to update release: %w", err)
 	}
 

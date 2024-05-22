@@ -91,8 +91,6 @@ func (s *ReleaseService) Update(
 ) (model.Release, error) {
 	// TODO add project member authorization
 
-	// TODO check if release name is unique per project
-
 	rls, err := s.repo.Update(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
 			return model.Release{}, apierrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
