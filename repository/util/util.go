@@ -5,28 +5,13 @@ import (
 	"errors"
 	"fmt"
 
-	"release-manager/pkg/dberrors"
-
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	postgrestgo "github.com/nedpals/postgrest-go/pkg"
 )
 
 const (
-	postgresSingleRecordFetchErrorCode = "PGRST116"
-	postgresUniqueConstraintErrorCode  = "23505"
+	postgresUniqueConstraintErrorCode = "23505"
 )
-
-func ToDBError(err error) *dberrors.DBError {
-	var postgreErr *postgrestgo.RequestError
-	if errors.As(err, &postgreErr) {
-		if postgreErr.Code == postgresSingleRecordFetchErrorCode {
-			return dberrors.NewNotFoundError().Wrap(err)
-		}
-	}
-
-	return dberrors.NewUnknownError().Wrap(err)
-}
 
 func FinishTransaction(ctx context.Context, tx pgx.Tx, err error) error {
 	if err != nil {

@@ -3,8 +3,6 @@ package service
 import (
 	"context"
 
-	"release-manager/pkg/apierrors"
-	"release-manager/pkg/dberrors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -29,12 +27,7 @@ func (s *UserService) Get(ctx context.Context, id uuid.UUID, authUserID uuid.UUI
 
 	u, err := s.repository.Read(ctx, id)
 	if err != nil {
-		switch {
-		case dberrors.IsNotFoundError(err):
-			return model.User{}, apierrors.NewUserNotFoundError().Wrap(err)
-		default:
-			return model.User{}, err
-		}
+		return model.User{}, err
 	}
 
 	return u, nil

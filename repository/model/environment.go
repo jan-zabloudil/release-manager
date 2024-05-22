@@ -9,28 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// Environment TODO once all functions are using db pool, remove json tags
 type Environment struct {
-	ID         uuid.UUID `json:"id" db:"id"`
-	ProjectID  uuid.UUID `json:"project_id" db:"project_id"`
-	Name       string    `json:"name" db:"name"`
-	ServiceURL string    `json:"service_url" db:"service_url"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
-}
-
-type UpdateEnvironmentInput struct {
-	Name       string    `json:"name"`
-	ServiceURL string    `json:"service_url"`
-	UpdatedAt  time.Time `json:"updated_at"`
-}
-
-func ToUpdateEnvironmentInput(e svcmodel.Environment) UpdateEnvironmentInput {
-	return UpdateEnvironmentInput{
-		Name:       e.Name,
-		ServiceURL: e.ServiceURL.String(),
-		UpdatedAt:  e.UpdatedAt,
-	}
+	ID         uuid.UUID `db:"id"`
+	ProjectID  uuid.UUID `db:"project_id"`
+	Name       string    `db:"name"`
+	ServiceURL string    `db:"service_url"`
+	CreatedAt  time.Time `db:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
 }
 
 func ToSvcEnvironment(e Environment) (svcmodel.Environment, error) {

@@ -16,17 +16,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/nedpals/supabase-go"
 )
 
 type ProjectRepository struct {
-	client *supabase.Client
 	dbpool *pgxpool.Pool
 }
 
-func NewProjectRepository(c *supabase.Client, pool *pgxpool.Pool) *ProjectRepository {
+func NewProjectRepository(pool *pgxpool.Pool) *ProjectRepository {
 	return &ProjectRepository{
-		client: c,
 		dbpool: pool,
 	}
 }

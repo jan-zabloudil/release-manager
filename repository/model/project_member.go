@@ -1,26 +1,10 @@
 package model
 
 import (
-	"time"
-
 	svcmodel "release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
-
-type UpdateProjectMemberInput struct {
-	ProjectRole string    `json:"project_role"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-type ProjectMember struct {
-	User        User      `json:"users"` // Supabase returns joined table data in json array named after joined table, "users" in this case
-	ProjectID   uuid.UUID `json:"project_id"`
-	ProjectRole string    `json:"project_role"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
 
 func ScanToSvcProjectMember(row pgx.Row) (svcmodel.ProjectMember, error) {
 	var m svcmodel.ProjectMember
@@ -43,11 +27,4 @@ func ScanToSvcProjectMember(row pgx.Row) (svcmodel.ProjectMember, error) {
 	}
 
 	return m, nil
-}
-
-func ToUpdateProjectMemberInput(p svcmodel.ProjectMember) UpdateProjectMemberInput {
-	return UpdateProjectMemberInput{
-		ProjectRole: string(p.ProjectRole),
-		UpdatedAt:   p.UpdatedAt,
-	}
 }
