@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"release-manager/pkg/responseerrors"
+	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -11,7 +11,7 @@ import (
 func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateProjectInvitationInput
 	if err := util.UnmarshalRequest(r, &req); err != nil {
-		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -21,7 +21,7 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -31,7 +31,7 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
 	i, err := h.ProjectSvc.ListInvitations(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 	err := h.ProjectSvc.AcceptInvitation(r.Context(), util.ContextProjectInvitationToken(r))
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {
 	err := h.ProjectSvc.RejectInvitation(r.Context(), util.ContextProjectInvitationToken(r))
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 

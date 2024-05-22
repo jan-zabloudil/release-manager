@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"release-manager/pkg/responseerrors"
+	resperrors "release-manager/transport/errors"
 	"release-manager/transport/middleware"
 	"release-manager/transport/util"
 
@@ -88,9 +88,9 @@ func (h *Handler) setupRoutes() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 	h.Mux.NotFound(func(w http.ResponseWriter, _ *http.Request) {
-		util.WriteResponseError(w, responseerrors.NewNotFoundError())
+		util.WriteResponseError(w, resperrors.NewNotFoundError())
 	})
 	h.Mux.MethodNotAllowed(func(w http.ResponseWriter, _ *http.Request) {
-		util.WriteResponseError(w, responseerrors.NewMethodNotAllowedError())
+		util.WriteResponseError(w, resperrors.NewMethodNotAllowedError())
 	})
 }

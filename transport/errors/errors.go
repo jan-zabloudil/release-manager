@@ -1,4 +1,4 @@
-package responseerrors
+package errors
 
 import (
 	"errors"
@@ -24,17 +24,17 @@ var (
 	errCodeUnknown                    = "ERR_UNKNOWN"
 )
 
-type ResponseError struct {
+type Error struct {
 	StatusCode int
 	Message    string
 	Code       string
 	Err        error
 }
 
-func (r *ResponseError) Wrap(err error) *ResponseError {
+func (r *Error) Wrap(err error) *Error {
 	var apiErr *apierrors.APIError
 	if errors.As(err, &apiErr) {
-		return &ResponseError{
+		return &Error{
 			StatusCode: r.StatusCode,
 			Message:    apiErr.Message,
 			Code:       apiErr.Code,
@@ -42,7 +42,7 @@ func (r *ResponseError) Wrap(err error) *ResponseError {
 		}
 	}
 
-	return &ResponseError{
+	return &Error{
 		StatusCode: r.StatusCode,
 		Message:    r.Message,
 		Code:       r.Code,
@@ -50,90 +50,90 @@ func (r *ResponseError) Wrap(err error) *ResponseError {
 	}
 }
 
-func (r *ResponseError) WithMessage(msg string) *ResponseError {
+func (r *Error) WithMessage(msg string) *Error {
 	r.Message = msg
 	return r
 }
 
-func NewNotFoundError() *ResponseError {
-	return &ResponseError{
+func NewNotFoundError() *Error {
+	return &Error{
 		StatusCode: http.StatusNotFound,
 		Code:       errCodeDefaultNotFound,
 	}
 }
 
-func NewNotBearerTokenFormatError() *ResponseError {
-	return &ResponseError{
+func NewNotBearerTokenFormatError() *Error {
+	return &Error{
 		StatusCode: http.StatusUnauthorized,
 		Code:       errCodeNotBearerTokenFormat,
 	}
 }
 
-func NewMissingBearerTokenError() *ResponseError {
-	return &ResponseError{
+func NewMissingBearerTokenError() *Error {
+	return &Error{
 		StatusCode: http.StatusUnauthorized,
 		Code:       errCodeMissingBearerToken,
 	}
 }
 
-func NewExpiredOrInvalidTokenError() *ResponseError {
-	return &ResponseError{
+func NewExpiredOrInvalidTokenError() *Error {
+	return &Error{
 		StatusCode: http.StatusUnauthorized,
 		Code:       errCodeExpiredOrInvalidToken,
 	}
 }
 
-func NewServerError() *ResponseError {
-	return &ResponseError{
+func NewServerError() *Error {
+	return &Error{
 		StatusCode: http.StatusInternalServerError,
 		Code:       errCodeUnknown,
 	}
 }
 
-func NewMethodNotAllowedError() *ResponseError {
-	return &ResponseError{
+func NewMethodNotAllowedError() *Error {
+	return &Error{
 		StatusCode: http.StatusMethodNotAllowed,
 		Code:       errCodeMethodNotAllowed,
 	}
 }
 
-func NewForbiddenError() *ResponseError {
-	return &ResponseError{
+func NewForbiddenError() *Error {
+	return &Error{
 		StatusCode: http.StatusForbidden,
 		Code:       errCodeDefaultForbidden,
 	}
 }
 
-func NewUnauthorizedError() *ResponseError {
-	return &ResponseError{
+func NewUnauthorizedError() *Error {
+	return &Error{
 		StatusCode: http.StatusUnauthorized,
 		Code:       errCodeDefaultUnauthorized,
 	}
 }
 
-func NewInvalidResourceIDError() *ResponseError {
-	return &ResponseError{
+func NewInvalidResourceIDError() *Error {
+	return &Error{
 		StatusCode: http.StatusNotFound,
 		Code:       errCodeInvalidResourceID,
 	}
 }
 
-func NewBadRequestError() *ResponseError {
-	return &ResponseError{
+func NewBadRequestError() *Error {
+	return &Error{
 		StatusCode: http.StatusBadRequest,
 		Code:       errCodeDefaultBadRequest,
 	}
 }
 
-func NewUnprocessableEntityError() *ResponseError {
-	return &ResponseError{
+func NewUnprocessableEntityError() *Error {
+	return &Error{
 		StatusCode: http.StatusUnprocessableEntity,
 		Code:       errCodeDefaultUnprocessableEntity,
 	}
 }
 
-func NewConflictError() *ResponseError {
-	return &ResponseError{
+func NewConflictError() *Error {
+	return &Error{
 		StatusCode: http.StatusConflict,
 		Code:       errCodeDefaultConflict,
 	}

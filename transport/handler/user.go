@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -14,7 +15,7 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -24,7 +25,7 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.UserSvc.ListAll(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -37,7 +38,7 @@ func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
 		util.ContextUserID(r),
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
