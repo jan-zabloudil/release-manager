@@ -8,17 +8,16 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO remove json tags once all functions use db pool
 type ProjectInvitation struct {
-	ID            uuid.UUID `json:"id" db:"id"`
-	ProjectID     uuid.UUID `json:"project_id" db:"project_id"`
-	Email         string    `json:"email" db:"email"`
-	ProjectRole   string    `json:"project_role" db:"project_role"`
-	Status        string    `json:"status" db:"status"`
-	TokenHash     []byte    `json:"token_hash" db:"token_hash"`
-	InviterUserID uuid.UUID `json:"invited_by" db:"invited_by"`
-	CreatedAt     time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
+	ID            uuid.UUID `db:"id"`
+	ProjectID     uuid.UUID `db:"project_id"`
+	Email         string    `db:"email"`
+	ProjectRole   string    `db:"project_role"`
+	Status        string    `db:"status"`
+	TokenHash     []byte    `db:"token_hash"`
+	InviterUserID uuid.UUID `db:"invited_by"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
 }
 
 func ToSvcProjectInvitation(i ProjectInvitation) svcmodel.ProjectInvitation {
