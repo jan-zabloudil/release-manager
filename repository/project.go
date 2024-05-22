@@ -18,6 +18,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const (
+	uniqueEnvironmentNamePerProjectConstraintName = "unique_environment_name_per_project"
+)
+
 type ProjectRepository struct {
 	dbpool *pgxpool.Pool
 }
@@ -159,6 +163,10 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 		"updatedAt":  e.UpdatedAt,
 	})
 	if err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
+			return apierrors.NewEnvironmentDuplicateNameError().Wrap(err)
+		}
+
 		return err
 	}
 
@@ -166,27 +174,19 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 }
 
 func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
+	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironment, projectID, envID)
+}
+
+func (r *ProjectRepository) readEnvironment(ctx context.Context, q querier, readQuery string, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
+	var e model.Environment
+
 	// Project ID is not needed in the query because envID is primary key
 	// But it is added for security reasons
 	// To make sure that the environment belongs to the project that is passed from the service
-	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironment, pgx.NamedArgs{
+	err := pgxscan.Get(ctx, q, &e, readQuery, pgx.NamedArgs{
 		"envID":     envID,
 		"projectID": projectID,
 	})
-}
-
-func (r *ProjectRepository) ReadEnvironmentByName(ctx context.Context, projectID uuid.UUID, name string) (svcmodel.Environment, error) {
-	// Fetches the environment by name for the project
-	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironmentByName, pgx.NamedArgs{
-		"name":      name,
-		"projectID": projectID,
-	})
-}
-
-func (r *ProjectRepository) readEnvironment(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.Environment, error) {
-	var e model.Environment
-
-	err := pgxscan.Get(ctx, q, &e, readQuery, args)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return svcmodel.Environment{}, apierrors.NewEnvironmentNotFoundError().Wrap(err)
@@ -239,13 +239,7 @@ func (r *ProjectRepository) UpdateEnvironment(
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	// Project ID is not needed in the query because envID is primary key
-	// But it is added for security reasons
-	// To make sure that the environment belongs to the project that is passed from the service
-	env, err = r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), pgx.NamedArgs{
-		"envID":     envID,
-		"projectID": projectID,
-	})
+	env, err = r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), projectID, envID)
 	if err != nil {
 		return svcmodel.Environment{}, fmt.Errorf("failed to read environment: %w", err)
 	}
@@ -262,6 +256,10 @@ func (r *ProjectRepository) UpdateEnvironment(
 		"updatedAt":  env.UpdatedAt,
 	})
 	if err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
+			return svcmodel.Environment{}, apierrors.NewEnvironmentDuplicateNameError().Wrap(err)
+		}
+
 		return svcmodel.Environment{}, fmt.Errorf("failed to update environment: %w", err)
 	}
 

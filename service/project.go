@@ -146,14 +146,6 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 		return model.Environment{}, apierrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	isUnique, err := s.isEnvironmentNameUniqueInProject(ctx, env.ProjectID, env.Name)
-	if err != nil {
-		return model.Environment{}, err
-	}
-	if !isUnique {
-		return model.Environment{}, apierrors.NewEnvironmentDuplicateNameError()
-	}
-
 	if err := s.repo.CreateEnvironment(ctx, env); err != nil {
 		return model.Environment{}, err
 	}
@@ -181,23 +173,7 @@ func (s *ProjectService) UpdateEnvironment(
 ) (model.Environment, error) {
 	// TODO add project member authorization
 
-	env, err := s.GetEnvironment(ctx, projectID, envID, authUserID)
-	if err != nil {
-		return model.Environment{}, fmt.Errorf("getting the environment: %w", err)
-	}
-
-	// if new name is provided, and it is different from the current name, check if it is unique
-	if u.Name != nil && *u.Name != env.Name {
-		isUnique, err := s.isEnvironmentNameUniqueInProject(ctx, projectID, *u.Name)
-		if err != nil {
-			return model.Environment{}, fmt.Errorf("checking if the environment name is unique: %w", err)
-		}
-		if !isUnique {
-			return model.Environment{}, apierrors.NewEnvironmentDuplicateNameError()
-		}
-	}
-
-	env, err = s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
+	env, err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(u); err != nil {
 			return model.Environment{}, apierrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
@@ -502,18 +478,6 @@ func (s *ProjectService) invitationExists(ctx context.Context, email string, pro
 	}
 
 	return true, nil
-}
-
-func (s *ProjectService) isEnvironmentNameUniqueInProject(ctx context.Context, projectID uuid.UUID, name string) (bool, error) {
-	if _, err := s.repo.ReadEnvironmentByName(ctx, projectID, name); err != nil {
-		if apierrors.IsNotFoundError(err) {
-			return true, nil
-		}
-
-		return false, err
-	}
-
-	return false, nil
 }
 
 func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {

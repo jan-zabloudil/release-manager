@@ -343,24 +343,9 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, apierrors.NewEnvironmentNotFoundError())
 				projectRepo.On("CreateEnvironment", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
-		},
-		{
-			name: "Invalid environment creation - duplicate name",
-			envCreate: model.CreateEnvironmentInput{
-				ProjectID:     uuid.New(),
-				Name:          "Test Environment",
-				ServiceRawURL: "http://example.com",
-			},
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
-			},
-			wantErr: true,
 		},
 		{
 			name: "Invalid environment creation - not absolute service url",
@@ -487,29 +472,15 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 				ServiceRawURL: &validURL,
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
-				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, apierrors.NewEnvironmentNotFoundError())
-				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
+				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 			},
 			wantErr: false,
-		},
-		{
-			name: "Invalid environment update - duplicate name",
-			envUpdate: model.UpdateEnvironmentInput{
-				Name:          &validName,
-				ServiceRawURL: &validURL,
-			},
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
-				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
-			},
-			wantErr: true,
 		},
 		{
 			name:      "Unknown environment",
 			envUpdate: model.UpdateEnvironmentInput{},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, apierrors.NewEnvironmentNotFoundError())
+				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, apierrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -652,69 +623,6 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
-			}
-
-			projectRepo.AssertExpectations(t)
-			authSvc.AssertExpectations(t)
-		})
-	}
-}
-
-func TestProjectService_validateEnvironmentNameUnique(t *testing.T) {
-	testCases := []struct {
-		name      string
-		projectID uuid.UUID
-		mockSetup func(*svc.AuthorizeService, *repo.ProjectRepository)
-		wantErr   bool
-		isUnique  bool
-	}{
-		{
-			name:      "Name is unique",
-			projectID: uuid.New(),
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, apierrors.NewEnvironmentNotFoundError())
-			},
-			isUnique: true,
-			wantErr:  false,
-		},
-		{
-			name:      "Name is duplicate",
-			projectID: uuid.New(),
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
-			},
-			isUnique: false,
-			wantErr:  false,
-		},
-		{
-			name:      "Unexpected error",
-			projectID: uuid.New(),
-			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
-				projectRepo.On("ReadEnvironmentByName", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, errors.New("unknown error"))
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			projectRepo := new(repo.ProjectRepository)
-			github := new(githubmock.Client)
-			email := new(resendmock.Client)
-			userSvc := new(svc.UserService)
-			settingsSvc := new(svc.SettingsService)
-			authSvc := new(svc.AuthorizeService)
-			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
-
-			tc.mockSetup(authSvc, projectRepo)
-
-			isUnique, err := service.isEnvironmentNameUniqueInProject(context.Background(), tc.projectID, "env")
-
-			if tc.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.Equal(t, tc.isUnique, isUnique)
 				assert.NoError(t, err)
 			}
 
