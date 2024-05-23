@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"release-manager/pkg/responseerrors"
+	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -11,7 +11,7 @@ import (
 func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 	var input model.CreateReleaseInput
 	if err := util.UnmarshalRequest(r, &input); err != nil {
-		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -23,7 +23,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -38,7 +38,7 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -52,7 +52,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -76,7 +76,7 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 	var input model.UpdateReleaseInput
 	if err := util.UnmarshalRequest(r, &input); err != nil {
-		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -88,7 +88,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 

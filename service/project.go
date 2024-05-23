@@ -88,7 +88,7 @@ func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID)
 		}
 
 		return p, nil
-	case err != nil && apierrors.IsForbiddenError(err):
+	case err != nil && apierrors.IsInsufficientUserRoleError(err):
 		// Non-admin user can see only projects they are members of
 		p, err := s.repo.ListProjectsForUser(ctx, authUserID)
 		if err != nil {

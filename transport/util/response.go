@@ -4,12 +4,12 @@ import (
 	"log/slog"
 	"net/http"
 
-	"release-manager/pkg/responseerrors"
+	resperrors "release-manager/transport/errors"
 
 	httpx "go.strv.io/net/http"
 )
 
-func WriteResponseError(w http.ResponseWriter, r *responseerrors.ResponseError) {
+func WriteResponseError(w http.ResponseWriter, r *resperrors.Error) {
 	if err := httpx.WriteErrorResponse(
 		w,
 		r.StatusCode,

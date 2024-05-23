@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"release-manager/pkg/responseerrors"
+	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -11,7 +11,7 @@ import (
 func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateEnvironmentInput
 	if err := util.UnmarshalRequest(r, &req); err != nil {
-		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -21,7 +21,7 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -31,7 +31,7 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 	var req model.UpdateEnvironmentInput
 	if err := util.UnmarshalRequest(r, &req); err != nil {
-		util.WriteResponseError(w, responseerrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -43,7 +43,7 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -58,7 +58,7 @@ func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
@@ -87,7 +87,7 @@ func (h *Handler) deleteEnvironment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, util.ToResponseError(err))
+		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
