@@ -66,13 +66,17 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 }
 
 func (s *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return model.Project{}, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	return s.getProject(ctx, projectID)
 }
 
 func (s *ProjectService) ProjectExists(ctx context.Context, projectID, authUserID uuid.UUID) (bool, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return false, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	return s.projectExists(ctx, projectID)
 }
@@ -115,7 +119,9 @@ func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID,
 }
 
 func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return model.Project{}, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	p, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		if err := p.Update(u); err != nil {
@@ -154,7 +160,9 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 }
 
 func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return model.Environment{}, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	env, err := s.repo.ReadEnvironment(ctx, projectID, envID)
 	if err != nil {
@@ -171,7 +179,9 @@ func (s *ProjectService) UpdateEnvironment(
 	envID,
 	authUserID uuid.UUID,
 ) (model.Environment, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return model.Environment{}, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	env, err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(u); err != nil {
@@ -188,7 +198,9 @@ func (s *ProjectService) UpdateEnvironment(
 }
 
 func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Environment, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return nil, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	envs, err := s.repo.ListEnvironmentsForProject(ctx, projectID)
 	if err != nil {
@@ -222,7 +234,9 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 }
 
 func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return nil, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	project, err := s.getProject(ctx, projectID)
 	if err != nil {
