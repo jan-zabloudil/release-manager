@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	cryptox "release-manager/pkg/crypto"
-	"release-manager/service/errors"
+	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -40,26 +40,26 @@ func NewProjectService(
 
 func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.Project{}, err
+		return model.Project{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	p, err := model.NewProject(c)
 	if err != nil {
-		return model.Project{}, errors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	u, err := s.userGetter.Get(ctx, authUserID, authUserID)
 	if err != nil {
-		return model.Project{}, err
+		return model.Project{}, fmt.Errorf("reading user: %w", err)
 	}
 
 	owner, err := model.NewProjectOwner(u, p.ID)
 	if err != nil {
-		return model.Project{}, err
+		return model.Project{}, fmt.Errorf("creating project owner object: %w", err)
 	}
 
 	if err := s.repo.CreateProjectWithOwner(ctx, p, owner); err != nil {
-		return model.Project{}, err
+		return model.Project{}, fmt.Errorf("creating project and member in repository: %w", err)
 	}
 
 	return p, nil
@@ -84,31 +84,31 @@ func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID)
 		// Admin user can see all projects
 		p, err := s.repo.ListProjects(ctx)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing projects for admin user: %w", err)
 		}
 
 		return p, nil
-	case err != nil && errors.IsInsufficientUserRoleError(err):
+	case err != nil && svcerrors.IsInsufficientUserRoleError(err):
 		// Non-admin user can see only projects they are members of
 		p, err := s.repo.ListProjectsForUser(ctx, authUserID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("listing projects for non-admin user: %w", err)
 		}
 
 		return p, nil
 	default:
-		return nil, err
+		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}
 }
 
 func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return err
+		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	err := s.repo.DeleteProject(ctx, projectID)
 	if err != nil {
-		return err
+		return fmt.Errorf("deleting project: %w", err)
 	}
 
 	return nil
@@ -119,13 +119,13 @@ func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjec
 
 	p, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		if err := p.Update(u); err != nil {
-			return model.Project{}, errors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return p, nil
 	})
 	if err != nil {
-		return model.Project{}, err
+		return model.Project{}, fmt.Errorf("updating the project: %w", err)
 	}
 
 	return p, nil
@@ -133,21 +133,21 @@ func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjec
 
 func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.Environment{}, err
+		return model.Environment{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	_, err := s.getProject(ctx, c.ProjectID)
 	if err != nil {
-		return model.Environment{}, err
+		return model.Environment{}, fmt.Errorf("reading project: %w", err)
 	}
 
 	env, err := model.NewEnvironment(c)
 	if err != nil {
-		return model.Environment{}, errors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	if err := s.repo.CreateEnvironment(ctx, env); err != nil {
-		return model.Environment{}, err
+		return model.Environment{}, fmt.Errorf("creating environment: %w", err)
 	}
 
 	return env, nil
@@ -158,7 +158,7 @@ func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, a
 
 	env, err := s.repo.ReadEnvironment(ctx, projectID, envID)
 	if err != nil {
-		return model.Environment{}, err
+		return model.Environment{}, fmt.Errorf("reading environment: %w", err)
 	}
 
 	return env, nil
@@ -175,7 +175,7 @@ func (s *ProjectService) UpdateEnvironment(
 
 	env, err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(u); err != nil {
-			return model.Environment{}, errors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return e, nil
@@ -192,16 +192,16 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUs
 
 	envs, err := s.repo.ListEnvironmentsForProject(ctx, projectID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing environments: %w", err)
 	}
 
 	if len(envs) == 0 {
 		exists, err := s.projectExists(ctx, projectID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("checking if project exists: %w", err)
 		}
 		if !exists {
-			return nil, errors.NewProjectNotFoundError()
+			return nil, svcerrors.NewProjectNotFoundError()
 		}
 	}
 
@@ -210,12 +210,12 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUs
 
 func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return err
+		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	err := s.repo.DeleteEnvironment(ctx, projectID, envID)
 	if err != nil {
-		return err
+		return fmt.Errorf("deleting environment: %w", err)
 	}
 
 	return nil
@@ -226,19 +226,24 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 
 	project, err := s.getProject(ctx, projectID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading project: %w", err)
 	}
 
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting Github token: %w", err)
 	}
 
 	if !project.IsGithubConfigured() {
-		return nil, errors.NewGithubRepositoryNotConfiguredForProjectError()
+		return nil, svcerrors.NewGithubRepositoryNotConfiguredForProjectError()
 	}
 
-	return s.githubManager.ReadTagsForRepository(ctx, tkn, project.GithubRepositoryURL)
+	t, err := s.githubManager.ReadTagsForRepository(ctx, tkn, project.GithubRepositoryURL)
+	if err != nil {
+		return nil, fmt.Errorf("reading tags for github repository: %w", err)
+	}
+
+	return t, nil
 }
 
 func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvitationInput, authUserID uuid.UUID) (model.ProjectInvitation, error) {
@@ -248,38 +253,37 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 
 	p, err := s.getProject(ctx, c.ProjectID)
 	if err != nil {
-		return model.ProjectInvitation{}, err
+		return model.ProjectInvitation{}, fmt.Errorf("reading project: %w", err)
 	}
 
 	tkn, err := cryptox.NewToken()
 	if err != nil {
-		return model.ProjectInvitation{}, err
+		return model.ProjectInvitation{}, fmt.Errorf("creating token: %w", err)
 	}
 
 	i, err := model.NewProjectInvitation(c, tkn, authUserID)
 	if err != nil {
-		return model.ProjectInvitation{}, errors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.ProjectInvitation{}, svcerrors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	memberExists, err := s.memberExists(ctx, i.ProjectID, i.Email)
 	if err != nil {
-		return model.ProjectInvitation{}, err
+		return model.ProjectInvitation{}, fmt.Errorf("checking if member exists: %w", err)
 	}
-
 	if memberExists {
-		return model.ProjectInvitation{}, errors.NewProjectMemberAlreadyExistsError()
+		return model.ProjectInvitation{}, svcerrors.NewProjectMemberAlreadyExistsError()
 	}
 
 	invitationExists, err := s.invitationExists(ctx, i.Email, c.ProjectID)
 	if err != nil {
-		return model.ProjectInvitation{}, err
+		return model.ProjectInvitation{}, fmt.Errorf("checking if invitation exists: %w", err)
 	}
 	if invitationExists {
-		return model.ProjectInvitation{}, errors.NewProjectInvitationAlreadyExistsError()
+		return model.ProjectInvitation{}, svcerrors.NewProjectInvitationAlreadyExistsError()
 	}
 
 	if err := s.repo.CreateInvitation(ctx, i); err != nil {
-		return model.ProjectInvitation{}, err
+		return model.ProjectInvitation{}, fmt.Errorf("creating invitation: %w", err)
 	}
 
 	s.emailSender.SendProjectInvitationEmailAsync(ctx, model.NewProjectInvitationEmailData(p.Name, tkn), i.Email)
@@ -289,21 +293,21 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 
 func (s *ProjectService) ListInvitations(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectInvitation, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	invitations, err := s.repo.ListInvitationsForProject(ctx, projectID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing invitations: %w", err)
 	}
 
 	if len(invitations) == 0 {
 		exists, err := s.projectExists(ctx, projectID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("checking if project exists: %w", err)
 		}
 		if !exists {
-			return nil, errors.NewProjectNotFoundError()
+			return nil, svcerrors.NewProjectNotFoundError()
 		}
 	}
 
@@ -317,7 +321,7 @@ func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invita
 
 	err := s.repo.DeleteInvitation(ctx, projectID, invitationID)
 	if err != nil {
-		return err
+		return fmt.Errorf("deleting invitation: %w", err)
 	}
 
 	return nil
@@ -344,16 +348,16 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 
 	invitation, err := s.repo.ReadPendingInvitationByHash(ctx, tkn.ToHash())
 	if err != nil {
-		return fmt.Errorf("reading invitation by token hash: %w", err)
+		return fmt.Errorf("reading invitation: %w", err)
 	}
 
 	u, err := s.userGetter.GetByEmail(ctx, invitation.Email)
-	if err != nil && !errors.IsNotFoundError(err) {
-		return fmt.Errorf("reading user by email: %w", err)
+	if err != nil && !svcerrors.IsNotFoundError(err) {
+		return fmt.Errorf("reading user: %w", err)
 	}
 
 	// User does not exist yet
-	if errors.IsNotFoundError(err) {
+	if svcerrors.IsNotFoundError(err) {
 		if err := s.repo.AcceptPendingInvitation(ctx, invitation.ID, func(i *model.ProjectInvitation) {
 			i.Accept()
 		}); err != nil {
@@ -378,9 +382,8 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 
 func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token) error {
 	// Only pending invitations can be rejected
-	err := s.repo.DeleteInvitationByTokenHashAndStatus(ctx, tkn.ToHash(), model.InvitationStatusPending)
-	if err != nil {
-		return err
+	if err := s.repo.DeleteInvitationByTokenHashAndStatus(ctx, tkn.ToHash(), model.InvitationStatusPending); err != nil {
+		return fmt.Errorf("deleting invitation: %w", err)
 	}
 
 	return nil
@@ -388,21 +391,21 @@ func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token
 
 func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectMember, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	m, err := s.repo.ListMembersForProject(ctx, projectID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing members: %w", err)
 	}
 
 	if len(m) == 0 {
 		exists, err := s.projectExists(ctx, projectID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("checking if project exists: %w", err)
 		}
 		if !exists {
-			return nil, errors.NewProjectNotFoundError()
+			return nil, svcerrors.NewProjectNotFoundError()
 		}
 	}
 
@@ -411,12 +414,11 @@ func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID 
 
 func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return err
+		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	err := s.repo.DeleteMember(ctx, projectID, userID)
-	if err != nil {
-		return err
+	if err := s.repo.DeleteMember(ctx, projectID, userID); err != nil {
+		return fmt.Errorf("deleting member: %w", err)
 	}
 
 	return nil
@@ -429,18 +431,18 @@ func (s *ProjectService) UpdateMemberRole(
 	userID, authUserID uuid.UUID,
 ) (model.ProjectMember, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.ProjectMember{}, err
+		return model.ProjectMember{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	m, err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
 		if err := m.UpdateProjectRole(newRole); err != nil {
-			return model.ProjectMember{}, errors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.ProjectMember{}, svcerrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return m, nil
 	})
 	if err != nil {
-		return model.ProjectMember{}, err
+		return model.ProjectMember{}, fmt.Errorf("updating member role: %w", err)
 	}
 
 	return m, nil
@@ -449,7 +451,7 @@ func (s *ProjectService) UpdateMemberRole(
 func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (model.Project, error) {
 	p, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
-		return model.Project{}, err
+		return model.Project{}, fmt.Errorf("reading project: %w", err)
 	}
 
 	return p, nil
@@ -458,11 +460,11 @@ func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (m
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
 	_, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
-		if errors.IsNotFoundError(err) {
+		if svcerrors.IsNotFoundError(err) {
 			return false, nil
 		}
 
-		return false, err
+		return false, fmt.Errorf("reading project: %w", err)
 	}
 
 	return true, nil
@@ -470,11 +472,11 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 
 func (s *ProjectService) invitationExists(ctx context.Context, email string, projectID uuid.UUID) (bool, error) {
 	if _, err := s.repo.ReadInvitationByEmail(ctx, email, projectID); err != nil {
-		if errors.IsNotFoundError(err) {
+		if svcerrors.IsNotFoundError(err) {
 			return false, nil
 		}
 
-		return false, err
+		return false, fmt.Errorf("reading invitation: %w", err)
 	}
 
 	return true, nil
@@ -483,11 +485,11 @@ func (s *ProjectService) invitationExists(ctx context.Context, email string, pro
 func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {
 	_, err := s.repo.ReadMemberByEmail(ctx, projectID, email)
 	if err != nil {
-		if errors.IsNotFoundError(err) {
+		if svcerrors.IsNotFoundError(err) {
 			return false, nil
 		}
 
-		return false, err
+		return false, fmt.Errorf("reading member: %w", err)
 	}
 
 	return true, nil
