@@ -12,6 +12,7 @@ import (
 )
 
 type ReleaseService struct {
+	authGuard      authGuard
 	projectGetter  projectGetter
 	settingsGetter settingsGetter
 	slackNotifier  slackNotifier
@@ -19,12 +20,14 @@ type ReleaseService struct {
 }
 
 func NewReleaseService(
+	authGuard authGuard,
 	projectGetter projectGetter,
 	settingsGetter settingsGetter,
 	notifier slackNotifier,
 	repo releaseRepository,
 ) *ReleaseService {
 	return &ReleaseService{
+		authGuard:      authGuard,
 		projectGetter:  projectGetter,
 		settingsGetter: settingsGetter,
 		slackNotifier:  notifier,
@@ -39,7 +42,9 @@ func (s *ReleaseService) Create(
 	projectID,
 	authorUserID uuid.UUID,
 ) (model.Release, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authorUserID); err != nil {
+		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	p, err := s.projectGetter.GetProject(ctx, projectID, authorUserID)
 	if err != nil {
@@ -63,7 +68,9 @@ func (s *ReleaseService) Create(
 }
 
 func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) (model.Release, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authorUserID); err != nil {
+		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	rls, err := s.repo.Read(ctx, projectID, releaseID)
 	if err != nil {
@@ -74,7 +81,9 @@ func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authorUs
 }
 
 func (s *ReleaseService) Delete(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authorUserID); err != nil {
+		return fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	if err := s.repo.Delete(ctx, projectID, releaseID); err != nil {
 		return fmt.Errorf("deleting release: %w", err)
@@ -90,7 +99,9 @@ func (s *ReleaseService) Update(
 	releaseID,
 	authorUserID uuid.UUID,
 ) (model.Release, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authorUserID); err != nil {
+		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	rls, err := s.repo.Update(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
@@ -107,7 +118,9 @@ func (s *ReleaseService) Update(
 }
 
 func (s *ReleaseService) ListForProject(ctx context.Context, projectID, authorUserID uuid.UUID) ([]model.Release, error) {
-	// TODO add project member authorization
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authorUserID); err != nil {
+		return nil, fmt.Errorf("authorizing project member: %w", err)
+	}
 
 	rls, err := s.repo.ListForProject(ctx, projectID)
 	if err != nil {

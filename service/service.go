@@ -115,7 +115,7 @@ func NewService(
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)
-	releaseSvc := NewReleaseService(projectSvc, settingsSvc, slackNotifier, releaseRepo)
+	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, slackNotifier, releaseRepo)
 
 	return &Service{
 		Authorization: authSvc,
