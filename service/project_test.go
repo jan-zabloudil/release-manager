@@ -161,6 +161,7 @@ func TestProjectService_GetProject(t *testing.T) {
 			name:      "Existing project",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: false,
@@ -169,6 +170,7 @@ func TestProjectService_GetProject(t *testing.T) {
 			name:      "Non-existing project",
 			projectID: uuid.Nil,
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, errors.New("project not found"))
 			},
 			wantErr: true,
@@ -279,6 +281,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 				},
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
 			wantErr: false,
@@ -286,6 +289,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 		{
 			name: "Invalid project update",
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectUnprocessableError())
 			},
 			wantErr: true,
@@ -294,6 +298,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 			name:   "Non-existing-project",
 			update: model.UpdateProjectInput{},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
@@ -414,6 +419,7 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 			projectID: uuid.New(),
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 			},
 			wantErr: false,
@@ -423,6 +429,7 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 			projectID: uuid.New(),
 			envID:     uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadEnvironment", mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, svcerrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
@@ -472,6 +479,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 				ServiceRawURL: &validURL,
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 			},
 			wantErr: false,
@@ -480,6 +488,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 			name:      "Unknown environment",
 			envUpdate: model.UpdateEnvironmentInput{},
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, svcerrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
@@ -523,6 +532,7 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 			name:      "Success",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ListEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{
 					{ID: uuid.New()},
 					{ID: uuid.New()},
@@ -534,6 +544,7 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 			name:      "no environments",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ListEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{}, nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
@@ -543,6 +554,7 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 			name:      "project not found",
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ListEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{}, nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
 			},
@@ -1054,6 +1066,7 @@ func TestProjectService_ListMembers(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
+			authSvc.AssertExpectations(t)
 			projectRepo.AssertExpectations(t)
 		})
 	}
@@ -1106,6 +1119,7 @@ func TestProjectService_DeleteMember(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
+			authSvc.AssertExpectations(t)
 			projectRepo.AssertExpectations(t)
 		})
 	}
@@ -1160,6 +1174,7 @@ func TestProjectService_UpdateMemberRole(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
+			authSvc.AssertExpectations(t)
 			projectRepo.AssertExpectations(t)
 		})
 	}
