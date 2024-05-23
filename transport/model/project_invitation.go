@@ -36,8 +36,8 @@ func ToProjectInvitation(i svcmodel.ProjectInvitation) ProjectInvitation {
 		Email:       i.Email,
 		ProjectRole: string(i.ProjectRole),
 		Status:      string(i.Status),
-		CreatedAt:   i.CreatedAt.Local(),
-		UpdatedAt:   i.UpdatedAt.Local(),
+		CreatedAt:   i.CreatedAt,
+		UpdatedAt:   i.UpdatedAt,
 	}
 }
 
