@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"release-manager/pkg/apierrors"
 	repo "release-manager/repository/mock"
+	svcerrors "release-manager/service/errors"
 	svc "release-manager/service/mock"
 	"release-manager/service/model"
 	slack "release-manager/slack/mock"
@@ -65,7 +65,7 @@ func TestReleaseService_Create(t *testing.T) {
 					SlackChannelID: "channel",
 				}, nil)
 				releaseRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", apierrors.NewSlackIntegrationNotEnabledError())
+				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", svcerrors.NewSlackIntegrationNotEnabledError())
 			},
 			wantErr: false,
 		},
@@ -91,7 +91,7 @@ func TestReleaseService_Create(t *testing.T) {
 				ReleaseNotes: "Test release notes",
 			},
 			mockSetup: func(projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, apierrors.NewProjectNotFoundError())
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -150,7 +150,7 @@ func TestReleaseService_Get(t *testing.T) {
 		{
 			name: "Non-existing release",
 			mockSetup: func(repo *repo.ReleaseRepository) {
-				repo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
+				repo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -196,7 +196,7 @@ func TestReleaseService_Delete(t *testing.T) {
 		{
 			name: "Non-existing release",
 			mockSetup: func(repo *repo.ReleaseRepository) {
-				repo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(apierrors.NewReleaseNotFoundError())
+				repo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -316,7 +316,7 @@ func TestReleaseService_Update(t *testing.T) {
 				ReleaseNotes: &validNotes,
 			},
 			mockSetup: func(repo *repo.ReleaseRepository) {
-				repo.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseUnprocessableError())
+				repo.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseUnprocessableError())
 			},
 			wantErr: true,
 		},
@@ -324,7 +324,7 @@ func TestReleaseService_Update(t *testing.T) {
 			name:   "Non existing release",
 			update: model.UpdateReleaseInput{},
 			mockSetup: func(repo *repo.ReleaseRepository) {
-				repo.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, apierrors.NewReleaseNotFoundError())
+				repo.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},

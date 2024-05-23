@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"release-manager/pkg/apierrors"
+	"release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -47,7 +47,7 @@ func (s *ReleaseService) Create(
 
 	rls, err := model.NewRelease(input, projectID, authorUserID)
 	if err != nil {
-		return model.Release{}, apierrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Release{}, errors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	if err := s.repo.Create(ctx, rls); err != nil {
@@ -93,7 +93,7 @@ func (s *ReleaseService) Update(
 
 	rls, err := s.repo.Update(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
-			return model.Release{}, apierrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Release{}, errors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return rls, nil
@@ -118,7 +118,7 @@ func (s *ReleaseService) ListForProject(ctx context.Context, projectID, authorUs
 			return nil, err
 		}
 		if !exists {
-			return nil, apierrors.NewProjectNotFoundError()
+			return nil, errors.NewProjectNotFoundError()
 		}
 	}
 
@@ -138,7 +138,7 @@ func (s *ReleaseService) sendReleaseNotification(ctx context.Context, p model.Pr
 		// two possible reasons for failure:
 		// 1. slack integration is not set (logged in debug level, as it's not an error, but possible scenario)
 		// 2. failed to fetch slack token (logged in error level)
-		slog.Log(ctx, apierrors.GetLogLevel(err), "failed to get slack token", "err", err)
+		slog.Log(ctx, errors.GetLogLevel(err), "failed to get slack token", "err", err)
 		return
 	}
 

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"release-manager/pkg/apierrors"
 	"release-manager/pkg/crypto"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
 	"release-manager/repository/util"
+	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -78,7 +78,7 @@ func (r *ProjectRepository) readProject(ctx context.Context, q querier, query st
 	err := pgxscan.Get(ctx, q, &p, query, pgx.NamedArgs{"id": id})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.Project{}, apierrors.NewProjectNotFoundError().Wrap(err)
+			return svcmodel.Project{}, svcerrors.NewProjectNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.Project{}, err
@@ -113,7 +113,7 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	}
 
 	if result.RowsAffected() == 0 {
-		return apierrors.NewProjectNotFoundError()
+		return svcerrors.NewProjectNotFoundError()
 	}
 
 	return nil
@@ -164,7 +164,7 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 	})
 	if err != nil {
 		if util.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
-			return apierrors.NewEnvironmentDuplicateNameError().Wrap(err)
+			return svcerrors.NewEnvironmentDuplicateNameError().Wrap(err)
 		}
 
 		return err
@@ -189,7 +189,7 @@ func (r *ProjectRepository) readEnvironment(ctx context.Context, q querier, read
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.Environment{}, apierrors.NewEnvironmentNotFoundError().Wrap(err)
+			return svcmodel.Environment{}, svcerrors.NewEnvironmentNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.Environment{}, err
@@ -219,7 +219,7 @@ func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, en
 	}
 
 	if result.RowsAffected() == 0 {
-		return apierrors.NewEnvironmentNotFoundError()
+		return svcerrors.NewEnvironmentNotFoundError()
 	}
 
 	return nil
@@ -257,7 +257,7 @@ func (r *ProjectRepository) UpdateEnvironment(
 	})
 	if err != nil {
 		if util.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
-			return svcmodel.Environment{}, apierrors.NewEnvironmentDuplicateNameError().Wrap(err)
+			return svcmodel.Environment{}, svcerrors.NewEnvironmentDuplicateNameError().Wrap(err)
 		}
 
 		return svcmodel.Environment{}, fmt.Errorf("failed to update environment: %w", err)
@@ -344,7 +344,7 @@ func (r *ProjectRepository) readInvitation(ctx context.Context, q pgxscan.Querie
 	err := pgxscan.Get(ctx, q, &i, readQuery, args)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.ProjectInvitation{}, apierrors.NewProjectInvitationNotFoundError().Wrap(err)
+			return svcmodel.ProjectInvitation{}, svcerrors.NewProjectInvitationNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.ProjectInvitation{}, err
@@ -389,7 +389,7 @@ func (r *ProjectRepository) deleteInvitation(ctx context.Context, deleteQuery st
 	}
 
 	if result.RowsAffected() == 0 {
-		return apierrors.NewProjectInvitationNotFoundError()
+		return svcerrors.NewProjectInvitationNotFoundError()
 	}
 
 	return nil
@@ -468,7 +468,7 @@ func (r *ProjectRepository) readMember(ctx context.Context, q querier, readQuery
 	m, err := model.ScanToSvcProjectMember(row)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.ProjectMember{}, apierrors.NewProjectMemberNotFoundError().Wrap(err)
+			return svcmodel.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.ProjectMember{}, err
@@ -487,7 +487,7 @@ func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 	}
 
 	if result.RowsAffected() == 0 {
-		return apierrors.NewProjectMemberNotFoundError()
+		return svcerrors.NewProjectMemberNotFoundError()
 	}
 
 	return nil

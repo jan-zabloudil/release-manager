@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"release-manager/pkg/apierrors"
 	repo "release-manager/repository/mock"
+	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -39,7 +39,7 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 		{
 			name: "User not found",
 			mockSetup: func(userRepo *repo.UserRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, apierrors.NewUserNotFoundError())
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -97,7 +97,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 			name: "User not project member",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, apierrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -111,7 +111,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 		{
 			name: "User not found",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, apierrors.NewUserNotFoundError())
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -170,7 +170,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 			name: "User not project member",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, apierrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -184,7 +184,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 		{
 			name: "User not found",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, apierrors.NewUserNotFoundError())
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
 			},
 			wantErr: true,
 		},

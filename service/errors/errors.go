@@ -1,4 +1,4 @@
-package apierrors
+package errors
 
 import (
 	"errors"
@@ -38,227 +38,227 @@ var (
 	ErrCodeGithubReleaseNotFound                   = "ERR_GITHUB_RELEASE_NOT_FOUND"
 )
 
-type APIError struct {
+type Error struct {
 	Code    string
 	Message string
 	Err     error
 }
 
-func (e *APIError) Error() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("Code: %s, error: %s", e.Code, e.Err)
 }
 
-func (e *APIError) Wrap(err error) *APIError {
-	return &APIError{
+func (e *Error) Wrap(err error) *Error {
+	return &Error{
 		Code:    e.Code,
 		Message: e.Message,
 		Err:     err,
 	}
 }
 
-func (e *APIError) WithMessage(msg string) *APIError {
+func (e *Error) WithMessage(msg string) *Error {
 	e.Message = msg
 	return e
 }
 
-func NewUserNotFoundError() *APIError {
-	return &APIError{
+func NewUserNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeUserNotFound,
 		Message: "User not found",
 	}
 }
 
-func NewProjectNotFoundError() *APIError {
-	return &APIError{
+func NewProjectNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectNotFound,
 		Message: "Project not found",
 	}
 }
 
-func NewEnvironmentNotFoundError() *APIError {
-	return &APIError{
+func NewEnvironmentNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeEnvironmentNotFound,
 		Message: "Environment not found",
 	}
 }
 
-func NewEnvironmentDuplicateNameError() *APIError {
-	return &APIError{
+func NewEnvironmentDuplicateNameError() *Error {
+	return &Error{
 		Code:    ErrCodeEnvironmentDuplicateName,
 		Message: "environment name is already in use",
 	}
 }
 
-func NewProjectUnprocessableError() *APIError {
-	return &APIError{
+func NewProjectUnprocessableError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectUnprocessable,
 		Message: "Project unprocessable",
 	}
 }
 
-func NewEnvironmentUnprocessableError() *APIError {
-	return &APIError{
+func NewEnvironmentUnprocessableError() *Error {
+	return &Error{
 		Code:    ErrCodeEnvironmentUnprocessable,
 		Message: "Environment unprocessable",
 	}
 }
 
-func NewSettingsUnprocessableError() *APIError {
-	return &APIError{
+func NewSettingsUnprocessableError() *Error {
+	return &Error{
 		Code:    ErrCodeSettingsUnprocessable,
 		Message: "Settings unprocessable",
 	}
 }
 
-func NewUnauthorizedUnknownUserError() *APIError {
-	return &APIError{
+func NewUnauthorizedUnknownUserError() *Error {
+	return &Error{
 		Code:    ErrCodeUnauthorizedUnknownUser,
 		Message: "Unauthorized access, unknown user.",
 	}
 }
 
-func NewForbiddenInsufficientUserRoleError() *APIError {
-	return &APIError{
+func NewForbiddenInsufficientUserRoleError() *Error {
+	return &Error{
 		Code:    ErrCodeForbiddenInsufficientUserRole,
 		Message: "Forbidden access, insufficient user role.",
 	}
 }
 
-func NewForbiddenInsufficientProjectRoleError() *APIError {
-	return &APIError{
+func NewForbiddenInsufficientProjectRoleError() *Error {
+	return &Error{
 		Code:    ErrCodeForbiddenInsufficientProjectRole,
 		Message: "Forbidden access, insufficient project role.",
 	}
 }
 
-func NewForbiddenUserNotProjectMemberError() *APIError {
-	return &APIError{
+func NewForbiddenUserNotProjectMemberError() *Error {
+	return &Error{
 		Code:    ErrCodeForbiddenUserNotProjectMember,
 		Message: "User is not a project member.",
 	}
 }
 
-func NewProjectInvitationUnprocessableError() *APIError {
-	return &APIError{
+func NewProjectInvitationUnprocessableError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectInvitationUnprocessable,
 		Message: "Project invitation unprocessable",
 	}
 }
 
-func NewProjectInvitationAlreadyExistsError() *APIError {
-	return &APIError{
+func NewProjectInvitationAlreadyExistsError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectInvitationAlreadyExists,
 		Message: "Project invitation already exists",
 	}
 }
 
-func NewProjectInvitationNotFoundError() *APIError {
-	return &APIError{
+func NewProjectInvitationNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectInvitationNotFound,
 		Message: "Project invitation not found",
 	}
 }
 
-func NewProjectMemberAlreadyExistsError() *APIError {
-	return &APIError{
+func NewProjectMemberAlreadyExistsError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectMemberAlreadyExists,
 		Message: "Project member already exists",
 	}
 }
 
-func NewGithubRepositoryInvalidURL() *APIError {
-	return &APIError{
+func NewGithubRepositoryInvalidURL() *Error {
+	return &Error{
 		Code:    ErrCodeGithubRepositoryInvalidURL,
 		Message: "Invalid Github repository URL.",
 	}
 }
 
-func NewGithubIntegrationNotEnabledError() *APIError {
-	return &APIError{
+func NewGithubIntegrationNotEnabledError() *Error {
+	return &Error{
 		Code:    ErrCodeGithubIntegrationNotEnabled,
 		Message: "Github integration is not enabled.",
 	}
 }
 
-func NewGithubRepositoryNotConfiguredForProjectError() *APIError {
-	return &APIError{
+func NewGithubRepositoryNotConfiguredForProjectError() *Error {
+	return &Error{
 		Code:    ErrCodeGithubRepositoryNotConfiguredForProject,
 		Message: "Github repository is not configured for the project.",
 	}
 }
 
-func NewGithubClientUnauthorizedError() *APIError {
-	return &APIError{
+func NewGithubClientUnauthorizedError() *Error {
+	return &Error{
 		Code:    ErrCodeGithubClientUnauthorized,
 		Message: "Request to the GitHub API cannot be processed because the client is not properly authenticated (invalid or expired token).",
 	}
 }
 
-func NewGithubClientForbiddenError() *APIError {
-	return &APIError{
+func NewGithubClientForbiddenError() *Error {
+	return &Error{
 		Code:    ErrCodeGithubClientForbidden,
 		Message: "Request cannot be processed because the client does not have permission to access the specified resource via GitHub API.",
 	}
 }
 
-func NewGithubRepositoryNotFoundError() *APIError {
-	return &APIError{
+func NewGithubRepositoryNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeGithubRepositoryNotFound,
 		Message: "Github repository not found among accessible repositories.",
 	}
 }
 
-func NewProjectMemberNotFoundError() *APIError {
-	return &APIError{
+func NewProjectMemberNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectMemberNotFound,
 		Message: "Project member not found",
 	}
 }
 
-func NewProjectMemberUnprocessableError() *APIError {
-	return &APIError{
+func NewProjectMemberUnprocessableError() *Error {
+	return &Error{
 		Code:    ErrCodeProjectMemberUnprocessable,
 		Message: "Project member unprocessable",
 	}
 }
 
-func NewReleaseUnprocessableError() *APIError {
-	return &APIError{
+func NewReleaseUnprocessableError() *Error {
+	return &Error{
 		Code:    ErrCodeReleaseUnprocessable,
 		Message: "Release unprocessable",
 	}
 }
 
-func NewReleaseNotFoundError() *APIError {
-	return &APIError{
+func NewReleaseNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeReleaseNotFound,
 		Message: "Release not found",
 	}
 }
 
-func NewReleaseDuplicateTitleError() *APIError {
-	return &APIError{
+func NewReleaseDuplicateTitleError() *Error {
+	return &Error{
 		Code:    ErrCodeReleaseDuplicateTitle,
 		Message: "Release with the same title already exists",
 	}
 }
 
-func NewSlackIntegrationNotEnabledError() *APIError {
-	return &APIError{
+func NewSlackIntegrationNotEnabledError() *Error {
+	return &Error{
 		Code:    ErrCodeSlackIntegrationNotEnabled,
 		Message: "Slack integration is not enabled.",
 	}
 }
 
-func NewGitTagNotFoundError() *APIError {
-	return &APIError{
+func NewGitTagNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeGitTagNotFound,
 		Message: "Git tag not found",
 	}
 }
 
-func NewGithubReleaseNotFoundError() *APIError {
-	return &APIError{
+func NewGithubReleaseNotFoundError() *Error {
+	return &Error{
 		Code:    ErrCodeGithubReleaseNotFound,
 		Message: "Github release not found",
 	}
@@ -297,9 +297,9 @@ func GetLogLevel(err error) slog.Level {
 }
 
 func isErrorWithCode(err error, code string) bool {
-	var apiErr *APIError
-	if errors.As(err, &apiErr) {
-		return apiErr.Code == code
+	var svcErr *Error
+	if errors.As(err, &svcErr) {
+		return svcErr.Code == code
 	}
 
 	return false
