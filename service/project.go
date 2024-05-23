@@ -288,14 +288,6 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 		return model.ProjectInvitation{}, svcerrors.NewProjectMemberAlreadyExistsError()
 	}
 
-	invitationExists, err := s.invitationExists(ctx, i.Email, c.ProjectID)
-	if err != nil {
-		return model.ProjectInvitation{}, fmt.Errorf("checking if invitation exists: %w", err)
-	}
-	if invitationExists {
-		return model.ProjectInvitation{}, svcerrors.NewProjectInvitationAlreadyExistsError()
-	}
-
 	if err := s.repo.CreateInvitation(ctx, i); err != nil {
 		return model.ProjectInvitation{}, fmt.Errorf("creating invitation: %w", err)
 	}
@@ -479,18 +471,6 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 		}
 
 		return false, fmt.Errorf("reading project: %w", err)
-	}
-
-	return true, nil
-}
-
-func (s *ProjectService) invitationExists(ctx context.Context, email string, projectID uuid.UUID) (bool, error) {
-	if _, err := s.repo.ReadInvitationByEmail(ctx, email, projectID); err != nil {
-		if svcerrors.IsNotFoundError(err) {
-			return false, nil
-		}
-
-		return false, fmt.Errorf("reading invitation: %w", err)
 	}
 
 	return true, nil

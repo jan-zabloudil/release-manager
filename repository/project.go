@@ -20,6 +20,7 @@ import (
 
 const (
 	uniqueEnvironmentNamePerProjectConstraintName = "unique_environment_name_per_project"
+	uniqueInvitationPerProjectConstraintName      = "unique_invitation_per_project"
 )
 
 type ProjectRepository struct {
@@ -277,6 +278,10 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 		"createdAt":    i.CreatedAt,
 		"updatedAt":    i.UpdatedAt,
 	}); err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueInvitationPerProjectConstraintName) {
+			return svcerrors.NewProjectInvitationAlreadyExistsError().Wrap(err)
+		}
+
 		return err
 	}
 
@@ -314,14 +319,6 @@ func (r *ProjectRepository) AcceptPendingInvitation(
 	}
 
 	return nil
-}
-
-func (r *ProjectRepository) ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (svcmodel.ProjectInvitation, error) {
-	// fetches the invitation by email for the project
-	return r.readInvitation(ctx, r.dbpool, query.ReadInvitationByEmail, pgx.NamedArgs{
-		"email":     email,
-		"projectID": projectID,
-	})
 }
 
 func (r *ProjectRepository) ReadPendingInvitationByHash(ctx context.Context, hash crypto.Hash) (svcmodel.ProjectInvitation, error) {
