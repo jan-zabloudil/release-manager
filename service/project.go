@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"release-manager/pkg/apierrors"
 	cryptox "release-manager/pkg/crypto"
+	"release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -45,7 +45,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 
 	p, err := model.NewProject(c)
 	if err != nil {
-		return model.Project{}, apierrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Project{}, errors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	u, err := s.userGetter.Get(ctx, authUserID, authUserID)
@@ -88,7 +88,7 @@ func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID)
 		}
 
 		return p, nil
-	case err != nil && apierrors.IsInsufficientUserRoleError(err):
+	case err != nil && errors.IsInsufficientUserRoleError(err):
 		// Non-admin user can see only projects they are members of
 		p, err := s.repo.ListProjectsForUser(ctx, authUserID)
 		if err != nil {
@@ -119,7 +119,7 @@ func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjec
 
 	p, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		if err := p.Update(u); err != nil {
-			return model.Project{}, apierrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Project{}, errors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return p, nil
@@ -143,7 +143,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEn
 
 	env, err := model.NewEnvironment(c)
 	if err != nil {
-		return model.Environment{}, apierrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Environment{}, errors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	if err := s.repo.CreateEnvironment(ctx, env); err != nil {
@@ -175,7 +175,7 @@ func (s *ProjectService) UpdateEnvironment(
 
 	env, err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(u); err != nil {
-			return model.Environment{}, apierrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Environment{}, errors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return e, nil
@@ -201,7 +201,7 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUs
 			return nil, err
 		}
 		if !exists {
-			return nil, apierrors.NewProjectNotFoundError()
+			return nil, errors.NewProjectNotFoundError()
 		}
 	}
 
@@ -235,7 +235,7 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 	}
 
 	if !project.IsGithubConfigured() {
-		return nil, apierrors.NewGithubRepositoryNotConfiguredForProjectError()
+		return nil, errors.NewGithubRepositoryNotConfiguredForProjectError()
 	}
 
 	return s.githubManager.ReadTagsForRepository(ctx, tkn, project.GithubRepositoryURL)
@@ -258,7 +258,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 
 	i, err := model.NewProjectInvitation(c, tkn, authUserID)
 	if err != nil {
-		return model.ProjectInvitation{}, apierrors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.ProjectInvitation{}, errors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	memberExists, err := s.memberExists(ctx, i.ProjectID, i.Email)
@@ -267,7 +267,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 	}
 
 	if memberExists {
-		return model.ProjectInvitation{}, apierrors.NewProjectMemberAlreadyExistsError()
+		return model.ProjectInvitation{}, errors.NewProjectMemberAlreadyExistsError()
 	}
 
 	invitationExists, err := s.invitationExists(ctx, i.Email, c.ProjectID)
@@ -275,7 +275,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 		return model.ProjectInvitation{}, err
 	}
 	if invitationExists {
-		return model.ProjectInvitation{}, apierrors.NewProjectInvitationAlreadyExistsError()
+		return model.ProjectInvitation{}, errors.NewProjectInvitationAlreadyExistsError()
 	}
 
 	if err := s.repo.CreateInvitation(ctx, i); err != nil {
@@ -303,7 +303,7 @@ func (s *ProjectService) ListInvitations(ctx context.Context, projectID, authUse
 			return nil, err
 		}
 		if !exists {
-			return nil, apierrors.NewProjectNotFoundError()
+			return nil, errors.NewProjectNotFoundError()
 		}
 	}
 
@@ -348,12 +348,12 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 	}
 
 	u, err := s.userGetter.GetByEmail(ctx, invitation.Email)
-	if err != nil && !apierrors.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		return fmt.Errorf("reading user by email: %w", err)
 	}
 
 	// User does not exist yet
-	if apierrors.IsNotFoundError(err) {
+	if errors.IsNotFoundError(err) {
 		if err := s.repo.AcceptPendingInvitation(ctx, invitation.ID, func(i *model.ProjectInvitation) {
 			i.Accept()
 		}); err != nil {
@@ -402,7 +402,7 @@ func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID 
 			return nil, err
 		}
 		if !exists {
-			return nil, apierrors.NewProjectNotFoundError()
+			return nil, errors.NewProjectNotFoundError()
 		}
 	}
 
@@ -434,7 +434,7 @@ func (s *ProjectService) UpdateMemberRole(
 
 	m, err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
 		if err := m.UpdateProjectRole(newRole); err != nil {
-			return model.ProjectMember{}, apierrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.ProjectMember{}, errors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return m, nil
@@ -458,7 +458,7 @@ func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (m
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
 	_, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
-		if apierrors.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil
 		}
 
@@ -470,7 +470,7 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 
 func (s *ProjectService) invitationExists(ctx context.Context, email string, projectID uuid.UUID) (bool, error) {
 	if _, err := s.repo.ReadInvitationByEmail(ctx, email, projectID); err != nil {
-		if apierrors.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil
 		}
 
@@ -483,7 +483,7 @@ func (s *ProjectService) invitationExists(ctx context.Context, email string, pro
 func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {
 	_, err := s.repo.ReadMemberByEmail(ctx, projectID, email)
 	if err != nil {
-		if apierrors.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil
 		}
 

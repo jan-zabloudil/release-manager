@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"release-manager/pkg/apierrors"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
 	"release-manager/repository/util"
+	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -43,7 +43,7 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 	})
 	if err != nil {
 		if util.IsUniqueConstraintViolation(err, uniqueReleaseTitlePerProjectConstraintName) {
-			return apierrors.NewReleaseDuplicateTitleError().Wrap(err)
+			return svcerrors.NewReleaseDuplicateTitleError().Wrap(err)
 		}
 
 		return err
@@ -68,7 +68,7 @@ func (r *ReleaseRepository) read(ctx context.Context, q querier, readQuery strin
 	err := pgxscan.Get(ctx, q, &rls, readQuery, args)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.Release{}, apierrors.NewReleaseNotFoundError().Wrap(err)
+			return svcmodel.Release{}, svcerrors.NewReleaseNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.Release{}, err
@@ -116,7 +116,7 @@ func (r *ReleaseRepository) Update(
 	})
 	if err != nil {
 		if util.IsUniqueConstraintViolation(err, uniqueReleaseTitlePerProjectConstraintName) {
-			return svcmodel.Release{}, apierrors.NewReleaseDuplicateTitleError().Wrap(err)
+			return svcmodel.Release{}, svcerrors.NewReleaseDuplicateTitleError().Wrap(err)
 		}
 
 		return svcmodel.Release{}, fmt.Errorf("failed to update release: %w", err)
@@ -138,7 +138,7 @@ func (r *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uui
 	}
 
 	if result.RowsAffected() == 0 {
-		return apierrors.NewReleaseNotFoundError()
+		return svcerrors.NewReleaseNotFoundError()
 	}
 
 	return nil

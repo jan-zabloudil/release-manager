@@ -3,7 +3,7 @@ package errors
 import (
 	"errors"
 
-	"release-manager/pkg/apierrors"
+	svcerrors "release-manager/service/errors"
 )
 
 func ToError(err error) *Error {
@@ -24,53 +24,53 @@ func ToError(err error) *Error {
 }
 
 func isNotFoundError(err error) bool {
-	return isAPIErrorWithCode(err, apierrors.ErrCodeUserNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeProjectNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeEnvironmentNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeProjectInvitationNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubRepositoryNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubRepositoryNotConfiguredForProject) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubIntegrationNotEnabled) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeProjectMemberNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubIntegrationNotEnabled) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubRepositoryInvalidURL) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeReleaseNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGitTagNotFound) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubReleaseNotFound)
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeUserNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepositoryNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepositoryNotConfiguredForProject) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepositoryInvalidURL) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound)
 }
 
 func isUnprocessableModelError(err error) bool {
-	return isAPIErrorWithCode(err, apierrors.ErrCodeProjectUnprocessable) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeEnvironmentUnprocessable) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeSettingsUnprocessable) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeProjectInvitationUnprocessable) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeProjectMemberUnprocessable) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeReleaseUnprocessable)
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeProjectUnprocessable) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable)
 }
 
 func isUnauthorizedError(err error) bool {
-	return isAPIErrorWithCode(err, apierrors.ErrCodeUnauthorizedUnknownUser) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubClientUnauthorized)
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeUnauthorizedUnknownUser) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized)
 }
 
 func isForbiddenError(err error) bool {
-	return isAPIErrorWithCode(err, apierrors.ErrCodeForbiddenInsufficientUserRole) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeGithubClientForbidden) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeForbiddenInsufficientProjectRole) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeForbiddenUserNotProjectMember)
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientUserRole) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientForbidden) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientProjectRole) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenUserNotProjectMember)
 }
 
 func isConflictError(err error) bool {
-	return isAPIErrorWithCode(err, apierrors.ErrCodeEnvironmentDuplicateName) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeProjectInvitationAlreadyExists) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeProjectMemberAlreadyExists) ||
-		isAPIErrorWithCode(err, apierrors.ErrCodeReleaseDuplicateTitle)
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentDuplicateName) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseDuplicateTitle)
 }
 
-func isAPIErrorWithCode(err error, code string) bool {
-	var apiErr *apierrors.APIError
-	if errors.As(err, &apiErr) {
-		return apiErr.Code == code
+func isSvcErrorWithCode(err error, code string) bool {
+	var svcErr *svcerrors.Error
+	if errors.As(err, &svcErr) {
+		return svcErr.Code == code
 	}
 
 	return false

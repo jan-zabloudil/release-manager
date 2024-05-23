@@ -8,7 +8,7 @@ import (
 	"net/url"
 
 	"release-manager/github/model"
-	"release-manager/pkg/apierrors"
+	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/go-github/v60/github"
@@ -27,7 +27,7 @@ func NewClient() *Client {
 func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {
 	repo, err := model.ToGithubRepo(repoURL)
 	if err != nil {
-		return nil, apierrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+		return nil, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
 	// Up to 100 tags can be fetched per page
@@ -44,11 +44,11 @@ func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL 
 		if errors.As(err, &githubErr) {
 			switch githubErr.Response.StatusCode {
 			case http.StatusUnauthorized:
-				return nil, apierrors.NewGithubClientUnauthorizedError().Wrap(err)
+				return nil, svcerrors.NewGithubClientUnauthorizedError().Wrap(err)
 			case http.StatusForbidden:
-				return nil, apierrors.NewGithubClientForbiddenError().Wrap(err)
+				return nil, svcerrors.NewGithubClientForbiddenError().Wrap(err)
 			case http.StatusNotFound:
-				return nil, apierrors.NewGithubRepositoryNotFoundError().Wrap(err)
+				return nil, svcerrors.NewGithubRepositoryNotFoundError().Wrap(err)
 			}
 		}
 
@@ -61,7 +61,7 @@ func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL 
 func (c *Client) ReadTagByName(ctx context.Context, tkn string, repoURL url.URL, tagName string) (svcmodel.GitTag, error) {
 	repo, err := model.ToGithubRepo(repoURL)
 	if err != nil {
-		return svcmodel.GitTag{}, apierrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+		return svcmodel.GitTag{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
 	// Git tag can be fetched only by its SHA, using GET /repos/{owner}/{repo}/git/tags/{tag_sha}
@@ -80,7 +80,7 @@ func (c *Client) ReadTagByName(ctx context.Context, tkn string, repoURL url.URL,
 	if err != nil {
 		var githubErr *github.ErrorResponse
 		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
-			return svcmodel.GitTag{}, apierrors.NewGitTagNotFoundError().Wrap(err)
+			return svcmodel.GitTag{}, svcerrors.NewGitTagNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.GitTag{}, err
@@ -97,7 +97,7 @@ func (c *Client) CreateRelease(
 ) (svcmodel.GithubRelease, error) {
 	repo, err := model.ToGithubRepo(repoURL)
 	if err != nil {
-		return svcmodel.GithubRelease{}, apierrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+		return svcmodel.GithubRelease{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
 	// Creates a new release
@@ -122,7 +122,7 @@ func (c *Client) CreateRelease(
 func (c *Client) ReadReleaseByTag(ctx context.Context, tkn string, repoURL url.URL, tagName string) (svcmodel.GithubRelease, error) {
 	repo, err := model.ToGithubRepo(repoURL)
 	if err != nil {
-		return svcmodel.GithubRelease{}, apierrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+		return svcmodel.GithubRelease{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
 	rls, _, err := c.getGithubClient(tkn).Repositories.GetReleaseByTag(
@@ -134,7 +134,7 @@ func (c *Client) ReadReleaseByTag(ctx context.Context, tkn string, repoURL url.U
 	if err != nil {
 		var githubErr *github.ErrorResponse
 		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
-			return svcmodel.GithubRelease{}, apierrors.NewGithubReleaseNotFoundError().Wrap(err)
+			return svcmodel.GithubRelease{}, svcerrors.NewGithubReleaseNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.GithubRelease{}, err

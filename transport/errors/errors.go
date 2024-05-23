@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"release-manager/pkg/apierrors"
+	svcerrors "release-manager/service/errors"
 )
 
 var (
@@ -32,12 +32,12 @@ type Error struct {
 }
 
 func (r *Error) Wrap(err error) *Error {
-	var apiErr *apierrors.APIError
-	if errors.As(err, &apiErr) {
+	var svcErr *svcerrors.Error
+	if errors.As(err, &svcErr) {
 		return &Error{
 			StatusCode: r.StatusCode,
-			Message:    apiErr.Message,
-			Code:       apiErr.Code,
+			Message:    svcErr.Message,
+			Code:       svcErr.Code,
 			Err:        err,
 		}
 	}

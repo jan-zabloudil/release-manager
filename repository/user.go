@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"release-manager/pkg/apierrors"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
+	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -35,7 +35,7 @@ func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.U
 	err := pgxscan.Get(ctx, r.dbpool, &u, query.ReadUser, pgx.NamedArgs{"id": userID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.User{}, apierrors.NewUserNotFoundError().Wrap(err)
+			return svcmodel.User{}, svcerrors.NewUserNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.User{}, err
@@ -50,7 +50,7 @@ func (r *UserRepository) ReadByEmail(ctx context.Context, email string) (svcmode
 	err := pgxscan.Get(ctx, r.dbpool, &u, query.ReadUserByEmail, pgx.NamedArgs{"email": email})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.User{}, apierrors.NewUserNotFoundError().Wrap(err)
+			return svcmodel.User{}, svcerrors.NewUserNotFoundError().Wrap(err)
 		}
 
 		return svcmodel.User{}, err
@@ -79,7 +79,7 @@ func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		var errResponse *supabase.ErrorResponse
 		if errors.As(err, &errResponse) && errResponse.Code == http.StatusNotFound {
-			return apierrors.NewUserNotFoundError().Wrap(err)
+			return svcerrors.NewUserNotFoundError().Wrap(err)
 		}
 
 		return err

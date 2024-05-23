@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"release-manager/pkg/apierrors"
 	repomock "release-manager/repository/mock"
+	svcerrors "release-manager/service/errors"
 	svcmock "release-manager/service/mock"
 	"release-manager/service/model"
 
@@ -153,7 +153,7 @@ func TestUserService_Delete(t *testing.T) {
 				mockAuthSvc := new(svcmock.AuthorizeService)
 				mockUserRepo := new(repomock.UserRepository)
 				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
-				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, apierrors.NewUserNotFoundError())
+				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: true,

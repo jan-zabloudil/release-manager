@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"release-manager/pkg/apierrors"
 	repo "release-manager/repository/mock"
+	svcerrors "release-manager/service/errors"
 	svc "release-manager/service/mock"
 	"release-manager/service/model"
 
@@ -55,7 +55,7 @@ func TestSettingsService_Update(t *testing.T) {
 			},
 			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(model.Settings{}, apierrors.NewSettingsUnprocessableError())
+				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(model.Settings{}, svcerrors.NewSettingsUnprocessableError())
 			},
 			expectErr: true,
 		},

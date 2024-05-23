@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"release-manager/pkg/apierrors"
+	"release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -36,7 +36,7 @@ func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInpu
 
 	settings, err := s.repository.Update(ctx, func(s model.Settings) (model.Settings, error) {
 		if err := s.Update(u); err != nil {
-			return model.Settings{}, apierrors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Settings{}, errors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return s, nil
@@ -55,7 +55,7 @@ func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
 	}
 
 	if !settings.Github.Enabled {
-		return "", apierrors.NewGithubIntegrationNotEnabledError()
+		return "", errors.NewGithubIntegrationNotEnabledError()
 	}
 
 	return settings.Github.Token, nil
@@ -68,7 +68,7 @@ func (s *SettingsService) GetSlackToken(ctx context.Context) (string, error) {
 	}
 
 	if !settings.Slack.Enabled {
-		return "", apierrors.NewSlackIntegrationNotEnabledError()
+		return "", errors.NewSlackIntegrationNotEnabledError()
 	}
 
 	return settings.Slack.Token, nil
