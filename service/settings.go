@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
+	"fmt"
 
-	"release-manager/service/errors"
+	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -23,26 +24,31 @@ func NewSettingsService(guard authGuard, r settingsRepository) *SettingsService 
 
 func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.Settings, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.Settings{}, err
+		return model.Settings{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	return s.repository.Read(ctx)
+	settings, err := s.repository.Read(ctx)
+	if err != nil {
+		return model.Settings{}, fmt.Errorf("reading settings: %w", err)
+	}
+
+	return settings, nil
 }
 
 func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInput, authUserID uuid.UUID) (model.Settings, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.Settings{}, err
+		return model.Settings{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	settings, err := s.repository.Update(ctx, func(s model.Settings) (model.Settings, error) {
 		if err := s.Update(u); err != nil {
-			return model.Settings{}, errors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Settings{}, svcerrors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return s, nil
 	})
 	if err != nil {
-		return model.Settings{}, err
+		return model.Settings{}, fmt.Errorf("updating settings: %w", err)
 	}
 
 	return settings, nil
@@ -51,11 +57,11 @@ func (s *SettingsService) Update(ctx context.Context, u model.UpdateSettingsInpu
 func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
 	settings, err := s.repository.Read(ctx)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("reading settings: %w", err)
 	}
 
 	if !settings.Github.Enabled {
-		return "", errors.NewGithubIntegrationNotEnabledError()
+		return "", svcerrors.NewGithubIntegrationNotEnabledError()
 	}
 
 	return settings.Github.Token, nil
@@ -64,11 +70,11 @@ func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
 func (s *SettingsService) GetSlackToken(ctx context.Context) (string, error) {
 	settings, err := s.repository.Read(ctx)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("reading settings: %w", err)
 	}
 
 	if !settings.Slack.Enabled {
-		return "", errors.NewSlackIntegrationNotEnabledError()
+		return "", svcerrors.NewSlackIntegrationNotEnabledError()
 	}
 
 	return settings.Slack.Token, nil

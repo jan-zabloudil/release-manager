@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
-	"release-manager/service/errors"
+	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -42,16 +43,16 @@ func (s *ReleaseService) Create(
 
 	p, err := s.projectGetter.GetProject(ctx, projectID, authorUserID)
 	if err != nil {
-		return model.Release{}, err
+		return model.Release{}, fmt.Errorf("getting project: %w", err)
 	}
 
 	rls, err := model.NewRelease(input, projectID, authorUserID)
 	if err != nil {
-		return model.Release{}, errors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
 	if err := s.repo.Create(ctx, rls); err != nil {
-		return model.Release{}, err
+		return model.Release{}, fmt.Errorf("creating release: %w", err)
 	}
 
 	if sendReleaseNotification {
@@ -66,7 +67,7 @@ func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authorUs
 
 	rls, err := s.repo.Read(ctx, projectID, releaseID)
 	if err != nil {
-		return model.Release{}, err
+		return model.Release{}, fmt.Errorf("reading release: %w", err)
 	}
 
 	return rls, nil
@@ -76,7 +77,7 @@ func (s *ReleaseService) Delete(ctx context.Context, projectID, releaseID, autho
 	// TODO add project member authorization
 
 	if err := s.repo.Delete(ctx, projectID, releaseID); err != nil {
-		return err
+		return fmt.Errorf("deleting release: %w", err)
 	}
 
 	return nil
@@ -93,13 +94,13 @@ func (s *ReleaseService) Update(
 
 	rls, err := s.repo.Update(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
-			return model.Release{}, errors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return rls, nil
 	})
 	if err != nil {
-		return model.Release{}, err
+		return model.Release{}, fmt.Errorf("updating release: %w", err)
 	}
 
 	return rls, nil
@@ -110,15 +111,15 @@ func (s *ReleaseService) ListForProject(ctx context.Context, projectID, authorUs
 
 	rls, err := s.repo.ListForProject(ctx, projectID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing releases: %w", err)
 	}
 	if len(rls) == 0 {
 		exists, err := s.projectGetter.ProjectExists(ctx, projectID, authorUserID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("checking project existence: %w", err)
 		}
 		if !exists {
-			return nil, errors.NewProjectNotFoundError()
+			return nil, svcerrors.NewProjectNotFoundError()
 		}
 	}
 
@@ -138,7 +139,7 @@ func (s *ReleaseService) sendReleaseNotification(ctx context.Context, p model.Pr
 		// two possible reasons for failure:
 		// 1. slack integration is not set (logged in debug level, as it's not an error, but possible scenario)
 		// 2. failed to fetch slack token (logged in error level)
-		slog.Log(ctx, errors.GetLogLevel(err), "failed to get slack token", "err", err)
+		slog.Log(ctx, svcerrors.GetLogLevel(err), "failed to get slack token", "err", err)
 		return
 	}
 

@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
+	"fmt"
 
-	"release-manager/service/errors"
+	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -29,15 +30,15 @@ func (s *AuthorizationService) AuthorizeUserRole(ctx context.Context, userID uui
 	user, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {
-		case errors.IsNotFoundError(err):
-			return errors.NewUnauthorizedUnknownUserError().Wrap(err)
+		case svcerrors.IsNotFoundError(err):
+			return svcerrors.NewUnauthorizedUnknownUserError().Wrap(err)
 		default:
-			return err
+			return fmt.Errorf("reading user: %w", err)
 		}
 	}
 
 	if !user.HasAtLeastRole(role) {
-		return errors.NewForbiddenInsufficientUserRoleError()
+		return svcerrors.NewForbiddenInsufficientUserRoleError()
 	}
 
 	return nil
@@ -55,10 +56,10 @@ func (s *AuthorizationService) AuthorizeProjectRole(ctx context.Context, project
 	user, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {
-		case errors.IsNotFoundError(err):
-			return errors.NewUnauthorizedUnknownUserError().Wrap(err)
+		case svcerrors.IsNotFoundError(err):
+			return svcerrors.NewUnauthorizedUnknownUserError().Wrap(err)
 		default:
-			return err
+			return fmt.Errorf("reading user: %w", err)
 		}
 	}
 
@@ -70,15 +71,15 @@ func (s *AuthorizationService) AuthorizeProjectRole(ctx context.Context, project
 	member, err := s.projectRepo.ReadMember(ctx, projectID, userID)
 	if err != nil {
 		switch {
-		case errors.IsNotFoundError(err):
-			return errors.NewForbiddenUserNotProjectMemberError().Wrap(err)
+		case svcerrors.IsNotFoundError(err):
+			return svcerrors.NewForbiddenUserNotProjectMemberError().Wrap(err)
 		default:
-			return err
+			return fmt.Errorf("reading project member: %w", err)
 		}
 	}
 
 	if !member.HasAtLeastProjectRole(role) {
-		return errors.NewForbiddenInsufficientProjectRoleError()
+		return svcerrors.NewForbiddenInsufficientProjectRoleError()
 	}
 
 	return nil
