@@ -46,8 +46,8 @@ func ToEnvironment(e svcmodel.Environment) Environment {
 		ID:         e.ID,
 		Name:       e.Name,
 		ServiceURL: e.ServiceURL.String(),
-		CreatedAt:  e.CreatedAt.Local(),
-		UpdatedAt:  e.UpdatedAt.Local(),
+		CreatedAt:  e.CreatedAt,
+		UpdatedAt:  e.UpdatedAt,
 	}
 }
 

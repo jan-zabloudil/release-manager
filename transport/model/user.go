@@ -25,8 +25,8 @@ func ToUser(u svcmodel.User) User {
 		Name:      u.Name,
 		AvatarURL: u.AvatarURL,
 		Role:      string(u.Role),
-		CreatedAt: u.CreatedAt.Local(),
-		UpdatedAt: u.UpdatedAt.Local(),
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
 	}
 }
 

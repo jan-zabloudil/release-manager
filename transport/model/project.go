@@ -75,8 +75,8 @@ func ToProject(p svcmodel.Project) Project {
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
 		GithubRepository:          p.GithubRepositoryURL.String(),
-		CreatedAt:                 p.CreatedAt.Local(),
-		UpdatedAt:                 p.UpdatedAt.Local(),
+		CreatedAt:                 p.CreatedAt,
+		UpdatedAt:                 p.UpdatedAt,
 	}
 }
 
