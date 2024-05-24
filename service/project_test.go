@@ -710,9 +710,8 @@ func TestProjectService_Invite(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizeService, user *svc.UserService, email *resendmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				user.On("GetByEmail", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError()) // case when user do not exist at all
-				projectRepo.On("ReadInvitationByEmail", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, nil)
 				projectRepo.On("ReadMemberByEmail", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("CreateInvitation", mock.Anything, mock.Anything).Return(svcerrors.NewProjectInvitationAlreadyExistsError())
 			},
 			wantErr: true,
 		},
@@ -727,7 +726,6 @@ func TestProjectService_Invite(t *testing.T) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 				projectRepo.On("ReadMemberByEmail", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
-				projectRepo.On("ReadInvitationByEmail", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectInvitation{}, svcerrors.NewProjectInvitationNotFoundError())
 				projectRepo.On("CreateInvitation", mock.Anything, mock.Anything).Return(nil)
 				email.On("SendProjectInvitationEmailAsync", mock.Anything, mock.Anything, mock.Anything)
 			},

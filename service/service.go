@@ -26,7 +26,6 @@ type projectRepository interface {
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
 	ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
-	ReadInvitationByEmail(ctx context.Context, email string, projectID uuid.UUID) (model.ProjectInvitation, error)
 	ReadPendingInvitationByHash(ctx context.Context, hash cryptox.Hash) (model.ProjectInvitation, error)
 	DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error
 	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
