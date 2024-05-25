@@ -23,11 +23,20 @@ func TestProject_NewProject(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Invalid Project",
+			name: "Missing name",
 			creation: CreateProjectInput{
 				Name:                      "",
 				SlackChannelID:            "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: "Test Message"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Missing release notification config message",
+			creation: CreateProjectInput{
+				Name:                      "Test project",
+				SlackChannelID:            "channelID",
+				ReleaseNotificationConfig: ReleaseNotificationConfig{Message: ""},
 			},
 			wantErr: true,
 		},
@@ -51,6 +60,7 @@ func TestProject_Update(t *testing.T) {
 	newValidName := "New Name"
 	newInvalidName := ""
 	newSlackChannelID := "newChannelID"
+	newInvalidMessage := ""
 
 	tests := []struct {
 		name    string
@@ -64,6 +74,9 @@ func TestProject_Update(t *testing.T) {
 				ID:             uuid.New(),
 				Name:           oldName,
 				SlackChannelID: oldSlackChannelID,
+				ReleaseNotificationConfig: ReleaseNotificationConfig{
+					Message: "Test Message",
+				},
 			},
 			update: UpdateProjectInput{
 				Name:           &newValidName,
@@ -72,15 +85,37 @@ func TestProject_Update(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Invalid Update",
+			name: "Missing name",
 			project: Project{
 				ID:             uuid.New(),
 				Name:           oldName,
 				SlackChannelID: oldSlackChannelID,
+				ReleaseNotificationConfig: ReleaseNotificationConfig{
+					Message: "Test Message",
+				},
 			},
 			update: UpdateProjectInput{
 				Name:           &newInvalidName,
 				SlackChannelID: &newSlackChannelID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Missing release config message",
+			project: Project{
+				ID:             uuid.New(),
+				Name:           oldName,
+				SlackChannelID: oldSlackChannelID,
+				ReleaseNotificationConfig: ReleaseNotificationConfig{
+					Message: "Test Message",
+				},
+			},
+			update: UpdateProjectInput{
+				Name:           &newValidName,
+				SlackChannelID: &newSlackChannelID,
+				ReleaseNotificationConfigUpdate: UpdateReleaseNotificationConfigInput{
+					Message: &newInvalidMessage,
+				},
 			},
 			wantErr: true,
 		},
@@ -110,15 +145,30 @@ func TestProject_Validate(t *testing.T) {
 				ID:             uuid.New(),
 				Name:           "Test Project",
 				SlackChannelID: "channelID",
+				ReleaseNotificationConfig: ReleaseNotificationConfig{
+					Message: "Test Message",
+				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Invalid Project",
+			name: "Missing name",
 			project: Project{
 				ID:             uuid.New(),
 				Name:           "",
 				SlackChannelID: "channelID",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Missing release notification config message",
+			project: Project{
+				ID:             uuid.New(),
+				Name:           "Test Project",
+				SlackChannelID: "channelID",
+				ReleaseNotificationConfig: ReleaseNotificationConfig{
+					Message: "",
+				},
 			},
 			wantErr: true,
 		},
@@ -132,6 +182,68 @@ func TestProject_Validate(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestReleaseNotificationConfig_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		config  ReleaseNotificationConfig
+		wantErr bool
+	}{
+		{
+			name: "Valid Config",
+			config: ReleaseNotificationConfig{
+				Message: "Test Message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid Config",
+			config: ReleaseNotificationConfig{
+				Message: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestReleaseNotificationConfig_IsEmpty(t *testing.T) {
+	tests := []struct {
+		name   string
+		config *ReleaseNotificationConfig
+		want   bool
+	}{
+		{
+			name:   "Empty Config",
+			config: &ReleaseNotificationConfig{},
+			want:   true,
+		},
+		{
+			name: "Non-Empty Config",
+			config: &ReleaseNotificationConfig{
+				Message: "Test Message",
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.config.IsEmpty()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

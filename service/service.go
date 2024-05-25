@@ -69,6 +69,7 @@ type authGuard interface {
 type settingsGetter interface {
 	GetGithubToken(ctx context.Context) (string, error)
 	GetSlackToken(ctx context.Context) (string, error)
+	GetDefaultReleaseMessage(ctx context.Context) (string, error)
 }
 
 type userGetter interface {
