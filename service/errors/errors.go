@@ -36,6 +36,7 @@ var (
 	ErrCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 	ErrCodeSlackClientUnauthorized                 = "ERR_SLACK_CLIENT_UNAUTHORIZED"
 	ErrCodeSlackChannelNotFound                    = "ERR_SLACK_CHANNEL_NOT_FOUND"
+	ErrCodeSlackChannelNotSetForProject            = "ERR_SLACK_CHANNEL_NOT_SET_FOR_PROJECT"
 	ErrCodeGitTagNotFound                          = "ERR_GIT_TAG_NOT_FOUND"
 	ErrCodeGithubReleaseNotFound                   = "ERR_GITHUB_RELEASE_NOT_FOUND"
 )
@@ -263,6 +264,13 @@ func NewSlackChannelNotFoundError() *Error {
 	return &Error{
 		Code:    ErrCodeSlackChannelNotFound,
 		Message: "Slack channel not found.",
+	}
+}
+
+func NewSlackChannelNotSetForProjectError() *Error {
+	return &Error{
+		Code:    ErrCodeSlackChannelNotSetForProject,
+		Message: "Slack channel is not set for the project.",
 	}
 }
 

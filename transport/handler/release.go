@@ -94,3 +94,17 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 
 	util.WriteJSONResponse(w, http.StatusOK, model.ToRelease(rls))
 }
+
+func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request) {
+	if err := h.ReleaseSvc.SendReleaseNotification(
+		r.Context(),
+		util.ContextProjectID(r),
+		util.ContextReleaseID(r),
+		util.ContextAuthUserID(r),
+	); err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

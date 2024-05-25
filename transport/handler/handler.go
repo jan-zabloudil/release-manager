@@ -53,6 +53,7 @@ type releaseService interface {
 	Delete(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error
 	Update(ctx context.Context, input svcmodel.UpdateReleaseInput, projectID, releaseID, authorUserID uuid.UUID) (svcmodel.Release, error)
 	ListForProject(ctx context.Context, projectID, authorUserID uuid.UUID) ([]svcmodel.Release, error)
+	SendReleaseNotification(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error
 }
 
 type authClient interface {

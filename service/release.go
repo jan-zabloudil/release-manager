@@ -61,7 +61,7 @@ func (s *ReleaseService) Create(
 	}
 
 	if sendReleaseNotification {
-		s.sendReleaseNotification(ctx, p, rls)
+		s.sendReleaseNotificationAsync(ctx, p, rls)
 	}
 
 	return rls, nil
@@ -139,7 +139,37 @@ func (s *ReleaseService) ListForProject(ctx context.Context, projectID, authorUs
 	return rls, nil
 }
 
-func (s *ReleaseService) sendReleaseNotification(ctx context.Context, p model.Project, rls model.Release) {
+func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authorUserID); err != nil {
+		return fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	rls, err := s.repo.Read(ctx, projectID, releaseID)
+	if err != nil {
+		return fmt.Errorf("reading release: %w", err)
+	}
+
+	p, err := s.projectGetter.GetProject(ctx, projectID, authorUserID)
+	if err != nil {
+		return fmt.Errorf("getting project: %w", err)
+	}
+
+	if !p.IsSlackChannelSet() {
+		return svcerrors.NewSlackChannelNotSetForProjectError()
+	}
+
+	tkn, err := s.settingsGetter.GetSlackToken(ctx)
+	if err != nil {
+		return fmt.Errorf("getting slack token: %w", err)
+	}
+
+	// TODO use synchronous notification sending
+	s.slackNotifier.SendReleaseNotificationAsync(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls))
+
+	return nil
+}
+
+func (s *ReleaseService) sendReleaseNotificationAsync(ctx context.Context, p model.Project, rls model.Release) {
 	if !p.IsSlackChannelSet() {
 		slog.Debug("notification not sent: slack channel missing for project", "project_id", p.ID)
 		return
