@@ -10,6 +10,10 @@ import (
 	httpx "go.strv.io/net/http"
 )
 
+const (
+	SignatureHeader = "X-Hub-Signature-256"
+)
+
 func GetUUIDFromURL(r *http.Request, key string) (uuid.UUID, error) {
 	idFromURL := chi.URLParam(r, key)
 
