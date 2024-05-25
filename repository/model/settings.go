@@ -26,8 +26,9 @@ type SlackSettings struct {
 }
 
 type GithubSettings struct {
-	Enabled bool   `json:"enabled"`
-	Token   string `json:"token"`
+	Enabled       bool   `json:"enabled"`
+	Token         string `json:"token"`
+	WebhookSecret string `json:"webhook_secret"`
 }
 
 func ToSettingsValues(s svcmodel.Settings) ([]SettingsValue, error) {
@@ -64,6 +65,9 @@ func toSettingsValue(key string, v any) (SettingsValue, error) {
 
 func ToSvcSettings(sv []SettingsValue) (svcmodel.Settings, error) {
 	var s svcmodel.Settings
+	var slackSettings SlackSettings
+	var githubSettings GithubSettings
+
 	for _, settingsValue := range sv {
 		switch settingsValue.Key {
 		case keyOrganizationName:
@@ -75,17 +79,20 @@ func ToSvcSettings(sv []SettingsValue) (svcmodel.Settings, error) {
 				return svcmodel.Settings{}, err
 			}
 		case keySlack:
-			if err := json.Unmarshal(settingsValue.Value, &s.Slack); err != nil {
+			if err := json.Unmarshal(settingsValue.Value, &slackSettings); err != nil {
 				return svcmodel.Settings{}, err
 			}
 		case keyGithub:
-			if err := json.Unmarshal(settingsValue.Value, &s.Github); err != nil {
+			if err := json.Unmarshal(settingsValue.Value, &githubSettings); err != nil {
 				return svcmodel.Settings{}, err
 			}
 		default:
 			return svcmodel.Settings{}, fmt.Errorf("unknown key: %s", settingsValue.Key)
 		}
 	}
+
+	s.Slack = svcmodel.SlackSettings(slackSettings)
+	s.Github = svcmodel.GithubSettings(githubSettings)
 
 	return s, nil
 }

@@ -95,13 +95,15 @@ func (s *SlackSettings) Validate() error {
 }
 
 type GithubSettings struct {
-	Enabled bool
-	Token   string
+	Enabled       bool
+	Token         string
+	WebhookSecret string
 }
 
 type UpdateGithubSettingsInput struct {
-	Enabled *bool
-	Token   *string
+	Enabled       *bool
+	Token         *string
+	WebhookSecret *string
 }
 
 func (s *GithubSettings) Update(u UpdateGithubSettingsInput) error {
@@ -110,6 +112,9 @@ func (s *GithubSettings) Update(u UpdateGithubSettingsInput) error {
 	}
 	if u.Token != nil {
 		s.Token = *u.Token
+	}
+	if u.WebhookSecret != nil {
+		s.WebhookSecret = *u.WebhookSecret
 	}
 
 	return s.Validate()

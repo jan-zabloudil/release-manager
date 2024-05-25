@@ -1365,6 +1365,9 @@ components:
             token:
               type: string
               example: 'ghp_abcdefgh1234567890ijklmnopqrstuvwx'
+            webhook_secret:
+              type: string
+              example: 'secret'
   securitySchemes:
     bearerAuth:
       type: http
