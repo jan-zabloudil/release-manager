@@ -28,6 +28,7 @@ func TestReleaseService_Create(t *testing.T) {
 			release: model.CreateReleaseInput{
 				ReleaseTitle: "Test release",
 				ReleaseNotes: "Test release notes",
+				GitTagName:   "v1.0.0",
 			},
 			sendReleaseNotification: false,
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
@@ -42,6 +43,7 @@ func TestReleaseService_Create(t *testing.T) {
 			release: model.CreateReleaseInput{
 				ReleaseTitle: "Test release",
 				ReleaseNotes: "Test release notes",
+				GitTagName:   "v1.0.0",
 			},
 			sendReleaseNotification: true,
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
@@ -60,6 +62,7 @@ func TestReleaseService_Create(t *testing.T) {
 			release: model.CreateReleaseInput{
 				ReleaseTitle: "Test release",
 				ReleaseNotes: "Test release notes",
+				GitTagName:   "v1.0.0",
 			},
 			sendReleaseNotification: true,
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
@@ -77,6 +80,7 @@ func TestReleaseService_Create(t *testing.T) {
 			release: model.CreateReleaseInput{
 				ReleaseTitle: "Test release",
 				ReleaseNotes: "Test release notes",
+				GitTagName:   "v1.0.0",
 			},
 			sendReleaseNotification: true,
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
@@ -93,6 +97,7 @@ func TestReleaseService_Create(t *testing.T) {
 			release: model.CreateReleaseInput{
 				ReleaseTitle: "Release",
 				ReleaseNotes: "Test release notes",
+				GitTagName:   "v1.0.0",
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -105,6 +110,7 @@ func TestReleaseService_Create(t *testing.T) {
 			release: model.CreateReleaseInput{
 				ReleaseTitle: "",
 				ReleaseNotes: "Test release notes",
+				GitTagName:   "v1.0.0",
 			},
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)

@@ -19,6 +19,7 @@ func TestRelease_NewRelease(t *testing.T) {
 			input: CreateReleaseInput{
 				ReleaseTitle: "Release 1.0",
 				ReleaseNotes: "Initial release",
+				GitTagName:   "v1.0.0",
 			},
 			wantErr: false,
 		},
@@ -27,6 +28,16 @@ func TestRelease_NewRelease(t *testing.T) {
 			input: CreateReleaseInput{
 				ReleaseTitle: "",
 				ReleaseNotes: "Initial release",
+				GitTagName:   "v1.0.0",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid Release - missing git tag",
+			input: CreateReleaseInput{
+				ReleaseTitle: "Release 1.0",
+				ReleaseNotes: "Initial release",
+				GitTagName:   "",
 			},
 			wantErr: true,
 		},
