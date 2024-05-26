@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	svcmodel "release-manager/service/model"
 
@@ -51,19 +52,19 @@ func ToSvcGitTags(tags []*github.RepositoryTag) []svcmodel.GitTag {
 	return t
 }
 
-func ToSvcGithubRelease(release *github.RepositoryRelease) (svcmodel.GithubRelease, error) {
-	u, err := url.Parse(release.GetHTMLURL())
+func ToSvcGithubRelease(rls *github.RepositoryRelease, repo GithubRepo) (svcmodel.GithubRelease, error) {
+	u, err := url.Parse(rls.GetHTMLURL())
 	if err != nil {
 		return svcmodel.GithubRelease{}, err
 	}
 
 	return svcmodel.GithubRelease{
-		ID:          release.GetID(),
-		Name:        release.GetName(),
-		Body:        release.GetBody(),
-		HTMLURL:     *u,
-		TagName:     release.GetTagName(),
-		CreatedAt:   release.CreatedAt.Time,
-		PublishedAt: release.PublishedAt.Time,
+		ID:             rls.GetID(),
+		OwnerSlug:      repo.OwnerSlug,
+		RepositorySlug: repo.RepositorySlug,
+		GitTagName:     rls.GetTagName(),
+		HTMLURL:        *u,
+		CreatedAt:      rls.CreatedAt.Time,
+		UpdatedAt:      time.Now(),
 	}, nil
 }

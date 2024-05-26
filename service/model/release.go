@@ -26,14 +26,14 @@ type UpdateReleaseInput struct {
 }
 
 type Release struct {
-	ID           uuid.UUID
-	ProjectID    uuid.UUID
-	ReleaseTitle string
-	ReleaseNotes string
-	AuthorUserID uuid.UUID
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	// TODO add source code link
+	ID            uuid.UUID
+	ProjectID     uuid.UUID
+	ReleaseTitle  string
+	ReleaseNotes  string
+	AuthorUserID  uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	GithubRelease GithubRelease
 }
 
 func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Release, error) {
@@ -109,11 +109,14 @@ func NewReleaseNotification(p Project, r Release) ReleaseNotification {
 }
 
 type GithubRelease struct {
-	ID          int64 // GitHub release ID
-	Name        string
-	Body        string
-	TagName     string  // Git tag associated with the release
-	HTMLURL     url.URL // URL to the release page on GitHub
-	CreatedAt   time.Time
-	PublishedAt time.Time
+	ID int64
+	// Owner and repo slugs are used to identify the repository
+	OwnerSlug      string
+	RepositorySlug string
+	GitTagName     string
+	// URL to the release page on GitHub
+	HTMLURL   url.URL
+	CreatedAt time.Time
+	// Time when the up-to-date information was last fetched from GitHub
+	UpdatedAt time.Time
 }
