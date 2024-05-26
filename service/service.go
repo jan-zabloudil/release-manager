@@ -59,6 +59,10 @@ type releaseRepository interface {
 	Update(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
 }
 
+type deploymentRepository interface {
+	Create(ctx context.Context, d model.Deployment) error
+}
+
 type authGuard interface {
 	AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error
 	AuthorizeUserRole(ctx context.Context, userID uuid.UUID, model model.UserRole) error
@@ -80,6 +84,14 @@ type userGetter interface {
 type projectGetter interface {
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
 	ProjectExists(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (bool, error)
+}
+
+type releaseGetter interface {
+	Get(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (model.Release, error)
+}
+
+type environmentGetter interface {
+	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error)
 }
 
 type githubManager interface {
@@ -105,6 +117,7 @@ type Service struct {
 	Project       *ProjectService
 	Settings      *SettingsService
 	Release       *ReleaseService
+	Deployment    *DeploymentService
 }
 
 func NewService(
@@ -112,6 +125,7 @@ func NewService(
 	projectRepo projectRepository,
 	settingsRepo settingsRepository,
 	releaseRepo releaseRepository,
+	deploymentRepo deploymentRepository,
 	githubManager githubManager,
 	emailSender emailSender,
 	slackNotifier slackNotifier,
@@ -121,6 +135,7 @@ func NewService(
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)
 	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, slackNotifier, githubManager, releaseRepo)
+	deploymentSvc := NewDeploymentService(authSvc, projectSvc, releaseSvc, projectSvc, deploymentRepo)
 
 	return &Service{
 		Authorization: authSvc,
@@ -128,5 +143,6 @@ func NewService(
 		Project:       projectSvc,
 		Settings:      settingsSvc,
 		Release:       releaseSvc,
+		Deployment:    deploymentSvc,
 	}
 }
