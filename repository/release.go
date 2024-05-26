@@ -17,6 +17,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const (
+	uniqueGithubReleasePerProjectConstraintName = "unique_github_release_per_project"
+)
+
 type ReleaseRepository struct {
 	dbpool *pgxpool.Pool
 }
@@ -29,15 +33,28 @@ func NewReleaseRepository(pool *pgxpool.Pool) *ReleaseRepository {
 
 func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) error {
 	_, err := r.dbpool.Exec(ctx, query.CreateRelease, pgx.NamedArgs{
-		"id":           rls.ID,
-		"projectID":    rls.ProjectID,
-		"releaseTitle": rls.ReleaseTitle,
-		"releaseNotes": rls.ReleaseNotes,
-		"createdBy":    rls.AuthorUserID,
-		"createdAt":    rls.CreatedAt,
-		"updatedAt":    rls.UpdatedAt,
+		"id":              rls.ID,
+		"projectID":       rls.ProjectID,
+		"releaseTitle":    rls.ReleaseTitle,
+		"releaseNotes":    rls.ReleaseNotes,
+		"createdBy":       rls.AuthorUserID,
+		"createdAt":       rls.CreatedAt,
+		"updatedAt":       rls.UpdatedAt,
+		"githubReleaseID": rls.GithubRelease.ID,
+		"githubOwnerSlug": rls.GithubRelease.OwnerSlug,
+		"githubRepoSlug":  rls.GithubRelease.RepositorySlug,
+		"githubReleaseData": model.GithubReleaseData{
+			GitTagName: rls.GithubRelease.GitTagName,
+			HTMLURL:    rls.GithubRelease.HTMLURL.String(),
+			CreatedAt:  rls.GithubRelease.CreatedAt,
+			UpdatedAt:  rls.GithubRelease.UpdatedAt,
+		},
 	})
 	if err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueGithubReleasePerProjectConstraintName) {
+			return svcerrors.NewReleaseGithubReleaseAlreadyUsedError().Wrap(err)
+		}
+
 		return err
 	}
 
