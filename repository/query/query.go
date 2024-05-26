@@ -84,6 +84,8 @@ var (
 
 	//go:embed scripts/create_deployment.sql
 	CreateDeployment string
+	//go:embed scripts/list_deployments_for_project.sql
+	ListDeploymentsForProject string
 )
 
 func AppendForUpdate(query string) string {

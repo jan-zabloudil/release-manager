@@ -77,6 +77,7 @@ func (h *Handler) setupRoutes() {
 			})
 			r.Route("/deployments", func(r chi.Router) {
 				r.Post("/", middleware.RequireAuthUser(h.createDeployment))
+				r.Get("/", middleware.RequireAuthUser(h.listDeploymentsForProject))
 			})
 		})
 	})

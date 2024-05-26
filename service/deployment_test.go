@@ -112,3 +112,68 @@ func TestDeploymentService_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestDeploymentService_ListForProject(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizeService, *svc.ProjectService, *repo.DeploymentRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Deployments fetched successfully",
+			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.DeploymentRepository) {
+				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ListForProject", mock.Anything, mock.Anything).Return([]model.Deployment{
+					{
+						ID: uuid.New(),
+					},
+					{
+						ID: uuid.New(),
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Deployments fetched successfully but no deployments found",
+			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.DeploymentRepository) {
+				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ListForProject", mock.Anything, mock.Anything).Return([]model.Deployment{}, nil)
+				projectSvc.On("ProjectExists", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project not found",
+			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.DeploymentRepository) {
+				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ListForProject", mock.Anything, mock.Anything).Return([]model.Deployment{}, nil)
+				projectSvc.On("ProjectExists", mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			authSvc := new(svc.AuthorizeService)
+			projectSvc := new(svc.ProjectService)
+			releaseSvc := new(svc.ReleaseService)
+			releaseRepo := new(repo.DeploymentRepository)
+			service := NewDeploymentService(authSvc, projectSvc, releaseSvc, projectSvc, releaseRepo)
+
+			tc.mockSetup(authSvc, projectSvc, releaseRepo)
+
+			_, err := service.ListForProject(context.TODO(), uuid.Nil, uuid.Nil)
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			authSvc.AssertExpectations(t)
+			projectSvc.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}
