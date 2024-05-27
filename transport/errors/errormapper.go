@@ -67,8 +67,7 @@ func isForbiddenError(err error) bool {
 func isConflictError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentDuplicateName) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseDuplicateTitle)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists)
 }
 
 func isBadRequestError(err error) bool {

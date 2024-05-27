@@ -32,7 +32,6 @@ var (
 	ErrCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
 	ErrCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
 	ErrCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
-	ErrCodeReleaseDuplicateTitle                   = "ERR_RELEASE_DUPLICATE_TITLE"
 	ErrCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 	ErrCodeSlackClientUnauthorized                 = "ERR_SLACK_CLIENT_UNAUTHORIZED"
 	ErrCodeSlackChannelNotFound                    = "ERR_SLACK_CHANNEL_NOT_FOUND"
@@ -236,13 +235,6 @@ func NewReleaseNotFoundError() *Error {
 	return &Error{
 		Code:    ErrCodeReleaseNotFound,
 		Message: "Release not found",
-	}
-}
-
-func NewReleaseDuplicateTitleError() *Error {
-	return &Error{
-		Code:    ErrCodeReleaseDuplicateTitle,
-		Message: "Release with the same title already exists",
 	}
 }
 
