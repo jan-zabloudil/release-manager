@@ -38,7 +38,7 @@ type ClientServiceConfig struct {
 }
 
 type ServiceConfig struct {
-	Port          uint                `env:"PORT, default=8080"`
+	Port          uint                `env:"APP_PORT, default=8080"`
 	LogLevel      slog.Level          `env:"LOG_LEVEL, default=INFO"`
 	Supabase      SupabaseConfig      `env:", prefix=SUPABASE_"`
 	Server        ServerConfig        `env:", prefix=SERVER_"`
