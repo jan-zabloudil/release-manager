@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  app:
+    build: '.'
+    restart: on-failure
+    ports:
+      - '${HOST_PORT}:${APP_PORT}'
+    env_file:
+        - .env
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:${APP_PORT}/ping" ]
+      interval: 2m
+      timeout: 10s
+      retries: 3
