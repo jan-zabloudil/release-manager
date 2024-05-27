@@ -109,14 +109,10 @@ func NewReleaseNotification(p Project, r Release) ReleaseNotification {
 }
 
 type GithubRelease struct {
-	ID int64
-	// Owner and repo slugs are used to identify the repository
-	OwnerSlug      string
-	RepositorySlug string
-	GitTagName     string
-	// URL to the release page on GitHub
+	GitTagName string
+	// URL to the release page on GitHub.
 	HTMLURL   url.URL
 	CreatedAt time.Time
-	// Time when the up-to-date information was last fetched from GitHub
+	// Time when the up-to-date information was last fetched from GitHub.
 	UpdatedAt time.Time
 }

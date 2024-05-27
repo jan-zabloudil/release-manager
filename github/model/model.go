@@ -52,19 +52,16 @@ func ToSvcGitTags(tags []*github.RepositoryTag) []svcmodel.GitTag {
 	return t
 }
 
-func ToSvcGithubRelease(rls *github.RepositoryRelease, repo GithubRepo) (svcmodel.GithubRelease, error) {
+func ToSvcGithubRelease(rls *github.RepositoryRelease) (svcmodel.GithubRelease, error) {
 	u, err := url.Parse(rls.GetHTMLURL())
 	if err != nil {
 		return svcmodel.GithubRelease{}, err
 	}
 
 	return svcmodel.GithubRelease{
-		ID:             rls.GetID(),
-		OwnerSlug:      repo.OwnerSlug,
-		RepositorySlug: repo.RepositorySlug,
-		GitTagName:     rls.GetTagName(),
-		HTMLURL:        *u,
-		CreatedAt:      rls.CreatedAt.Time,
-		UpdatedAt:      time.Now(),
+		GitTagName: rls.GetTagName(),
+		HTMLURL:    *u,
+		CreatedAt:  rls.CreatedAt.Time,
+		UpdatedAt:  time.Now(),
 	}, nil
 }

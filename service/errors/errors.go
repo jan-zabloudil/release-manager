@@ -32,8 +32,7 @@ var (
 	ErrCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
 	ErrCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
 	ErrCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
-	ErrCodeReleaseDuplicateTitle                   = "ERR_RELEASE_DUPLICATE_TITLE"
-	ErrCodeReleaseGithubReleaseAlreadyUsed         = "ERR_RELEASE_GITHUB_RELEASE_ALREADY_USED"
+	ErrCodeReleaseGitTagAlreadyUsed                = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
 	ErrCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 	ErrCodeSlackClientUnauthorized                 = "ERR_SLACK_CLIENT_UNAUTHORIZED"
 	ErrCodeSlackChannelNotFound                    = "ERR_SLACK_CHANNEL_NOT_FOUND"
@@ -240,10 +239,10 @@ func NewReleaseNotFoundError() *Error {
 	}
 }
 
-func NewReleaseGithubReleaseAlreadyUsedError() *Error {
+func NewReleaseGitTagAlreadyUsedError() *Error {
 	return &Error{
-		Code:    ErrCodeReleaseGithubReleaseAlreadyUsed,
-		Message: "Release with the same Github release already exists",
+		Code:    ErrCodeReleaseGitTagAlreadyUsed,
+		Message: "Release with the same git tag already exists.",
 	}
 }
 

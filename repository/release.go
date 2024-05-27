@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	uniqueGithubReleasePerProjectConstraintName = "unique_github_release_per_project"
+	uniqueGitTagPerProject = "unique_git_tag_per_project"
 )
 
 type ReleaseRepository struct {
@@ -33,26 +33,20 @@ func NewReleaseRepository(pool *pgxpool.Pool) *ReleaseRepository {
 
 func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) error {
 	_, err := r.dbpool.Exec(ctx, query.CreateRelease, pgx.NamedArgs{
-		"id":              rls.ID,
-		"projectID":       rls.ProjectID,
-		"releaseTitle":    rls.ReleaseTitle,
-		"releaseNotes":    rls.ReleaseNotes,
-		"createdBy":       rls.AuthorUserID,
-		"createdAt":       rls.CreatedAt,
-		"updatedAt":       rls.UpdatedAt,
-		"githubReleaseID": rls.GithubRelease.ID,
-		"githubOwnerSlug": rls.GithubRelease.OwnerSlug,
-		"githubRepoSlug":  rls.GithubRelease.RepositorySlug,
-		"githubReleaseData": model.GithubReleaseData{
-			GitTagName: rls.GithubRelease.GitTagName,
-			HTMLURL:    rls.GithubRelease.HTMLURL.String(),
-			CreatedAt:  rls.GithubRelease.CreatedAt,
-			UpdatedAt:  rls.GithubRelease.UpdatedAt,
-		},
+		"id":                     rls.ID,
+		"projectID":              rls.ProjectID,
+		"releaseTitle":           rls.ReleaseTitle,
+		"releaseNotes":           rls.ReleaseNotes,
+		"createdBy":              rls.AuthorUserID,
+		"createdAt":              rls.CreatedAt,
+		"updatedAt":              rls.UpdatedAt,
+		"gitTagName":             rls.GithubRelease.GitTagName,
+		"githubReleaseCreatedAt": rls.GithubRelease.CreatedAt,
+		"githubReleaseUpdatedAt": rls.GithubRelease.UpdatedAt,
 	})
 	if err != nil {
-		if util.IsUniqueConstraintViolation(err, uniqueGithubReleasePerProjectConstraintName) {
-			return svcerrors.NewReleaseGithubReleaseAlreadyUsedError().Wrap(err)
+		if util.IsUniqueConstraintViolation(err, uniqueGitTagPerProject) {
+			return svcerrors.NewReleaseGitTagAlreadyUsedError().Wrap(err)
 		}
 
 		return err

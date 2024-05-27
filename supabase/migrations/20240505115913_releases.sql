@@ -6,11 +6,10 @@ CREATE TABLE public.releases (
      created_by UUID REFERENCES public.users ON DELETE SET NULL,
      created_at TIMESTAMP WITH TIME ZONE NOT NULL,
      updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-     github_release_id BIGINT NOT NULL,
-     github_owner_slug TEXT NOT NULL,
-     github_repo_slug TEXT NOT NULL,
-     github_release_data JSON NOT NULL,
-     CONSTRAINT unique_github_release_per_project UNIQUE (project_id, github_owner_slug, github_repo_slug, github_release_id)
+     git_tag_name Text NOT NULL,
+     github_release_created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+     github_release_published_at TIMESTAMP WITH TIME ZONE NOT NULL,
+     CONSTRAINT unique_git_tag_per_project UNIQUE (project_id, git_tag_name)
 );
 
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE

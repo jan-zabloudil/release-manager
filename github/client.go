@@ -116,7 +116,7 @@ func (c *Client) CreateRelease(
 		return svcmodel.GithubRelease{}, err
 	}
 
-	return model.ToSvcGithubRelease(rls, repo)
+	return model.ToSvcGithubRelease(rls)
 }
 
 func (c *Client) ReadReleaseByTag(ctx context.Context, tkn string, repoURL url.URL, tagName string) (svcmodel.GithubRelease, error) {
@@ -140,7 +140,7 @@ func (c *Client) ReadReleaseByTag(ctx context.Context, tkn string, repoURL url.U
 		return svcmodel.GithubRelease{}, err
 	}
 
-	return model.ToSvcGithubRelease(rls, repo)
+	return model.ToSvcGithubRelease(rls)
 }
 
 func (c *Client) getGithubClient(tkn string) *github.Client {

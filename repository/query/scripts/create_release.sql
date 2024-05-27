@@ -6,10 +6,9 @@ INSERT INTO releases (
     created_by,
     created_at,
     updated_at,
-    github_release_id,
-    github_owner_slug,
-    github_repo_slug,
-    github_release_data
+    git_tag_name,
+    github_release_created_at,
+    github_release_updated_at
 )
 VALUES (
     @id,
@@ -19,8 +18,7 @@ VALUES (
     @createdBy,
     @createdAt,
     @updatedAt,
-    @githubReleaseID,
-    @githubOwnerSlug,
-    @githubRepoSlug,
-    @githubReleaseData
+    @gitTagName,
+    @githubReleaseCreatedAt,
+    @githubReleaseUpdatedAt
 )
