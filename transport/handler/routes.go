@@ -85,6 +85,8 @@ func (h *Handler) setupRoutes() {
 		r.Patch("/", middleware.RequireAuthUser(h.updateSettings))
 	})
 
+	h.Mux.Post("/webhooks/github/releases", h.handleGithubReleaseWebhook)
+
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
