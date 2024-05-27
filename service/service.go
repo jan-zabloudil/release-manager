@@ -84,6 +84,9 @@ type projectGetter interface {
 
 type githubManager interface {
 	ReadTagsForRepository(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
+	ReadTagByName(ctx context.Context, token string, repoURL url.URL, tagName string) (model.GitTag, error)
+	CreateRelease(ctx context.Context, token string, repoURL url.URL, input model.CreateReleaseInput) (model.GithubRelease, error)
+	ReadReleaseByTag(ctx context.Context, token string, repoURL url.URL, tagName string) (model.GithubRelease, error)
 }
 
 type emailSender interface {
