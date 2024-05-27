@@ -92,3 +92,12 @@ func (s *SettingsService) GetGithubWebhookSecret(ctx context.Context) (string, e
 
 	return settings.Github.WebhookSecret, nil
 }
+
+func (s *SettingsService) GetDefaultReleaseMessage(ctx context.Context) (string, error) {
+	settings, err := s.repository.Read(ctx)
+	if err != nil {
+		return "", fmt.Errorf("reading settings: %w", err)
+	}
+
+	return settings.DefaultReleaseMessage, nil
+}

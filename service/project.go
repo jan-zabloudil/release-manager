@@ -43,6 +43,16 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 		return model.Project{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
+	// If empty release notification config is provided, use default config
+	if c.ReleaseNotificationConfig.IsEmpty() {
+		defaultCfg, err := s.getDefaultReleaseNotificationConfig(ctx)
+		if err != nil {
+			return model.Project{}, fmt.Errorf("getting default release notification config: %w", err)
+		}
+
+		c.ReleaseNotificationConfig = defaultCfg
+	}
+
 	p, err := model.NewProject(c)
 	if err != nil {
 		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
@@ -461,6 +471,22 @@ func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (m
 	}
 
 	return p, nil
+}
+
+func (s *ProjectService) getDefaultReleaseNotificationConfig(ctx context.Context) (model.ReleaseNotificationConfig, error) {
+	msg, err := s.settingsGetter.GetDefaultReleaseMessage(ctx)
+	if err != nil {
+		return model.ReleaseNotificationConfig{}, err
+	}
+
+	return model.ReleaseNotificationConfig{
+		Message:          msg,
+		ShowProjectName:  true,
+		ShowReleaseTitle: true,
+		ShowReleaseNotes: true,
+		ShowDeployments:  true,
+		ShowSourceCode:   true,
+	}, nil
 }
 
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {

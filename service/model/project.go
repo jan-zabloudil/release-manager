@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	errProjectNameRequired                = errors.New("project name is required")
-	errProjectGithubRepoURLCannotBeParsed = errors.New("github repository URL cannot be parsed")
+	errProjectNameRequired                      = errors.New("project name is required")
+	errProjectGithubRepoURLCannotBeParsed       = errors.New("github repository URL cannot be parsed")
+	errReleaseNotificationConfigMessageRequired = errors.New("message in release notification config is required")
 )
 
 type Project struct {
@@ -110,7 +111,7 @@ func (p *Project) Validate() error {
 		return errProjectNameRequired
 	}
 
-	return nil
+	return p.ReleaseNotificationConfig.Validate()
 }
 
 func (p *Project) IsSlackChannelSet() bool {
@@ -140,6 +141,22 @@ func (c *ReleaseNotificationConfig) Update(u UpdateReleaseNotificationConfigInpu
 	if u.ShowSourceCode != nil {
 		c.ShowSourceCode = *u.ShowSourceCode
 	}
+}
+
+func (c *ReleaseNotificationConfig) IsEmpty() bool {
+	if c == nil {
+		return true
+	}
+
+	return *c == ReleaseNotificationConfig{}
+}
+
+func (c *ReleaseNotificationConfig) Validate() error {
+	if c.Message == "" {
+		return errReleaseNotificationConfigMessageRequired
+	}
+
+	return nil
 }
 
 type ProjectInvitationEmailData struct {
