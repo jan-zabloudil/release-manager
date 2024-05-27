@@ -377,3 +377,83 @@ func TestReleaseService_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseService_SendReleaseNotification(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizeService, *svc.ProjectService, *svc.SettingsService, *slack.Client, *repo.ReleaseRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Send release notification",
+			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					SlackChannelID: "channel",
+				}, nil)
+				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
+				slackClient.On("SendReleaseNotificationAsync", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+			},
+			wantErr: false,
+		},
+		{
+			name: "Release not found",
+			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Slack integration not enabled",
+			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					SlackChannelID: "channel",
+				}, nil)
+				settingsSvc.On("GetSlackToken", mock.Anything).Return("", svcerrors.NewSlackIntegrationNotEnabledError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Project has no slack channel",
+			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					SlackChannelID: "",
+				}, nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			authSvc := new(svc.AuthorizeService)
+			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
+			releaseRepo := new(repo.ReleaseRepository)
+			slackClient := new(slack.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, slackClient, releaseRepo)
+
+			tc.mockSetup(authSvc, projectSvc, settingsSvc, slackClient, releaseRepo)
+
+			err := service.SendReleaseNotification(context.TODO(), uuid.New(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			authSvc.AssertExpectations(t)
+			projectSvc.AssertExpectations(t)
+			settingsSvc.AssertExpectations(t)
+			slackClient.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}

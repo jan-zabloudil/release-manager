@@ -18,6 +18,8 @@ func ToError(err error) *Error {
 		return NewUnprocessableEntityError().Wrap(err)
 	case isConflictError(err):
 		return NewConflictError().Wrap(err)
+	case isBadRequestError(err):
+		return NewBadRequestError().Wrap(err)
 	default:
 		return NewServerError().Wrap(err)
 	}
@@ -67,6 +69,11 @@ func isConflictError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseDuplicateTitle)
+}
+
+func isBadRequestError(err error) bool {
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotSetForProject) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled)
 }
 
 func isSvcErrorWithCode(err error, code string) bool {
