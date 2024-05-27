@@ -36,7 +36,8 @@ func isNotFoundError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepositoryInvalidURL) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotFound)
 }
 
 func isUnprocessableModelError(err error) bool {
@@ -50,7 +51,8 @@ func isUnprocessableModelError(err error) bool {
 
 func isUnauthorizedError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeUnauthorizedUnknownUser) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackClientUnauthorized)
 }
 
 func isForbiddenError(err error) bool {

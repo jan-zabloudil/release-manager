@@ -34,6 +34,8 @@ var (
 	ErrCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
 	ErrCodeReleaseDuplicateTitle                   = "ERR_RELEASE_DUPLICATE_TITLE"
 	ErrCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
+	ErrCodeSlackClientUnauthorized                 = "ERR_SLACK_CLIENT_UNAUTHORIZED"
+	ErrCodeSlackChannelNotFound                    = "ERR_SLACK_CHANNEL_NOT_FOUND"
 	ErrCodeGitTagNotFound                          = "ERR_GIT_TAG_NOT_FOUND"
 	ErrCodeGithubReleaseNotFound                   = "ERR_GITHUB_RELEASE_NOT_FOUND"
 )
@@ -247,6 +249,20 @@ func NewSlackIntegrationNotEnabledError() *Error {
 	return &Error{
 		Code:    ErrCodeSlackIntegrationNotEnabled,
 		Message: "Slack integration is not enabled.",
+	}
+}
+
+func NewSlackClientUnauthorizedError() *Error {
+	return &Error{
+		Code:    ErrCodeSlackClientUnauthorized,
+		Message: "Cannot send Slack message, client is not properly authenticated (invalid or expired token).",
+	}
+}
+
+func NewSlackChannelNotFoundError() *Error {
+	return &Error{
+		Code:    ErrCodeSlackChannelNotFound,
+		Message: "Slack channel not found.",
 	}
 }
 
