@@ -143,6 +143,23 @@ func (c *Client) ReadReleaseByTag(ctx context.Context, tkn string, repoURL url.U
 	return model.ToSvcGithubRelease(rls)
 }
 
+// GenerateGitTagURL generates a URL to the tag page on GitHub for a given repository and tag name
+func (c *Client) GenerateGitTagURL(repoURL url.URL, tagName string) (*url.URL, error) {
+	repo, err := model.ToGithubRepo(repoURL)
+	if err != nil {
+		return nil, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+	}
+
+	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", repo.OwnerSlug, repo.RepositorySlug, tagName)
+
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse URL: %w", err)
+	}
+
+	return u, nil
+}
+
 func (c *Client) getGithubClient(tkn string) *github.Client {
 	return github.NewClient(nil).WithAuthToken(tkn)
 }
