@@ -79,3 +79,16 @@ func (s *SettingsService) GetSlackToken(ctx context.Context) (string, error) {
 
 	return settings.Slack.Token, nil
 }
+
+func (s *SettingsService) GetGithubWebhookSecret(ctx context.Context) (string, error) {
+	settings, err := s.repository.Read(ctx)
+	if err != nil {
+		return "", fmt.Errorf("reading settings: %w", err)
+	}
+
+	if !settings.Github.Enabled {
+		return "", svcerrors.NewGithubIntegrationNotEnabledError()
+	}
+
+	return settings.Github.WebhookSecret, nil
+}
