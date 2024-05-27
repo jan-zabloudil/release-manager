@@ -9,13 +9,15 @@ import (
 )
 
 var (
-	errReleaseTitleRequired = errors.New("release title is required")
+	errReleaseTitleRequired  = errors.New("release title is required")
+	errReleaseGitTagRequired = errors.New("git tag name is required")
 )
 
 type CreateReleaseInput struct {
 	ReleaseTitle string
 	ReleaseNotes string
-	GitTagName   string // used for linking the release with a specific point in a git repository, TODO make this field required
+	// Used for linking the release with a specific point in a git repository.
+	GitTagName string
 }
 
 type UpdateReleaseInput struct {
@@ -35,6 +37,10 @@ type Release struct {
 }
 
 func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Release, error) {
+	if input.GitTagName == "" {
+		return Release{}, errReleaseGitTagRequired
+	}
+
 	now := time.Now()
 	r := Release{
 		ID:           uuid.New(),
