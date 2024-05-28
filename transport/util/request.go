@@ -12,6 +12,9 @@ import (
 
 const (
 	SignatureHeader = "X-Hub-Signature-256"
+	// GithubHookEvent is the header key for the GitHub webhook event type.
+	// Docs: https://docs.github.com/en/webhooks/webhook-events-and-payloads
+	GithubHookEvent = "X-GitHub-Event"
 )
 
 func GetUUIDFromURL(r *http.Request, key string) (uuid.UUID, error) {
