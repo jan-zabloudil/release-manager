@@ -4,8 +4,8 @@ type GithubReleaseWebhookInput struct {
 	Action  string `json:"action" required:"true"`
 	Release struct {
 		TagName string `json:"tag_name" required:"true"`
-		Name    string `json:"name"`
-		Body    string `json:"body"`
+		Name    string `json:"name" required:"true"`
+		Body    string `json:"body" required:"true"`
 	} `json:"release"`
 	Repo struct {
 		// Owner and repository slug of the GitHub repository separated by a slash

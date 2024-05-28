@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	"release-manager/pkg/validator"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
@@ -32,6 +33,11 @@ func (h *Handler) handleGithubReleaseWebhook(w http.ResponseWriter, r *http.Requ
 
 	var input model.GithubReleaseWebhookInput
 	if err := json.Unmarshal(body, &input); err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err))
+		return
+	}
+
+	if err := validator.Validate.Struct(input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err))
 		return
 	}
