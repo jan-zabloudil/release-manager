@@ -163,8 +163,9 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 		return fmt.Errorf("getting slack token: %w", err)
 	}
 
-	// TODO use synchronous notification sending
-	s.slackNotifier.SendReleaseNotificationAsync(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls))
+	if err := s.slackNotifier.SendReleaseNotification(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls)); err != nil {
+		return fmt.Errorf("sending slack notification: %w", err)
+	}
 
 	return nil
 }
