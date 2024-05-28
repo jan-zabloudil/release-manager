@@ -21,14 +21,14 @@ type Project struct {
 	Name                      string
 	SlackChannelID            string
 	ReleaseNotificationConfig ReleaseNotificationConfig
-	GithubRepositoryURL       url.URL
+	GithubRepositoryURL       url.URL // TODO remove this field
 	GithubRepo                *GithubRepo
 	CreatedAt                 time.Time
 	UpdatedAt                 time.Time
 }
 
 type GithubRepo struct {
-	HTMLURL   url.URL
+	URL       url.URL
 	OwnerSlug string
 	RepoSlug  string
 }
@@ -37,14 +37,14 @@ type CreateProjectInput struct {
 	Name                      string
 	SlackChannelID            string
 	ReleaseNotificationConfig ReleaseNotificationConfig
-	GithubRepositoryRawURL    string
+	GithubRepositoryRawURL    string // TODO remove this field
 }
 
 type UpdateProjectInput struct {
 	Name                            *string
 	SlackChannelID                  *string
 	ReleaseNotificationConfigUpdate UpdateReleaseNotificationConfigInput
-	GithubRepositoryRawURL          *string
+	GithubRepositoryRawURL          *string // TODO remove this field
 }
 
 type ReleaseNotificationConfig struct {
@@ -87,6 +87,11 @@ func NewProject(c CreateProjectInput) (Project, error) {
 	}
 
 	return p, nil
+}
+
+func (p *Project) SetGithubRepo(repo *GithubRepo) {
+	p.GithubRepo = repo
+	p.UpdatedAt = time.Now()
 }
 
 type UpdateProjectFunc func(p Project) (Project, error)

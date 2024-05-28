@@ -59,7 +59,10 @@ func (h *Handler) setupRoutes() {
 					r.Patch("/", middleware.RequireAuthUser(h.updateMemberRole))
 				})
 			})
-			r.Get("/repository/tags", middleware.RequireAuthUser(h.listGithubRepositoryTags))
+			r.Route("/github-repository", func(r chi.Router) {
+				r.Post("/", middleware.RequireAuthUser(h.setGithubRepoForProject))
+				r.Get("/tags", middleware.RequireAuthUser(h.listGithubRepositoryTags))
+			})
 			r.Route("/releases", func(r chi.Router) {
 				r.Get("/", middleware.RequireAuthUser(h.listReleases))
 				r.Post("/", middleware.RequireAuthUser(h.createRelease))

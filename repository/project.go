@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"release-manager/pkg/crypto"
 	"release-manager/repository/model"
@@ -49,7 +50,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig), // converted to the struct with json tags (the field is saved as json in the database)
 		"createdAt":                 p.CreatedAt,
 		"updatedAt":                 p.UpdatedAt,
-		"githubRepositoryURL":       p.GithubRepositoryURL.String(),
+		"githubRepositoryURL":       p.GithubRepositoryURL.String(), // TODO remove
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create project: %w", err)
@@ -139,14 +140,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 		return svcmodel.Project{}, err
 	}
 
-	_, err = tx.Exec(ctx, query.UpdateProject, pgx.NamedArgs{
-		"id":                        p.ID,
-		"name":                      p.Name,
-		"slackChannelID":            p.SlackChannelID,
-		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig), // converted to the struct with json tags (the field is saved as json in the database)
-		"githubRepositoryURL":       p.GithubRepositoryURL.String(),
-		"updatedAt":                 p.UpdatedAt,
-	})
+	_, err = tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p))
 	if err != nil {
 		return svcmodel.Project{}, fmt.Errorf("failed to update project: %w", err)
 	}
@@ -529,4 +523,27 @@ func (r *ProjectRepository) UpdateMemberRole(
 	}
 
 	return m, err
+}
+
+func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
+	var ownerSlug, repoSlug *string
+	var repoURL *url.URL
+	if p.GithubRepo != nil {
+		ownerSlug = &p.GithubRepo.OwnerSlug
+		repoSlug = &p.GithubRepo.RepoSlug
+		repoURL = &p.GithubRepo.URL
+	}
+
+	return pgx.NamedArgs{
+		"id":             p.ID,
+		"name":           p.Name,
+		"slackChannelID": p.SlackChannelID,
+		// Converted to the struct with json tags (the field is saved as json in the database).
+		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
+		"githubRepositoryURL":       p.GithubRepositoryURL.String(), // TODO remove
+		"githubOwnerSlug":           ownerSlug,
+		"githubRepoSlug":            repoSlug,
+		"githubRepoURL":             repoURL.String(),
+		"updatedAt":                 p.UpdatedAt,
+	}
 }

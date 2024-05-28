@@ -29,10 +29,10 @@ type GithubRepo struct {
 	RepositorySlug string
 }
 
-func ToSvcGithubRepo(rawURL string) (svcmodel.GithubRepo, error) {
+func ParseGithubRepoURL(rawURL string) (ownerSlug, repoSlug string, err error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
-		return svcmodel.GithubRepo{}, err
+		return "", "", err
 	}
 
 	// GitHub repo URL format: https://github.com/owner/repo,
@@ -41,18 +41,14 @@ func ToSvcGithubRepo(rawURL string) (svcmodel.GithubRepo, error) {
 	slugs := strings.Split(path, "/")
 
 	if len(slugs) != expectedGithubRepositoryURLSlugCount {
-		return svcmodel.GithubRepo{}, errInvalidGithubRepoURLPath
+		return "", "", errInvalidGithubRepoURLPath
 	}
 
 	if slugs[0] == "" || slugs[1] == "" {
-		return svcmodel.GithubRepo{}, errInvalidGithubRepoURLPath
+		return "", "", errInvalidGithubRepoURLPath
 	}
 
-	return svcmodel.GithubRepo{
-		HTMLURL:   *u,
-		OwnerSlug: slugs[0],
-		RepoSlug:  slugs[1],
-	}, nil
+	return slugs[0], slugs[1], nil
 }
 
 func ToGithubRepo(u url.URL) (GithubRepo, error) {
