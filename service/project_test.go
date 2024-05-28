@@ -22,7 +22,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 	testCases := []struct {
 		name      string
 		project   model.CreateProjectInput
-		mockSetup func(*svc.AuthorizeService, *svc.SettingsService, *svc.UserService, *repo.ProjectRepository)
+		mockSetup func(*svc.AuthorizeService, *svc.SettingsService, *svc.UserService, *githubmock.Client, *repo.ProjectRepository)
 		wantErr   bool
 	}{
 		{
@@ -32,9 +32,10 @@ func TestProjectService_CreateProject(t *testing.T) {
 				SlackChannelID:            "c1234",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{},
 			},
-			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settings.On("GetDefaultReleaseMessage", mock.Anything).Return("message", nil)
+				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -47,8 +48,9 @@ func TestProjectService_CreateProject(t *testing.T) {
 				SlackChannelID:            "c1234",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{Message: "test message"},
 			},
-			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -61,8 +63,9 @@ func TestProjectService_CreateProject(t *testing.T) {
 				SlackChannelID:            "c1234",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{Message: "", ShowProjectName: true},
 			},
-			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 			},
 			wantErr: true,
 		},
@@ -73,8 +76,9 @@ func TestProjectService_CreateProject(t *testing.T) {
 				SlackChannelID:            "",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{Message: "test message"},
 			},
-			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 			},
 			wantErr: true,
 		},
@@ -86,8 +90,9 @@ func TestProjectService_CreateProject(t *testing.T) {
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{Message: "test message"},
 				GithubRepositoryRawURL:    "https://github.com/owner",
 			},
-			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, projectRepo *repo.ProjectRepository) {
+			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 			},
 			wantErr: true,
 		},
@@ -103,7 +108,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			authSvc := new(svc.AuthorizeService)
 			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
-			tc.mockSetup(authSvc, settingsSvc, userSvc, projectRepo)
+			tc.mockSetup(authSvc, settingsSvc, userSvc, github, projectRepo)
 
 			_, err := service.CreateProject(context.Background(), tc.project, uuid.New())
 
@@ -117,6 +122,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			projectRepo.AssertExpectations(t)
 			userSvc.AssertExpectations(t)
 			authSvc.AssertExpectations(t)
+			github.AssertExpectations(t)
 		})
 	}
 }

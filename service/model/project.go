@@ -22,8 +22,15 @@ type Project struct {
 	SlackChannelID            string
 	ReleaseNotificationConfig ReleaseNotificationConfig
 	GithubRepositoryURL       url.URL
+	GithubRepo                *GithubRepo
 	CreatedAt                 time.Time
 	UpdatedAt                 time.Time
+}
+
+type GithubRepo struct {
+	HTMLURL   url.URL
+	OwnerSlug string
+	RepoSlug  string
 }
 
 type CreateProjectInput struct {
