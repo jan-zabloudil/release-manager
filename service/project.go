@@ -53,6 +53,13 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 		c.ReleaseNotificationConfig = defaultCfg
 	}
 
+	// TODO pass it to model.NewProject
+	// TODO update also service update project method
+	_, err := s.githubManager.GetGithubRepoFromRawURL(c.GithubRepositoryRawURL)
+	if err != nil {
+		return model.Project{}, fmt.Errorf("getting GitHub repo from URL: %w", err)
+	}
+
 	p, err := model.NewProject(c)
 	if err != nil {
 		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())

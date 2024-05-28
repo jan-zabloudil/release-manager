@@ -24,6 +24,15 @@ func NewClient() *Client {
 	return &Client{}
 }
 
+func (c *Client) GetGithubRepoFromRawURL(rawURL string) (svcmodel.GithubRepo, error) {
+	repo, err := model.ToSvcGithubRepo(rawURL)
+	if err != nil {
+		return svcmodel.GithubRepo{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+	}
+
+	return repo, nil
+}
+
 func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {
 	repo, err := model.ToGithubRepo(repoURL)
 	if err != nil {
