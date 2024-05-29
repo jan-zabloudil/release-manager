@@ -16,7 +16,6 @@ type Project struct {
 	Name                      string                    `db:"name"`
 	SlackChannelID            string                    `db:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `db:"release_notification_config"`
-	GithubRepositoryURL       string                    `db:"github_repository_url"` // TODO remove this field
 	GithubOwnerSlug           sql.NullString            `db:"github_owner_slug"`
 	GithubRepoSlug            sql.NullString            `db:"github_repo_slug"`
 	GithubRepoURL             sql.NullString            `db:"github_repo_url"`
@@ -34,11 +33,6 @@ type ReleaseNotificationConfig struct {
 }
 
 func ToSvcProject(p Project) (svcmodel.Project, error) {
-	u, err := url.Parse(p.GithubRepositoryURL)
-	if err != nil {
-		return svcmodel.Project{}, err
-	}
-
 	var githubRepo *svcmodel.GithubRepo
 	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid && p.GithubRepoURL.Valid {
 		u, err := url.Parse(p.GithubRepoURL.String)
@@ -58,7 +52,6 @@ func ToSvcProject(p Project) (svcmodel.Project, error) {
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepoURL:             *u, // TODO remove
 		GithubRepo:                githubRepo,
 		CreatedAt:                 p.CreatedAt,
 		UpdatedAt:                 p.UpdatedAt,

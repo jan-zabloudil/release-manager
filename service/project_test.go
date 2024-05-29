@@ -78,19 +78,6 @@ func TestProjectService_CreateProject(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "Invalid project - invalid github repository url",
-			project: model.CreateProjectInput{
-				Name:                      "",
-				SlackChannelID:            "",
-				ReleaseNotificationConfig: model.ReleaseNotificationConfig{Message: "test message"},
-				GithubRepoRawURL:          "https://github.com/owner",
-			},
-			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-			},
-			wantErr: true,
-		},
 	}
 
 	for _, tc := range testCases {
