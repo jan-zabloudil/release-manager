@@ -5,14 +5,15 @@ import (
 	"io"
 	"net/http"
 
+	"release-manager/pkg/validator"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
 
 const (
-	githubReleaseWebhookEditedAction  = "edited"
-	githubReleaseWebhookDeletedAction = "deleted"
+	githubWebhookDeleteEventName = "delete"
+	gitRefTypeTag                = "tag"
 )
 
 func (h *Handler) handleGithubReleaseWebhook(w http.ResponseWriter, r *http.Request) {
@@ -30,17 +31,19 @@ func (h *Handler) handleGithubReleaseWebhook(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var input model.GithubReleaseWebhookInput
+	var input model.GithubRefWebhookInput
 	if err := json.Unmarshal(body, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err))
 		return
 	}
 
-	switch input.Action {
-	case githubReleaseWebhookEditedAction:
-		// TODO call the service to update the release
-	case githubReleaseWebhookDeletedAction:
-		// TODO call the service to delete the release
+	if err := validator.Validate.Struct(input); err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err))
+		return
+	}
+
+	if r.Header.Get(util.GithubHookEvent) == githubWebhookDeleteEventName && input.RefType == gitRefTypeTag {
+		panic("implement me: handle the case when a tag is deleted")
 	}
 
 	w.WriteHeader(http.StatusOK)
