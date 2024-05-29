@@ -165,9 +165,9 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 		return fmt.Errorf("getting Github token: %w", err)
 	}
 
-	repo, err := s.githubManager.ReadRepository(ctx, tkn, rawRepoURL)
+	repo, err := s.githubManager.ReadRepo(ctx, tkn, rawRepoURL)
 	if err != nil {
-		return fmt.Errorf("reading github repository: %w", err)
+		return fmt.Errorf("reading github repo: %w", err)
 	}
 
 	_, err = s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
@@ -175,7 +175,7 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 		return p, nil
 	})
 	if err != nil {
-		return fmt.Errorf("updating project with Github repository: %w", err)
+		return fmt.Errorf("updating project with Github repo: %w", err)
 	}
 
 	return nil
@@ -277,7 +277,7 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 	return nil
 }
 
-func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
+func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -293,12 +293,12 @@ func (s *ProjectService) ListGithubRepositoryTags(ctx context.Context, projectID
 	}
 
 	if !project.IsGithubConfigured() {
-		return nil, svcerrors.NewGithubRepositoryNotConfiguredForProjectError()
+		return nil, svcerrors.NewGithubRepoNotConfiguredForProjectError()
 	}
 
-	t, err := s.githubManager.ReadTagsForRepository(ctx, tkn, project.GithubRepositoryURL)
+	t, err := s.githubManager.ReadTagsForRepo(ctx, tkn, project.GithubRepoURL)
 	if err != nil {
-		return nil, fmt.Errorf("reading tags for github repository: %w", err)
+		return nil, fmt.Errorf("reading tags for github repo: %w", err)
 	}
 
 	return t, nil

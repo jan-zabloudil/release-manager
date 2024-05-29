@@ -83,8 +83,8 @@ type projectGetter interface {
 }
 
 type githubManager interface {
-	ReadRepository(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
-	ReadTagsForRepository(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
+	ReadRepo(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
+	ReadTagsForRepo(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
 }
 
 type emailSender interface {

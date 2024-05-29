@@ -24,7 +24,7 @@ type projectService interface {
 	DeleteEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) error
 	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
 
-	ListGithubRepositoryTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.GitTag, error)
+	ListGithubRepoTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.GitTag, error)
 
 	Invite(ctx context.Context, c svcmodel.CreateProjectInvitationInput, authUserID uuid.UUID) (svcmodel.ProjectInvitation, error)
 	ListInvitations(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectInvitation, error)

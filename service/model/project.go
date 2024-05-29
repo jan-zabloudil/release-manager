@@ -21,7 +21,7 @@ type Project struct {
 	Name                      string
 	SlackChannelID            string
 	ReleaseNotificationConfig ReleaseNotificationConfig
-	GithubRepositoryURL       url.URL // TODO remove this field
+	GithubRepoURL             url.URL // TODO remove this field
 	GithubRepo                *GithubRepo
 	CreatedAt                 time.Time
 	UpdatedAt                 time.Time
@@ -37,14 +37,14 @@ type CreateProjectInput struct {
 	Name                      string
 	SlackChannelID            string
 	ReleaseNotificationConfig ReleaseNotificationConfig
-	GithubRepositoryRawURL    string // TODO remove this field
+	GithubRepoRawURL          string // TODO remove this field
 }
 
 type UpdateProjectInput struct {
 	Name                            *string
 	SlackChannelID                  *string
 	ReleaseNotificationConfigUpdate UpdateReleaseNotificationConfigInput
-	GithubRepositoryRawURL          *string // TODO remove this field
+	GithubRepoRawURL                *string // TODO remove this field
 }
 
 type ReleaseNotificationConfig struct {
@@ -66,7 +66,7 @@ type UpdateReleaseNotificationConfigInput struct {
 }
 
 func NewProject(c CreateProjectInput) (Project, error) {
-	u, err := url.Parse(c.GithubRepositoryRawURL)
+	u, err := url.Parse(c.GithubRepoRawURL)
 	if err != nil {
 		return Project{}, errProjectGithubRepoURLCannotBeParsed
 	}
@@ -77,7 +77,7 @@ func NewProject(c CreateProjectInput) (Project, error) {
 		Name:                      c.Name,
 		SlackChannelID:            c.SlackChannelID,
 		ReleaseNotificationConfig: c.ReleaseNotificationConfig,
-		GithubRepositoryURL:       *u,
+		GithubRepoURL:             *u,
 		CreatedAt:                 now,
 		UpdatedAt:                 now,
 	}
@@ -97,13 +97,13 @@ func (p *Project) SetGithubRepo(repo *GithubRepo) {
 type UpdateProjectFunc func(p Project) (Project, error)
 
 func (p *Project) Update(u UpdateProjectInput) error {
-	if u.GithubRepositoryRawURL != nil {
-		u, err := url.Parse(*u.GithubRepositoryRawURL)
+	if u.GithubRepoRawURL != nil {
+		u, err := url.Parse(*u.GithubRepoRawURL)
 		if err != nil {
 			return errProjectGithubRepoURLCannotBeParsed
 		}
 
-		p.GithubRepositoryURL = *u
+		p.GithubRepoURL = *u
 	}
 	if u.Name != nil {
 		p.Name = *u.Name
@@ -131,7 +131,7 @@ func (p *Project) IsSlackChannelSet() bool {
 }
 
 func (p *Project) IsGithubConfigured() bool {
-	return p.GithubRepositoryURL != (url.URL{})
+	return p.GithubRepoURL != (url.URL{})
 }
 
 func (c *ReleaseNotificationConfig) Update(u UpdateReleaseNotificationConfigInput) {

@@ -35,10 +35,10 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) ReadRepository(ctx context.Context, tkn string, rawRepoURL string) (svcmodel.GithubRepo, error) {
+func (c *Client) ReadRepo(ctx context.Context, tkn string, rawRepoURL string) (svcmodel.GithubRepo, error) {
 	ownerSlug, repoSlug, err := model.ParseGithubRepoURL(rawRepoURL)
 	if err != nil {
-		return svcmodel.GithubRepo{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+		return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
 	// Docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
@@ -52,7 +52,7 @@ func (c *Client) ReadRepository(ctx context.Context, tkn string, rawRepoURL stri
 			case http.StatusForbidden:
 				return svcmodel.GithubRepo{}, svcerrors.NewGithubClientForbiddenError().Wrap(err)
 			case http.StatusNotFound:
-				return svcmodel.GithubRepo{}, svcerrors.NewGithubRepositoryNotFoundError().Wrap(err)
+				return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
 			}
 		}
 
@@ -61,7 +61,7 @@ func (c *Client) ReadRepository(ctx context.Context, tkn string, rawRepoURL stri
 
 	u, err := url.Parse(repo.GetHTMLURL())
 	if err != nil {
-		return svcmodel.GithubRepo{}, fmt.Errorf("failed to parse repository URL: %w", err)
+		return svcmodel.GithubRepo{}, fmt.Errorf("failed to parse repo URL: %w", err)
 	}
 
 	return svcmodel.GithubRepo{
@@ -71,10 +71,10 @@ func (c *Client) ReadRepository(ctx context.Context, tkn string, rawRepoURL stri
 	}, nil
 }
 
-func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {
+func (c *Client) ReadTagsForRepo(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {
 	repo, err := model.ToGithubRepo(repoURL)
 	if err != nil {
-		return nil, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
+		return nil, svcerrors.NewGithubRepoInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
 	// Up to 100 tags can be fetched per page
@@ -95,7 +95,7 @@ func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL 
 			case http.StatusForbidden:
 				return nil, svcerrors.NewGithubClientForbiddenError().Wrap(err)
 			case http.StatusNotFound:
-				return nil, svcerrors.NewGithubRepositoryNotFoundError().Wrap(err)
+				return nil, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
 			}
 		}
 
