@@ -399,7 +399,7 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 					SlackChannelID: "channel",
 				}, nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
-				slackClient.On("SendReleaseNotificationAsync", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+				slackClient.On("SendReleaseNotification", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
