@@ -81,20 +81,3 @@ func ToSvcGitTags(tags []*github.RepositoryTag) []svcmodel.GitTag {
 
 	return t
 }
-
-func ToSvcGithubRelease(release *github.RepositoryRelease) (svcmodel.GithubRelease, error) {
-	u, err := url.Parse(release.GetHTMLURL())
-	if err != nil {
-		return svcmodel.GithubRelease{}, err
-	}
-
-	return svcmodel.GithubRelease{
-		ID:          release.GetID(),
-		Name:        release.GetName(),
-		Body:        release.GetBody(),
-		HTMLURL:     *u,
-		TagName:     release.GetTagName(),
-		CreatedAt:   release.CreatedAt.Time,
-		PublishedAt: release.PublishedAt.Time,
-	}, nil
-}

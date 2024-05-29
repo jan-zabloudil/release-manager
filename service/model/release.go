@@ -33,7 +33,8 @@ type Release struct {
 	AuthorUserID uuid.UUID
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	// TODO add source code link
+	GitTagName   string
+	GitTagURL    url.URL
 }
 
 func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Release, error) {
@@ -106,14 +107,4 @@ func NewReleaseNotification(p Project, r Release) ReleaseNotification {
 	}
 
 	return n
-}
-
-type GithubRelease struct {
-	ID          int64 // GitHub release ID
-	Name        string
-	Body        string
-	TagName     string  // Git tag associated with the release
-	HTMLURL     url.URL // URL to the release page on GitHub
-	CreatedAt   time.Time
-	PublishedAt time.Time
 }
