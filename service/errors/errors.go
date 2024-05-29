@@ -7,37 +7,37 @@ import (
 )
 
 var (
-	ErrCodeUnauthorizedUnknownUser                 = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
-	ErrCodeForbiddenInsufficientUserRole           = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
-	ErrCodeForbiddenInsufficientProjectRole        = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
-	ErrCodeForbiddenUserNotProjectMember           = "ERR_FORBIDDEN_USER_NOT_PROJECT_MEMBER"
-	ErrCodeUserNotFound                            = "ERR_USER_NOT_FOUND"
-	ErrCodeProjectNotFound                         = "ERR_PROJECT_NOT_FOUND"
-	ErrCodeEnvironmentNotFound                     = "ERR_ENVIRONMENT_NOT_FOUND"
-	ErrCodeProjectUnprocessable                    = "ERR_PROJECT_UNPROCESSABLE"
-	ErrCodeEnvironmentUnprocessable                = "ERR_ENVIRONMENT_UNPROCESSABLE"
-	ErrCodeEnvironmentDuplicateName                = "ERR_ENVIRONMENT_DUPLICATE_NAME"
-	ErrCodeSettingsUnprocessable                   = "ERR_SETTINGS_UNPROCESSABLE"
-	ErrCodeProjectInvitationUnprocessable          = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
-	ErrCodeProjectInvitationAlreadyExists          = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
-	ErrCodeProjectInvitationNotFound               = "ERR_PROJECT_INVITATION_NOT_FOUND"
-	ErrCodeProjectMemberAlreadyExists              = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
-	ErrCodeGithubIntegrationNotEnabled             = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
-	ErrCodeGithubClientUnauthorized                = "ERR_GITHUB_CLIENT_UNAUTHORIZED"
-	ErrCodeGithubClientForbidden                   = "ERR_GITHUB_CLIENT_FORBIDDEN"
-	ErrCodeGithubRepositoryNotConfiguredForProject = "ERR_GITHUB_REPOSITORY_NOT_CONFIGURED_FOR_PROJECT"
-	ErrCodeGithubRepositoryNotFound                = "ERR_GITHUB_REPOSITORY_NOT_FOUND"
-	ErrCodeGithubRepositoryInvalidURL              = "ERR_GITHUB_REPOSITORY_INVALID_URL"
-	ErrCodeProjectMemberNotFound                   = "ERR_PROJECT_MEMBER_NOT_FOUND"
-	ErrCodeProjectMemberUnprocessable              = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
-	ErrCodeReleaseUnprocessable                    = "ERR_RELEASE_UNPROCESSABLE"
-	ErrCodeReleaseNotFound                         = "ERR_RELEASE_NOT_FOUND"
-	ErrCodeSlackIntegrationNotEnabled              = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
-	ErrCodeSlackClientUnauthorized                 = "ERR_SLACK_CLIENT_UNAUTHORIZED"
-	ErrCodeSlackChannelNotFound                    = "ERR_SLACK_CHANNEL_NOT_FOUND"
-	ErrCodeSlackChannelNotSetForProject            = "ERR_SLACK_CHANNEL_NOT_SET_FOR_PROJECT"
-	ErrCodeGitTagNotFound                          = "ERR_GIT_TAG_NOT_FOUND"
-	ErrCodeGithubReleaseNotFound                   = "ERR_GITHUB_RELEASE_NOT_FOUND"
+	ErrCodeUnauthorizedUnknownUser           = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
+	ErrCodeForbiddenInsufficientUserRole     = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
+	ErrCodeForbiddenInsufficientProjectRole  = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
+	ErrCodeForbiddenUserNotProjectMember     = "ERR_FORBIDDEN_USER_NOT_PROJECT_MEMBER"
+	ErrCodeUserNotFound                      = "ERR_USER_NOT_FOUND"
+	ErrCodeProjectNotFound                   = "ERR_PROJECT_NOT_FOUND"
+	ErrCodeEnvironmentNotFound               = "ERR_ENVIRONMENT_NOT_FOUND"
+	ErrCodeProjectUnprocessable              = "ERR_PROJECT_UNPROCESSABLE"
+	ErrCodeEnvironmentUnprocessable          = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	ErrCodeEnvironmentDuplicateName          = "ERR_ENVIRONMENT_DUPLICATE_NAME"
+	ErrCodeSettingsUnprocessable             = "ERR_SETTINGS_UNPROCESSABLE"
+	ErrCodeProjectInvitationUnprocessable    = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
+	ErrCodeProjectInvitationAlreadyExists    = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
+	ErrCodeProjectInvitationNotFound         = "ERR_PROJECT_INVITATION_NOT_FOUND"
+	ErrCodeProjectMemberAlreadyExists        = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
+	ErrCodeGithubIntegrationNotEnabled       = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
+	ErrCodeGithubClientUnauthorized          = "ERR_GITHUB_CLIENT_UNAUTHORIZED"
+	ErrCodeGithubClientForbidden             = "ERR_GITHUB_CLIENT_FORBIDDEN"
+	ErrCodeGithubRepoNotConfiguredForProject = "ERR_GITHUB_REPO_NOT_CONFIGURED_FOR_PROJECT"
+	ErrCodeGithubRepoNotFound                = "ERR_GITHUB_REPO_NOT_FOUND"
+	ErrCodeGithubRepoInvalidURL              = "ERR_GITHUB_REPO_INVALID_URL"
+	ErrCodeProjectMemberNotFound             = "ERR_PROJECT_MEMBER_NOT_FOUND"
+	ErrCodeProjectMemberUnprocessable        = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
+	ErrCodeReleaseUnprocessable              = "ERR_RELEASE_UNPROCESSABLE"
+	ErrCodeReleaseNotFound                   = "ERR_RELEASE_NOT_FOUND"
+	ErrCodeSlackIntegrationNotEnabled        = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
+	ErrCodeSlackClientUnauthorized           = "ERR_SLACK_CLIENT_UNAUTHORIZED"
+	ErrCodeSlackChannelNotFound              = "ERR_SLACK_CHANNEL_NOT_FOUND"
+	ErrCodeSlackChannelNotSetForProject      = "ERR_SLACK_CHANNEL_NOT_SET_FOR_PROJECT"
+	ErrCodeGitTagNotFound                    = "ERR_GIT_TAG_NOT_FOUND"
+	ErrCodeGithubReleaseNotFound             = "ERR_GITHUB_RELEASE_NOT_FOUND"
 )
 
 type Error struct {
@@ -168,10 +168,10 @@ func NewProjectMemberAlreadyExistsError() *Error {
 	}
 }
 
-func NewGithubRepositoryInvalidURL() *Error {
+func NewGithubRepoInvalidURL() *Error {
 	return &Error{
-		Code:    ErrCodeGithubRepositoryInvalidURL,
-		Message: "Invalid Github repository URL.",
+		Code:    ErrCodeGithubRepoInvalidURL,
+		Message: "Invalid Github repo URL.",
 	}
 }
 
@@ -182,10 +182,10 @@ func NewGithubIntegrationNotEnabledError() *Error {
 	}
 }
 
-func NewGithubRepositoryNotConfiguredForProjectError() *Error {
+func NewGithubRepoNotConfiguredForProjectError() *Error {
 	return &Error{
-		Code:    ErrCodeGithubRepositoryNotConfiguredForProject,
-		Message: "Github repository is not configured for the project.",
+		Code:    ErrCodeGithubRepoNotConfiguredForProject,
+		Message: "Github repo is not configured for the project.",
 	}
 }
 
@@ -203,10 +203,10 @@ func NewGithubClientForbiddenError() *Error {
 	}
 }
 
-func NewGithubRepositoryNotFoundError() *Error {
+func NewGithubRepoNotFoundError() *Error {
 	return &Error{
-		Code:    ErrCodeGithubRepositoryNotFound,
-		Message: "Github repository not found among accessible repositories.",
+		Code:    ErrCodeGithubRepoNotFound,
+		Message: "Github repo not found among accessible repos.",
 	}
 }
 
@@ -285,12 +285,12 @@ func IsNotFoundError(err error) bool {
 		isErrorWithCode(err, ErrCodeProjectNotFound) ||
 		isErrorWithCode(err, ErrCodeEnvironmentNotFound) ||
 		isErrorWithCode(err, ErrCodeProjectInvitationNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubRepositoryNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubRepositoryNotConfiguredForProject) ||
+		isErrorWithCode(err, ErrCodeGithubRepoNotFound) ||
+		isErrorWithCode(err, ErrCodeGithubRepoNotConfiguredForProject) ||
 		isErrorWithCode(err, ErrCodeGithubIntegrationNotEnabled) ||
 		isErrorWithCode(err, ErrCodeProjectMemberNotFound) ||
 		isErrorWithCode(err, ErrCodeGithubIntegrationNotEnabled) ||
-		isErrorWithCode(err, ErrCodeGithubRepositoryInvalidURL) ||
+		isErrorWithCode(err, ErrCodeGithubRepoInvalidURL) ||
 		isErrorWithCode(err, ErrCodeReleaseNotFound) ||
 		isErrorWithCode(err, ErrCodeGitTagNotFound) ||
 		isErrorWithCode(err, ErrCodeGithubReleaseNotFound)

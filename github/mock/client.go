@@ -13,12 +13,12 @@ type Client struct {
 	mock.Mock
 }
 
-func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {
+func (c *Client) ReadTagsForRepo(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {
 	args := c.Called(ctx, tkn, repoURL)
 	return args.Get(0).([]svcmodel.GitTag), args.Error(1)
 }
 
-func (c *Client) ReadRepository(ctx context.Context, tkn string, rawRepoURL string) (svcmodel.GithubRepo, error) {
+func (c *Client) ReadRepo(ctx context.Context, tkn string, rawRepoURL string) (svcmodel.GithubRepo, error) {
 	args := c.Called(ctx, tkn, rawRepoURL)
 	return args.Get(0).(svcmodel.GithubRepo), args.Error(1)
 }

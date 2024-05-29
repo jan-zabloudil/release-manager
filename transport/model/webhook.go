@@ -6,7 +6,7 @@ type GithubRefWebhookInput struct {
 	// RefType is the type of the reference (e.g. "branch" or "tag")
 	RefType string `json:"ref_type" required:"true"`
 	Repo    struct {
-		// Owner and repository slug of the GitHub repository separated by a slash
+		// Owner and repo slug of the GitHub repo separated by a slash
 		// (e.g. "owner/repo")
 		Slugs string `json:"full_name"`
 	} `json:"repository"`

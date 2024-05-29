@@ -43,7 +43,7 @@ func ToSvcProject(p Project) (svcmodel.Project, error) {
 	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid && p.GithubRepoURL.Valid {
 		u, err := url.Parse(p.GithubRepoURL.String)
 		if err != nil {
-			return svcmodel.Project{}, fmt.Errorf("failed to parse github repository URL: %w", err)
+			return svcmodel.Project{}, fmt.Errorf("failed to parse github repo URL: %w", err)
 		}
 
 		githubRepo = &svcmodel.GithubRepo{
@@ -58,7 +58,7 @@ func ToSvcProject(p Project) (svcmodel.Project, error) {
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepositoryURL:       *u, // TODO remove
+		GithubRepoURL:             *u, // TODO remove
 		GithubRepo:                githubRepo,
 		CreatedAt:                 p.CreatedAt,
 		UpdatedAt:                 p.UpdatedAt,

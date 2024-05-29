@@ -79,8 +79,8 @@ func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) listGithubRepositoryTags(w http.ResponseWriter, r *http.Request) {
-	t, err := h.ProjectSvc.ListGithubRepositoryTags(
+func (h *Handler) listGithubRepoTags(w http.ResponseWriter, r *http.Request) {
+	t, err := h.ProjectSvc.ListGithubRepoTags(
 		r.Context(),
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),

@@ -12,14 +12,14 @@ type CreateProjectInput struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepositoryURL       string                    `json:"github_repository_url"` // TODO remove
+	GithubRepoURL             string                    `json:"github_repository_url"` // TODO remove
 }
 
 type UpdateProjectInput struct {
 	Name                      *string                              `json:"name"`
 	SlackChannelID            *string                              `json:"slack_channel_id"`
 	ReleaseNotificationConfig UpdateReleaseNotificationConfigInput `json:"release_notification_config"`
-	GithubRepositoryURL       *string                              `json:"github_repository_url"` // TODO remove
+	GithubRepoURL             *string                              `json:"github_repository_url"` // TODO remove
 }
 
 type SetProjectGithubRepoInput struct {
@@ -31,7 +31,7 @@ type Project struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepository          string                    `json:"github_repository_url"` // TODO remove this field
+	GithubRepo                string                    `json:"github_repository_url"` // TODO remove this field
 	CreatedAt                 time.Time                 `json:"created_at"`
 	UpdatedAt                 time.Time                 `json:"updated_at"`
 }
@@ -59,7 +59,7 @@ func ToSvcCreateProjectInput(c CreateProjectInput) svcmodel.CreateProjectInput {
 		Name:                      c.Name,
 		SlackChannelID:            c.SlackChannelID,
 		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(c.ReleaseNotificationConfig),
-		GithubRepositoryRawURL:    c.GithubRepositoryURL,
+		GithubRepoRawURL:          c.GithubRepoURL,
 	}
 }
 
@@ -68,7 +68,7 @@ func ToSvcUpdateProjectInput(u UpdateProjectInput) svcmodel.UpdateProjectInput {
 		Name:                            u.Name,
 		SlackChannelID:                  u.SlackChannelID,
 		ReleaseNotificationConfigUpdate: svcmodel.UpdateReleaseNotificationConfigInput(u.ReleaseNotificationConfig),
-		GithubRepositoryRawURL:          u.GithubRepositoryURL,
+		GithubRepoRawURL:                u.GithubRepoURL,
 	}
 }
 
@@ -78,7 +78,7 @@ func ToProject(p svcmodel.Project) Project {
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepository:          p.GithubRepositoryURL.String(),
+		GithubRepo:                p.GithubRepoURL.String(),
 		CreatedAt:                 p.CreatedAt,
 		UpdatedAt:                 p.UpdatedAt,
 	}

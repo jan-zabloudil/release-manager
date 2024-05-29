@@ -84,7 +84,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 				Name:                      "",
 				SlackChannelID:            "",
 				ReleaseNotificationConfig: model.ReleaseNotificationConfig{Message: "test message"},
-				GithubRepositoryRawURL:    "https://github.com/owner",
+				GithubRepoRawURL:          "https://github.com/owner",
 			},
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)

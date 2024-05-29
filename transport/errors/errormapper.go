@@ -30,12 +30,12 @@ func isNotFoundError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepositoryNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepositoryNotConfiguredForProject) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepoNotFound) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepoNotConfiguredForProject) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepositoryInvalidURL) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound) ||
