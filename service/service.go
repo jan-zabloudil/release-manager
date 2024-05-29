@@ -92,7 +92,6 @@ type emailSender interface {
 }
 
 type slackNotifier interface {
-	SendReleaseNotificationAsync(ctx context.Context, token, channel string, notification model.ReleaseNotification)
 	SendReleaseNotification(ctx context.Context, token, channel string, notification model.ReleaseNotification) error
 }
 

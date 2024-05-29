@@ -8,8 +8,6 @@ import (
 	"release-manager/service/model"
 
 	"github.com/slack-go/slack"
-	"go.strv.io/background"
-	"go.strv.io/background/task"
 )
 
 const (
@@ -17,25 +15,13 @@ const (
 	errChannelNotFound = "channel_not_found"
 )
 
-type Client struct {
-	taskManager *background.Manager
-}
+type Client struct{}
 
-func NewClient(manager *background.Manager) *Client {
-	return &Client{
-		taskManager: manager,
-	}
-}
-
-func (c *Client) SendReleaseNotificationAsync(ctx context.Context, token, channelID string, n model.ReleaseNotification) {
-	c.sendMessageAsync(ctx, token, channelID, c.buildReleaseNotificationMsgOptions(n))
+func NewClient() *Client {
+	return &Client{}
 }
 
 func (c *Client) SendReleaseNotification(ctx context.Context, token, channelID string, n model.ReleaseNotification) error {
-	return c.sendMessage(ctx, token, channelID, c.buildReleaseNotificationMsgOptions(n))
-}
-
-func (c *Client) buildReleaseNotificationMsgOptions(n model.ReleaseNotification) []slack.MsgOption {
 	msgOptions := NewMsgOptionsBuilder().
 		SetMessage(n.Message)
 
@@ -49,21 +35,7 @@ func (c *Client) buildReleaseNotificationMsgOptions(n model.ReleaseNotification)
 		msgOptions.AddAttachmentField("Release notes", *n.ReleaseNotes)
 	}
 
-	return msgOptions.Build()
-}
-
-func (c *Client) sendMessageAsync(ctx context.Context, token, channelID string, msgOptions []slack.MsgOption) {
-	t := task.Task{
-		Type: task.TypeOneOff,
-		Meta: task.Metadata{
-			"task": "sending slack message",
-		},
-		Fn: func(ctx context.Context) error {
-			return c.sendMessage(ctx, token, channelID, msgOptions)
-		},
-	}
-
-	c.taskManager.RunTask(ctx, t)
+	return c.sendMessage(ctx, token, channelID, msgOptions.Build())
 }
 
 func (c *Client) sendMessage(ctx context.Context, token, channelID string, msgOptions []slack.MsgOption) error {
