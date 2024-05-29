@@ -230,6 +230,16 @@ func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 	return nil
 }
 
+func (c *Client) GenerateGitTagURL(repo svcmodel.GithubRepo, tagName string) (url.URL, error) {
+	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", repo.OwnerSlug, repo.RepoSlug, tagName)
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	return *u, nil
+}
+
 // getReleaseByTag is an internal method for fetching a release ID.
 // This method simplifies the logic in other functions that need to get a release,
 // as it also returns the private error errGithubReleaseNotFound if the release is not found.
