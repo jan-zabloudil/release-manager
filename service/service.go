@@ -83,7 +83,7 @@ type projectGetter interface {
 }
 
 type githubManager interface {
-	GetGithubRepoFromRawURL(rawURL string) (model.GithubRepo, error)
+	ReadRepository(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
 	ReadTagsForRepository(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
 }
 

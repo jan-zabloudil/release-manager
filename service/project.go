@@ -53,13 +53,6 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 		c.ReleaseNotificationConfig = defaultCfg
 	}
 
-	// TODO pass it to model.NewProject
-	// TODO update also service update project method
-	_, err := s.githubManager.GetGithubRepoFromRawURL(c.GithubRepositoryRawURL)
-	if err != nil {
-		return model.Project{}, fmt.Errorf("getting GitHub repo from URL: %w", err)
-	}
-
 	p, err := model.NewProject(c)
 	if err != nil {
 		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
@@ -152,6 +145,40 @@ func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjec
 	}
 
 	return p, nil
+}
+
+func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID uuid.UUID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	exists, err := s.projectExists(ctx, projectID)
+	if err != nil {
+		return fmt.Errorf("checking if project exists: %w", err)
+	}
+	if !exists {
+		return svcerrors.NewProjectNotFoundError()
+	}
+
+	tkn, err := s.settingsGetter.GetGithubToken(ctx)
+	if err != nil {
+		return fmt.Errorf("getting Github token: %w", err)
+	}
+
+	repo, err := s.githubManager.ReadRepository(ctx, tkn, rawRepoURL)
+	if err != nil {
+		return fmt.Errorf("reading github repository: %w", err)
+	}
+
+	_, err = s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
+		p.SetGithubRepo(&repo)
+		return p, nil
+	})
+	if err != nil {
+		return fmt.Errorf("updating project with Github repository: %w", err)
+	}
+
+	return nil
 }
 
 func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {

@@ -24,13 +24,40 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) GetGithubRepoFromRawURL(rawURL string) (svcmodel.GithubRepo, error) {
-	repo, err := model.ToSvcGithubRepo(rawURL)
+func (c *Client) ReadRepository(ctx context.Context, tkn string, rawRepoURL string) (svcmodel.GithubRepo, error) {
+	ownerSlug, repoSlug, err := model.ParseGithubRepoURL(rawRepoURL)
 	if err != nil {
 		return svcmodel.GithubRepo{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
-	return repo, nil
+	// Docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
+	repo, _, err := c.getGithubClient(tkn).Repositories.Get(ctx, ownerSlug, repoSlug)
+	if err != nil {
+		var githubErr *github.ErrorResponse
+		if errors.As(err, &githubErr) {
+			switch githubErr.Response.StatusCode {
+			case http.StatusUnauthorized:
+				return svcmodel.GithubRepo{}, svcerrors.NewGithubClientUnauthorizedError().Wrap(err)
+			case http.StatusForbidden:
+				return svcmodel.GithubRepo{}, svcerrors.NewGithubClientForbiddenError().Wrap(err)
+			case http.StatusNotFound:
+				return svcmodel.GithubRepo{}, svcerrors.NewGithubRepositoryNotFoundError().Wrap(err)
+			}
+		}
+
+		return svcmodel.GithubRepo{}, err
+	}
+
+	u, err := url.Parse(repo.GetHTMLURL())
+	if err != nil {
+		return svcmodel.GithubRepo{}, fmt.Errorf("failed to parse repository URL: %w", err)
+	}
+
+	return svcmodel.GithubRepo{
+		OwnerSlug: ownerSlug,
+		RepoSlug:  repoSlug,
+		URL:       *u,
+	}, nil
 }
 
 func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {

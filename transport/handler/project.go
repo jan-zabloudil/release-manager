@@ -92,3 +92,23 @@ func (h *Handler) listGithubRepositoryTags(w http.ResponseWriter, r *http.Reques
 
 	util.WriteJSONResponse(w, http.StatusOK, model.ToGitTags(t))
 }
+
+func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
+	var input model.SetProjectGithubRepoInput
+	if err := util.UnmarshalRequest(r, &input); err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	if err := h.ProjectSvc.SetGithubRepoForProject(
+		r.Context(),
+		input.RawRepoURL,
+		util.ContextProjectID(r),
+		util.ContextAuthUserID(r),
+	); err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

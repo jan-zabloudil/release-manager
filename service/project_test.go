@@ -35,7 +35,6 @@ func TestProjectService_CreateProject(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settings.On("GetDefaultReleaseMessage", mock.Anything).Return("message", nil)
-				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -50,7 +49,6 @@ func TestProjectService_CreateProject(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -65,7 +63,6 @@ func TestProjectService_CreateProject(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 			},
 			wantErr: true,
 		},
@@ -78,7 +75,6 @@ func TestProjectService_CreateProject(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 			},
 			wantErr: true,
 		},
@@ -92,7 +88,6 @@ func TestProjectService_CreateProject(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				github.On("GetGithubRepoFromRawURL", mock.Anything).Return(model.GithubRepo{}, nil)
 			},
 			wantErr: true,
 		},

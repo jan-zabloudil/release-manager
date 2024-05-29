@@ -12,14 +12,18 @@ type CreateProjectInput struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepositoryURL       string                    `json:"github_repository_url"`
+	GithubRepositoryURL       string                    `json:"github_repository_url"` // TODO remove
 }
 
 type UpdateProjectInput struct {
 	Name                      *string                              `json:"name"`
 	SlackChannelID            *string                              `json:"slack_channel_id"`
 	ReleaseNotificationConfig UpdateReleaseNotificationConfigInput `json:"release_notification_config"`
-	GithubRepositoryURL       *string                              `json:"github_repository_url"`
+	GithubRepositoryURL       *string                              `json:"github_repository_url"` // TODO remove
+}
+
+type SetProjectGithubRepoInput struct {
+	RawRepoURL string `json:"github_repo_url"`
 }
 
 type Project struct {
@@ -27,7 +31,7 @@ type Project struct {
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
-	GithubRepository          string                    `json:"github_repository_url"`
+	GithubRepository          string                    `json:"github_repository_url"` // TODO remove this field
 	CreatedAt                 time.Time                 `json:"created_at"`
 	UpdatedAt                 time.Time                 `json:"updated_at"`
 }
