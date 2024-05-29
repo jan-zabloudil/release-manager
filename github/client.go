@@ -98,60 +98,6 @@ func (c *Client) ReadTagByName(ctx context.Context, tkn string, repoURL url.URL,
 	return svcmodel.GitTag{Name: tagName}, nil
 }
 
-func (c *Client) CreateRelease(
-	ctx context.Context,
-	tkn string,
-	repoURL url.URL,
-	input svcmodel.CreateReleaseInput,
-) (svcmodel.GithubRelease, error) {
-	repo, err := model.ToGithubRepo(repoURL)
-	if err != nil {
-		return svcmodel.GithubRelease{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
-	}
-
-	// Creates a new release
-	// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#create-a-release
-	//
-	// TagName is the name of the tag to link the release to
-	// Name is the name of the release
-	// Body is the description of the release
-	rls, _, err := c.getGithubClient(tkn).Repositories.CreateRelease(ctx, repo.OwnerSlug, repo.RepositorySlug, &github.RepositoryRelease{
-		TagName: &input.GitTagName,
-		Name:    &input.ReleaseTitle,
-		Body:    &input.ReleaseNotes,
-	})
-	if err != nil {
-		// TODO translate to service error if this function is not executed asynchronously
-		return svcmodel.GithubRelease{}, err
-	}
-
-	return model.ToSvcGithubRelease(rls)
-}
-
-func (c *Client) ReadReleaseByTag(ctx context.Context, tkn string, repoURL url.URL, tagName string) (svcmodel.GithubRelease, error) {
-	repo, err := model.ToGithubRepo(repoURL)
-	if err != nil {
-		return svcmodel.GithubRelease{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
-	}
-
-	rls, _, err := c.getGithubClient(tkn).Repositories.GetReleaseByTag(
-		ctx,
-		repo.OwnerSlug,
-		repo.RepositorySlug,
-		tagName,
-	)
-	if err != nil {
-		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
-			return svcmodel.GithubRelease{}, svcerrors.NewGithubReleaseNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.GithubRelease{}, err
-	}
-
-	return model.ToSvcGithubRelease(rls)
-}
-
 func (c *Client) getGithubClient(tkn string) *github.Client {
 	return github.NewClient(nil).WithAuthToken(tkn)
 }
