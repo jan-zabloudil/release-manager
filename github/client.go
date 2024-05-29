@@ -105,12 +105,7 @@ func (c *Client) ReadTagsForRepository(ctx context.Context, tkn string, repoURL 
 	return model.ToSvcGitTags(t), nil
 }
 
-func (c *Client) ReadTagByName(ctx context.Context, tkn string, repoURL url.URL, tagName string) (svcmodel.GitTag, error) {
-	repo, err := model.ToGithubRepo(repoURL)
-	if err != nil {
-		return svcmodel.GitTag{}, svcerrors.NewGithubRepositoryInvalidURL().Wrap(err).WithMessage(err.Error())
-	}
-
+func (c *Client) ReadTagByName(ctx context.Context, tkn string, repo svcmodel.GithubRepo, tagName string) (svcmodel.GitTag, error) {
 	// Git tag can be fetched only by its SHA, using GET /repos/{owner}/{repo}/git/tags/{tag_sha}
 	// Another limitation is that only annotated tags can be fetched by /repos/{owner}/{repo}/git/tags/{tag_sha}
 	// Because lightweight tags do not have their own SHA, they only reference a commit
@@ -118,10 +113,10 @@ func (c *Client) ReadTagByName(ctx context.Context, tkn string, repoURL url.URL,
 	//
 	// So in order to check if a tag exists by name (both lightweights and annotated tags), GET /repos/{owner}/{repo}/git/ref/{ref} is used
 	// Docs https://docs.github.com/rest/git/refs#get-a-reference
-	_, _, err = c.getGithubClient(tkn).Git.GetRef(
+	_, _, err := c.getGithubClient(tkn).Git.GetRef(
 		ctx,
 		repo.OwnerSlug,
-		repo.RepositorySlug,
+		repo.RepoSlug,
 		fmt.Sprintf("tags/%s", tagName),
 	)
 	if err != nil {
