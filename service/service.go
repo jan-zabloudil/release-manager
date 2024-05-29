@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net/url"
 
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/service/model"
@@ -85,6 +86,8 @@ type githubManager interface {
 	ReadRepo(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
 	ReadTagsForRepo(ctx context.Context, token string, repo model.GithubRepo) ([]model.GitTag, error)
 	DeleteReleaseByTag(ctx context.Context, token string, repo model.GithubRepo, tagName string) error
+	GenerateGitTagURL(repo model.GithubRepo, tagName string) (url.URL, error)
+	TagExists(ctx context.Context, token string, repo model.GithubRepo, tagName string) (bool, error)
 }
 
 type emailSender interface {
@@ -116,7 +119,7 @@ func NewService(
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)
-	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, slackNotifier, releaseRepo)
+	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, slackNotifier, githubManager, releaseRepo)
 
 	return &Service{
 		Authorization: authSvc,

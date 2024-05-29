@@ -32,3 +32,8 @@ func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmod
 	args := c.Called(ctx, tkn, repo, tagName)
 	return args.Error(0)
 }
+
+func (c *Client) TagExists(ctx context.Context, tkn string, repo svcmodel.GithubRepo, tagName string) (bool, error) {
+	args := c.Called(ctx, tkn, repo, tagName)
+	return args.Bool(0), args.Error(1)
+}

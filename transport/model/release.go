@@ -11,7 +11,7 @@ import (
 type CreateReleaseInput struct {
 	ReleaseTitle string `json:"release_title"`
 	ReleaseNotes string `json:"release_notes"`
-	GitTagName   string `json:"git_tag"`
+	GitTagName   string `json:"git_tag_name"`
 }
 
 type UpdateReleaseInput struct {

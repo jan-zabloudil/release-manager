@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	errReleaseTitleRequired  = errors.New("release title is required")
-	errReleaseGitTagRequired = errors.New("git tag name is required")
+	errReleaseTitleRequired     = errors.New("release title is required")
+	errReleaseGitTagRequired    = errors.New("git tag name is required")
+	errReleaseGitTagURLRequired = errors.New("git tag URL is required")
 )
 
 type CreateReleaseInput struct {
@@ -18,6 +19,19 @@ type CreateReleaseInput struct {
 	ReleaseNotes string
 	// Used for linking the release with a specific point in a git repository.
 	GitTagName string
+	GitTagURL  url.URL
+}
+
+func (i *CreateReleaseInput) ValidateGitTagName() error {
+	if i.GitTagName == "" {
+		return errReleaseGitTagRequired
+	}
+
+	return nil
+}
+
+func (i *CreateReleaseInput) AddGitTagURL(tagURL url.URL) {
+	i.GitTagURL = tagURL
 }
 
 type UpdateReleaseInput struct {
@@ -38,16 +52,14 @@ type Release struct {
 }
 
 func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Release, error) {
-	if input.GitTagName == "" {
-		return Release{}, errReleaseGitTagRequired
-	}
-
 	now := time.Now()
 	r := Release{
 		ID:           uuid.New(),
 		ProjectID:    projectID,
 		ReleaseTitle: input.ReleaseTitle,
 		ReleaseNotes: input.ReleaseNotes,
+		GitTagName:   input.GitTagName,
+		GitTagURL:    input.GitTagURL,
 		AuthorUserID: authorUserID,
 		CreatedAt:    now,
 		UpdatedAt:    now,
@@ -78,6 +90,12 @@ func (r *Release) Update(input UpdateReleaseInput) error {
 func (r *Release) Validate() error {
 	if r.ReleaseTitle == "" {
 		return errReleaseTitleRequired
+	}
+	if r.GitTagName == "" {
+		return errReleaseGitTagRequired
+	}
+	if r.GitTagURL == (url.URL{}) {
+		return errReleaseGitTagURLRequired
 	}
 
 	return nil

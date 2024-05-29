@@ -14,6 +14,7 @@ type Release struct {
 	ReleaseTitle string    `db:"release_title"`
 	ReleaseNotes string    `db:"release_notes"`
 	AuthorUserID uuid.UUID `db:"created_by"`
+	GitTagName   string    `db:"git_tag_name"`
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
 }

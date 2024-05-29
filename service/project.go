@@ -293,7 +293,7 @@ func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, auth
 	}
 
 	if !project.IsGithubRepoSet() {
-		return nil, svcerrors.NewGithubRepoNotConfiguredForProjectError()
+		return nil, svcerrors.NewGithubRepoNotSetForProjectError()
 	}
 
 	t, err := s.githubManager.ReadTagsForRepo(ctx, tkn, *project.GithubRepo)
