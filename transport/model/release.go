@@ -9,10 +9,9 @@ import (
 )
 
 type CreateReleaseInput struct {
-	ReleaseTitle            string `json:"release_title"`
-	ReleaseNotes            string `json:"release_notes"`
-	SendReleaseNotification bool   `json:"send_release_notification"`
-	GitTagName              string `json:"git_tag"`
+	ReleaseTitle string `json:"release_title"`
+	ReleaseNotes string `json:"release_notes"`
+	GitTagName   string `json:"git_tag"`
 }
 
 type UpdateReleaseInput struct {

@@ -45,7 +45,7 @@ func run() error {
 	githubClient := githubx.NewClient()
 	resendClient := resendx.NewClient(taskManager, cfg.Resend, cfg.ClientService)
 	authClient := auth.NewClient(supaClient)
-	slackClient := slack.NewClient(taskManager)
+	slackClient := slack.NewClient()
 
 	dbpool, err := pgxpool.New(ctx, cfg.Supabase.DatabaseURL)
 	if err != nil {

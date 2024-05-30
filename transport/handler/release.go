@@ -18,7 +18,6 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 	rls, err := h.ReleaseSvc.Create(
 		r.Context(),
 		model.ToSvcCreateReleaseInput(input),
-		input.SendReleaseNotification,
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),
 	)

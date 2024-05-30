@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
@@ -38,7 +37,6 @@ func NewReleaseService(
 func (s *ReleaseService) Create(
 	ctx context.Context,
 	input model.CreateReleaseInput,
-	sendReleaseNotification bool,
 	projectID,
 	authorUserID uuid.UUID,
 ) (model.Release, error) {
@@ -46,9 +44,12 @@ func (s *ReleaseService) Create(
 		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	p, err := s.projectGetter.GetProject(ctx, projectID, authorUserID)
+	exists, err := s.projectGetter.ProjectExists(ctx, projectID, authorUserID)
 	if err != nil {
-		return model.Release{}, fmt.Errorf("getting project: %w", err)
+		return model.Release{}, fmt.Errorf("checking project existence: %w", err)
+	}
+	if !exists {
+		return model.Release{}, svcerrors.NewProjectNotFoundError()
 	}
 
 	rls, err := model.NewRelease(input, projectID, authorUserID)
@@ -58,10 +59,6 @@ func (s *ReleaseService) Create(
 
 	if err := s.repo.Create(ctx, rls); err != nil {
 		return model.Release{}, fmt.Errorf("creating release: %w", err)
-	}
-
-	if sendReleaseNotification {
-		s.sendReleaseNotificationAsync(ctx, p, rls)
 	}
 
 	return rls, nil
@@ -168,24 +165,4 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 	}
 
 	return nil
-}
-
-func (s *ReleaseService) sendReleaseNotificationAsync(ctx context.Context, p model.Project, rls model.Release) {
-	if !p.IsSlackChannelSet() {
-		slog.Debug("notification not sent: slack channel missing for project", "project_id", p.ID)
-		return
-	}
-
-	tkn, err := s.settingsGetter.GetSlackToken(ctx)
-	if err != nil {
-		// when fetching slack token fails, just log the error
-		// fail attempt to send Slack notification should not affect the release creation
-		// two possible reasons for failure:
-		// 1. slack integration is not set (logged in debug level, as it's not an error, but possible scenario)
-		// 2. failed to fetch slack token (logged in error level)
-		slog.Log(ctx, svcerrors.GetLogLevel(err), "failed to get slack token", "err", err)
-		return
-	}
-
-	s.slackNotifier.SendReleaseNotificationAsync(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls))
 }
