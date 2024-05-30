@@ -142,10 +142,10 @@ func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 	return nil
 }
 
-func (c *Client) DeleteRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
+func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmodel.GithubRepo, tagName string) error {
 	// Release can be deleted only by release ID
 	// Therefore I need to get release ID first
-	id, err := c.getReleaseIDByTag(ctx, tkn, repo, rls.GitTagName)
+	id, err := c.getReleaseIDByTag(ctx, tkn, repo, tagName)
 	if err != nil {
 		if errors.Is(err, errGithubReleaseNotFound) {
 			return svcerrors.NewGithubReleaseNotFoundError().Wrap(err)

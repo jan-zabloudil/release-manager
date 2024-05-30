@@ -27,3 +27,8 @@ func (c *Client) GenerateGitTagURL(repo svcmodel.GithubRepo, tagName string) (ur
 	args := c.Called(repo, tagName)
 	return args.Get(0).(url.URL), args.Error(1)
 }
+
+func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmodel.GithubRepo, tagName string) error {
+	args := c.Called(ctx, tkn, repo, tagName)
+	return args.Error(0)
+}
