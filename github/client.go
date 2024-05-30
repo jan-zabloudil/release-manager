@@ -100,7 +100,7 @@ func (c *Client) ReadTagsForRepo(ctx context.Context, tkn string, repo svcmodel.
 	return model.ToSvcGitTags(t), nil
 }
 
-func (c *Client) ReadTagByName(ctx context.Context, tkn string, repo svcmodel.GithubRepo, tagName string) (svcmodel.GitTag, error) {
+func (c *Client) TagExists(ctx context.Context, tkn string, repo svcmodel.GithubRepo, tagName string) (bool, error) {
 	// Git tag can be fetched only by its SHA, using GET /repos/{owner}/{repo}/git/tags/{tag_sha}
 	// Another limitation is that only annotated tags can be fetched by /repos/{owner}/{repo}/git/tags/{tag_sha}
 	// Because lightweight tags do not have their own SHA, they only reference a commit
@@ -117,13 +117,13 @@ func (c *Client) ReadTagByName(ctx context.Context, tkn string, repo svcmodel.Gi
 	if err != nil {
 		var githubErr *github.ErrorResponse
 		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
-			return svcmodel.GitTag{}, svcerrors.NewGitTagNotFoundError().Wrap(err)
+			return false, nil
 		}
 
-		return svcmodel.GitTag{}, err
+		return false, err
 	}
 
-	return svcmodel.GitTag{Name: tagName}, nil
+	return true, nil
 }
 
 func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {

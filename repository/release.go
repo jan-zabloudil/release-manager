@@ -17,6 +17,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const (
+	uniqueGitTagPerProjectConstraintName = "unique_git_tag_per_project"
+)
+
 type ReleaseRepository struct {
 	dbpool *pgxpool.Pool
 }
@@ -33,12 +37,15 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 		"projectID":    rls.ProjectID,
 		"releaseTitle": rls.ReleaseTitle,
 		"releaseNotes": rls.ReleaseNotes,
+		"gitTagName":   rls.GitTagName,
 		"createdBy":    rls.AuthorUserID,
 		"createdAt":    rls.CreatedAt,
 		"updatedAt":    rls.UpdatedAt,
 	})
 	if err != nil {
-		return err
+		if util.IsUniqueConstraintViolation(err, uniqueGitTagPerProjectConstraintName) {
+			return svcerrors.NewReleaseGitTagAlreadyUsedError().Wrap(err)
+		}
 	}
 
 	return nil

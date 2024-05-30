@@ -7,37 +7,38 @@ import (
 )
 
 var (
-	ErrCodeUnauthorizedUnknownUser           = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
-	ErrCodeForbiddenInsufficientUserRole     = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
-	ErrCodeForbiddenInsufficientProjectRole  = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
-	ErrCodeForbiddenUserNotProjectMember     = "ERR_FORBIDDEN_USER_NOT_PROJECT_MEMBER"
-	ErrCodeUserNotFound                      = "ERR_USER_NOT_FOUND"
-	ErrCodeProjectNotFound                   = "ERR_PROJECT_NOT_FOUND"
-	ErrCodeEnvironmentNotFound               = "ERR_ENVIRONMENT_NOT_FOUND"
-	ErrCodeProjectUnprocessable              = "ERR_PROJECT_UNPROCESSABLE"
-	ErrCodeEnvironmentUnprocessable          = "ERR_ENVIRONMENT_UNPROCESSABLE"
-	ErrCodeEnvironmentDuplicateName          = "ERR_ENVIRONMENT_DUPLICATE_NAME"
-	ErrCodeSettingsUnprocessable             = "ERR_SETTINGS_UNPROCESSABLE"
-	ErrCodeProjectInvitationUnprocessable    = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
-	ErrCodeProjectInvitationAlreadyExists    = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
-	ErrCodeProjectInvitationNotFound         = "ERR_PROJECT_INVITATION_NOT_FOUND"
-	ErrCodeProjectMemberAlreadyExists        = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
-	ErrCodeGithubIntegrationNotEnabled       = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
-	ErrCodeGithubClientUnauthorized          = "ERR_GITHUB_CLIENT_UNAUTHORIZED"
-	ErrCodeGithubClientForbidden             = "ERR_GITHUB_CLIENT_FORBIDDEN"
-	ErrCodeGithubRepoNotConfiguredForProject = "ERR_GITHUB_REPO_NOT_CONFIGURED_FOR_PROJECT"
-	ErrCodeGithubRepoNotFound                = "ERR_GITHUB_REPO_NOT_FOUND"
-	ErrCodeGithubRepoInvalidURL              = "ERR_GITHUB_REPO_INVALID_URL"
-	ErrCodeProjectMemberNotFound             = "ERR_PROJECT_MEMBER_NOT_FOUND"
-	ErrCodeProjectMemberUnprocessable        = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
-	ErrCodeReleaseUnprocessable              = "ERR_RELEASE_UNPROCESSABLE"
-	ErrCodeReleaseNotFound                   = "ERR_RELEASE_NOT_FOUND"
-	ErrCodeSlackIntegrationNotEnabled        = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
-	ErrCodeSlackClientUnauthorized           = "ERR_SLACK_CLIENT_UNAUTHORIZED"
-	ErrCodeSlackChannelNotFound              = "ERR_SLACK_CHANNEL_NOT_FOUND"
-	ErrCodeSlackChannelNotSetForProject      = "ERR_SLACK_CHANNEL_NOT_SET_FOR_PROJECT"
-	ErrCodeGitTagNotFound                    = "ERR_GIT_TAG_NOT_FOUND"
-	ErrCodeGithubReleaseNotFound             = "ERR_GITHUB_RELEASE_NOT_FOUND"
+	ErrCodeUnauthorizedUnknownUser          = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
+	ErrCodeForbiddenInsufficientUserRole    = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
+	ErrCodeForbiddenInsufficientProjectRole = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
+	ErrCodeForbiddenUserNotProjectMember    = "ERR_FORBIDDEN_USER_NOT_PROJECT_MEMBER"
+	ErrCodeUserNotFound                     = "ERR_USER_NOT_FOUND"
+	ErrCodeProjectNotFound                  = "ERR_PROJECT_NOT_FOUND"
+	ErrCodeEnvironmentNotFound              = "ERR_ENVIRONMENT_NOT_FOUND"
+	ErrCodeProjectUnprocessable             = "ERR_PROJECT_UNPROCESSABLE"
+	ErrCodeEnvironmentUnprocessable         = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	ErrCodeEnvironmentDuplicateName         = "ERR_ENVIRONMENT_DUPLICATE_NAME"
+	ErrCodeSettingsUnprocessable            = "ERR_SETTINGS_UNPROCESSABLE"
+	ErrCodeProjectInvitationUnprocessable   = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
+	ErrCodeProjectInvitationAlreadyExists   = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
+	ErrCodeProjectInvitationNotFound        = "ERR_PROJECT_INVITATION_NOT_FOUND"
+	ErrCodeProjectMemberAlreadyExists       = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
+	ErrCodeGithubIntegrationNotEnabled      = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
+	ErrCodeGithubClientUnauthorized         = "ERR_GITHUB_CLIENT_UNAUTHORIZED"
+	ErrCodeGithubClientForbidden            = "ERR_GITHUB_CLIENT_FORBIDDEN"
+	ErrCodeGithubRepoNotSetForProject       = "ERR_GITHUB_REPO_NOT_SET_FOR_PROJECT"
+	ErrCodeGithubRepoNotFound               = "ERR_GITHUB_REPO_NOT_FOUND"
+	ErrCodeGithubRepoInvalidURL             = "ERR_GITHUB_REPO_INVALID_URL"
+	ErrCodeProjectMemberNotFound            = "ERR_PROJECT_MEMBER_NOT_FOUND"
+	ErrCodeProjectMemberUnprocessable       = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
+	ErrCodeReleaseUnprocessable             = "ERR_RELEASE_UNPROCESSABLE"
+	ErrCodeReleaseNotFound                  = "ERR_RELEASE_NOT_FOUND"
+	ErrCodeSlackIntegrationNotEnabled       = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
+	ErrCodeSlackClientUnauthorized          = "ERR_SLACK_CLIENT_UNAUTHORIZED"
+	ErrCodeSlackChannelNotFound             = "ERR_SLACK_CHANNEL_NOT_FOUND"
+	ErrCodeSlackChannelNotSetForProject     = "ERR_SLACK_CHANNEL_NOT_SET_FOR_PROJECT"
+	ErrCodeGitTagNotFound                   = "ERR_GIT_TAG_NOT_FOUND"
+	ErrCodeGithubReleaseNotFound            = "ERR_GITHUB_RELEASE_NOT_FOUND"
+	ErrCodeReleaseGitTagAlreadyUsed         = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
 )
 
 type Error struct {
@@ -182,10 +183,10 @@ func NewGithubIntegrationNotEnabledError() *Error {
 	}
 }
 
-func NewGithubRepoNotConfiguredForProjectError() *Error {
+func NewGithubRepoNotSetForProjectError() *Error {
 	return &Error{
-		Code:    ErrCodeGithubRepoNotConfiguredForProject,
-		Message: "Github repo is not configured for the project.",
+		Code:    ErrCodeGithubRepoNotSetForProject,
+		Message: "Github repo is not set for the project.",
 	}
 }
 
@@ -280,13 +281,20 @@ func NewGithubReleaseNotFoundError() *Error {
 	}
 }
 
+func NewReleaseGitTagAlreadyUsedError() *Error {
+	return &Error{
+		Code:    ErrCodeReleaseGitTagAlreadyUsed,
+		Message: "Git tag is already used for another release",
+	}
+}
+
 func IsNotFoundError(err error) bool {
 	return isErrorWithCode(err, ErrCodeUserNotFound) ||
 		isErrorWithCode(err, ErrCodeProjectNotFound) ||
 		isErrorWithCode(err, ErrCodeEnvironmentNotFound) ||
 		isErrorWithCode(err, ErrCodeProjectInvitationNotFound) ||
 		isErrorWithCode(err, ErrCodeGithubRepoNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubRepoNotConfiguredForProject) ||
+		isErrorWithCode(err, ErrCodeGithubRepoNotSetForProject) ||
 		isErrorWithCode(err, ErrCodeGithubIntegrationNotEnabled) ||
 		isErrorWithCode(err, ErrCodeProjectMemberNotFound) ||
 		isErrorWithCode(err, ErrCodeGithubIntegrationNotEnabled) ||
