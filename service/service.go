@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net/url"
 
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/service/model"
@@ -84,7 +83,7 @@ type projectGetter interface {
 
 type githubManager interface {
 	ReadRepo(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
-	ReadTagsForRepo(ctx context.Context, token string, repoURL url.URL) ([]model.GitTag, error)
+	ReadTagsForRepo(ctx context.Context, token string, repo model.GithubRepo) ([]model.GitTag, error)
 }
 
 type emailSender interface {

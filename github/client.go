@@ -71,19 +71,14 @@ func (c *Client) ReadRepo(ctx context.Context, tkn string, rawRepoURL string) (s
 	}, nil
 }
 
-func (c *Client) ReadTagsForRepo(ctx context.Context, tkn string, repoURL url.URL) ([]svcmodel.GitTag, error) {
-	repo, err := model.ToGithubRepo(repoURL)
-	if err != nil {
-		return nil, svcerrors.NewGithubRepoInvalidURL().Wrap(err).WithMessage(err.Error())
-	}
-
+func (c *Client) ReadTagsForRepo(ctx context.Context, tkn string, repo svcmodel.GithubRepo) ([]svcmodel.GitTag, error) {
 	// Up to 100 tags can be fetched per page
 	// If the number of pages is not specified in the list options, only one page will be fetched
 	// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
 	t, _, err := c.getGithubClient(tkn).Repositories.ListTags(
 		ctx,
 		repo.OwnerSlug,
-		repo.RepositorySlug,
+		repo.RepoSlug,
 		&github.ListOptions{PerPage: tagsToFetch},
 	)
 	if err != nil {

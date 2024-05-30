@@ -292,11 +292,11 @@ func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, auth
 		return nil, fmt.Errorf("getting Github token: %w", err)
 	}
 
-	if !project.IsGithubConfigured() {
+	if !project.IsGithubRepoSet() {
 		return nil, svcerrors.NewGithubRepoNotConfiguredForProjectError()
 	}
 
-	t, err := s.githubManager.ReadTagsForRepo(ctx, tkn, project.GithubRepoURL)
+	t, err := s.githubManager.ReadTagsForRepo(ctx, tkn, *project.GithubRepo)
 	if err != nil {
 		return nil, fmt.Errorf("reading tags for github repo: %w", err)
 	}

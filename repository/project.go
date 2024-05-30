@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 
 	"release-manager/pkg/crypto"
 	"release-manager/repository/model"
@@ -50,7 +49,6 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig), // converted to the struct with json tags (the field is saved as json in the database)
 		"createdAt":                 p.CreatedAt,
 		"updatedAt":                 p.UpdatedAt,
-		"githubRepositoryURL":       p.GithubRepoURL.String(), // TODO remove
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create project: %w", err)
@@ -526,12 +524,12 @@ func (r *ProjectRepository) UpdateMemberRole(
 }
 
 func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
-	var ownerSlug, repoSlug *string
-	var repoURL *url.URL
+	var ownerSlugPtr, repoSlugPtr, repoRawURLPtr *string
 	if p.GithubRepo != nil {
-		ownerSlug = &p.GithubRepo.OwnerSlug
-		repoSlug = &p.GithubRepo.RepoSlug
-		repoURL = &p.GithubRepo.URL
+		ownerSlugPtr = &p.GithubRepo.OwnerSlug
+		repoSlugPtr = &p.GithubRepo.RepoSlug
+		repoRawURL := p.GithubRepo.URL.String()
+		repoRawURLPtr = &repoRawURL
 	}
 
 	return pgx.NamedArgs{
@@ -540,10 +538,9 @@ func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
 		"slackChannelID": p.SlackChannelID,
 		// Converted to the struct with json tags (the field is saved as json in the database).
 		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		"githubRepositoryURL":       p.GithubRepoURL.String(), // TODO remove
-		"githubOwnerSlug":           ownerSlug,
-		"githubRepoSlug":            repoSlug,
-		"githubRepoURL":             repoURL.String(),
+		"githubOwnerSlug":           ownerSlugPtr,
+		"githubRepoSlug":            repoSlugPtr,
+		"githubRepoURL":             repoRawURLPtr,
 		"updatedAt":                 p.UpdatedAt,
 	}
 }
