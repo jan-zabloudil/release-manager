@@ -84,6 +84,7 @@ type projectGetter interface {
 type githubManager interface {
 	ReadRepo(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
 	ReadTagsForRepo(ctx context.Context, token string, repo model.GithubRepo) ([]model.GitTag, error)
+	DeleteReleaseByTag(ctx context.Context, token string, repo model.GithubRepo, tagName string) error
 }
 
 type emailSender interface {
