@@ -3,7 +3,6 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 )
 
 var (
@@ -310,14 +309,6 @@ func IsInsufficientUserRoleError(err error) bool {
 
 func IsSlackIntegrationNotEnabledError(err error) bool {
 	return isErrorWithCode(err, ErrCodeSlackIntegrationNotEnabled)
-}
-
-func GetLogLevel(err error) slog.Level {
-	if IsSlackIntegrationNotEnabledError(err) {
-		return slog.LevelDebug
-	}
-
-	return slog.LevelError
 }
 
 func isErrorWithCode(err error, code string) bool {
