@@ -1,6 +1,9 @@
 package slack
 
 import (
+	"fmt"
+	"net/url"
+
 	"github.com/slack-go/slack"
 )
 
@@ -22,6 +25,22 @@ func (b *MsgOptionsBuilder) SetMessage(msg string) *MsgOptionsBuilder {
 }
 
 func (b *MsgOptionsBuilder) AddAttachmentField(title, value string) *MsgOptionsBuilder {
+	return b.addAttachmentField(title, value)
+}
+
+func (b *MsgOptionsBuilder) AddAttachmentFieldWithLink(title string, linkURL url.URL, linkText string) *MsgOptionsBuilder {
+	// Docs: https://api.slack.com/reference/surfaces/formatting#linking
+	link := fmt.Sprintf("<%s|%s>", linkURL.String(), linkText)
+	return b.addAttachmentField(title, link)
+}
+
+func (b *MsgOptionsBuilder) addAttachmentField(title, value string) *MsgOptionsBuilder {
+	// Some of the fields can be empty (e.g. release notes).
+	// But we still want to show all fields in the message to keep the consistency and let user know that the value for field was not set.
+	if value == "" {
+		value = "-"
+	}
+
 	b.attachmentFields = append(b.attachmentFields, slack.AttachmentField{
 		Title: title,
 		Value: value,

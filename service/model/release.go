@@ -107,6 +107,8 @@ type ReleaseNotification struct {
 	ProjectName  *string
 	ReleaseTitle *string
 	ReleaseNotes *string
+	GitTagName   *string
+	GitTagURL    *url.URL
 }
 
 func NewReleaseNotification(p Project, r Release) ReleaseNotification {
@@ -122,6 +124,10 @@ func NewReleaseNotification(p Project, r Release) ReleaseNotification {
 	}
 	if p.ReleaseNotificationConfig.ShowReleaseNotes {
 		n.ReleaseNotes = &r.ReleaseNotes
+	}
+	if p.ReleaseNotificationConfig.ShowSourceCode {
+		n.GitTagName = &r.GitTagName
+		n.GitTagURL = &r.GitTagURL
 	}
 
 	return n
