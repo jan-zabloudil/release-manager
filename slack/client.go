@@ -34,6 +34,9 @@ func (c *Client) SendReleaseNotification(ctx context.Context, token, channelID s
 	if n.ReleaseNotes != nil {
 		msgOptions.AddAttachmentField("Release notes", *n.ReleaseNotes)
 	}
+	if n.GitTagName != nil && n.GitTagURL != nil {
+		msgOptions.AddAttachmentFieldWithLink("Source code", *n.GitTagURL, *n.GitTagName)
+	}
 
 	return c.sendMessage(ctx, token, channelID, msgOptions.Build())
 }
