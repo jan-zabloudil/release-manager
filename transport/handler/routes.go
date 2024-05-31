@@ -72,6 +72,7 @@ func (h *Handler) setupRoutes() {
 					r.Patch("/", middleware.RequireAuthUser(h.updateRelease))
 					r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))
 					r.Post("/slack-notifications", middleware.RequireAuthUser(h.sendReleaseNotification))
+					r.Put("/github-release", middleware.RequireAuthUser(h.upsertGithubRelease))
 				})
 			})
 		})

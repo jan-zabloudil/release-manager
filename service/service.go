@@ -88,6 +88,7 @@ type githubManager interface {
 	DeleteReleaseByTag(ctx context.Context, token string, repo model.GithubRepo, tagName string) error
 	GenerateGitTagURL(repo model.GithubRepo, tagName string) (url.URL, error)
 	TagExists(ctx context.Context, token string, repo model.GithubRepo, tagName string) (bool, error)
+	UpsertRelease(ctx context.Context, token string, repo model.GithubRepo, rls model.Release) error
 }
 
 type emailSender interface {

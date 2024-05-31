@@ -55,6 +55,7 @@ type releaseService interface {
 	Update(ctx context.Context, input svcmodel.UpdateReleaseInput, projectID, releaseID, authorUserID uuid.UUID) (svcmodel.Release, error)
 	ListForProject(ctx context.Context, projectID, authorUserID uuid.UUID) ([]svcmodel.Release, error)
 	SendReleaseNotification(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error
+	UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
 }
 
 type authClient interface {

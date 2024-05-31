@@ -37,3 +37,8 @@ func (c *Client) TagExists(ctx context.Context, tkn string, repo svcmodel.Github
 	args := c.Called(ctx, tkn, repo, tagName)
 	return args.Bool(0), args.Error(1)
 }
+
+func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
+	args := c.Called(ctx, tkn, repo, rls)
+	return args.Error(0)
+}

@@ -204,6 +204,37 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 	return nil
 }
 
+func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	rls, err := s.repo.Read(ctx, projectID, releaseID)
+	if err != nil {
+		return fmt.Errorf("reading release: %w", err)
+	}
+
+	tkn, err := s.settingsGetter.GetGithubToken(ctx)
+	if err != nil {
+		return fmt.Errorf("getting github token: %w", err)
+	}
+
+	p, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
+	if err != nil {
+		return fmt.Errorf("getting project: %w", err)
+	}
+
+	if !p.IsGithubRepoSet() {
+		return svcerrors.NewGithubRepoNotSetForProjectError()
+	}
+
+	if err := s.githubManager.UpsertRelease(ctx, tkn, *p.GithubRepo, rls); err != nil {
+		return fmt.Errorf("upserting github release: %w", err)
+	}
+
+	return nil
+}
+
 func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error {
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
