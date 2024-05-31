@@ -229,25 +229,97 @@ func TestReleaseService_Get(t *testing.T) {
 
 func TestReleaseService_Delete(t *testing.T) {
 	testCases := []struct {
-		name      string
-		mockSetup func(*svc.AuthorizeService, *repo.ReleaseRepository)
-		wantErr   bool
+		name               string
+		mockSetup          func(*svc.AuthorizeService, *svc.SettingsService, *svc.ProjectService, *github.Client, *repo.ReleaseRepository)
+		deleteReleaseInput model.DeleteReleaseInput
+		wantErr            bool
 	}{
 		{
-			name: "Success",
-			mockSetup: func(auth *svc.AuthorizeService, repo *repo.ReleaseRepository) {
+			name: "Success without deleting github release",
+			deleteReleaseInput: model.DeleteReleaseInput{
+				DeleteGithubRelease: false,
+			},
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
 		{
-			name: "Non-existing release",
-			mockSetup: func(auth *svc.AuthorizeService, repo *repo.ReleaseRepository) {
+			name: "Success with deleting github release",
+			deleteReleaseInput: model.DeleteReleaseInput{
+				DeleteGithubRelease: true,
+			},
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewReleaseNotFoundError())
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					GithubRepo: &model.GithubRepo{
+						OwnerSlug: "owner",
+						RepoSlug:  "repo",
+					},
+				}, nil)
+				releaseRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				github.On("DeleteReleaseByTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Github integration not enabled",
+			deleteReleaseInput: model.DeleteReleaseInput{
+				DeleteGithubRelease: true,
+			},
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("", svcerrors.NewGithubIntegrationNotEnabledError())
 			},
 			wantErr: true,
+		},
+		{
+			name: "Project not found",
+			deleteReleaseInput: model.DeleteReleaseInput{
+				DeleteGithubRelease: true,
+			},
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Release not found",
+			deleteReleaseInput: model.DeleteReleaseInput{
+				DeleteGithubRelease: true,
+			},
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				releaseRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Success (deleting non-existing github release)",
+			deleteReleaseInput: model.DeleteReleaseInput{
+				DeleteGithubRelease: true,
+			},
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					GithubRepo: &model.GithubRepo{
+						OwnerSlug: "owner",
+						RepoSlug:  "repo",
+					},
+				}, nil)
+				releaseRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				github.On("DeleteReleaseByTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewGithubReleaseNotFoundError())
+				releaseRepo.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
 		},
 	}
 
@@ -261,9 +333,9 @@ func TestReleaseService_Delete(t *testing.T) {
 			githubClient := new(github.Client)
 			service := NewReleaseService(authSvc, projectSvc, settingsSvc, slackClient, githubClient, releaseRepo)
 
-			tc.mockSetup(authSvc, releaseRepo)
+			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			err := service.Delete(context.TODO(), uuid.New(), uuid.New(), uuid.New())
+			err := service.Delete(context.TODO(), tc.deleteReleaseInput, uuid.New(), uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -272,6 +344,9 @@ func TestReleaseService_Delete(t *testing.T) {
 			}
 
 			authSvc.AssertExpectations(t)
+			settingsSvc.AssertExpectations(t)
+			projectSvc.AssertExpectations(t)
+			githubClient.AssertExpectations(t)
 			releaseRepo.AssertExpectations(t)
 		})
 	}

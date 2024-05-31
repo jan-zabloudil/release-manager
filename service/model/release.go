@@ -132,3 +132,7 @@ func NewReleaseNotification(p Project, r Release) ReleaseNotification {
 
 	return n
 }
+
+type DeleteReleaseInput struct {
+	DeleteGithubRelease bool
+}
