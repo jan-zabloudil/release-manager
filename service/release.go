@@ -77,7 +77,7 @@ func (s *ReleaseService) CreateRelease(
 		return model.Release{}, svcerrors.NewGitTagNotFoundError()
 	}
 
-	gitTagURL, err := s.githubManager.GenerateGitTagURL(*p.GithubRepo, input.GitTagName)
+	gitTagURL, err := s.githubManager.GenerateGitTagURL(p.GithubRepo.OwnerSlug, p.GithubRepo.RepoSlug, input.GitTagName)
 	if err != nil {
 		return model.Release{}, fmt.Errorf("generating git tag URL: %w", err)
 	}

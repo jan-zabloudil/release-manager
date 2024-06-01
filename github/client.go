@@ -235,8 +235,8 @@ func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
 	return *u, nil
 }
 
-func (c *Client) GenerateGitTagURL(repo svcmodel.GithubRepo, tagName string) (url.URL, error) {
-	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", repo.OwnerSlug, repo.RepoSlug, tagName)
+func (c *Client) GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
+	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", ownerSlug, repoSlug, tagName)
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return url.URL{}, err
