@@ -114,3 +114,17 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
+	if err := h.ReleaseSvc.UpsertGithubRelease(
+		r.Context(),
+		util.ContextProjectID(r),
+		util.ContextReleaseID(r),
+		util.ContextAuthUserID(r),
+	); err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

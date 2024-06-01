@@ -49,12 +49,13 @@ type settingsService interface {
 }
 
 type releaseService interface {
-	Create(ctx context.Context, input svcmodel.CreateReleaseInput, projectID, authorUserID uuid.UUID) (svcmodel.Release, error)
-	Get(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) (svcmodel.Release, error)
-	Delete(ctx context.Context, input svcmodel.DeleteReleaseInput, projectID, releaseID, authorUserID uuid.UUID) error
-	Update(ctx context.Context, input svcmodel.UpdateReleaseInput, projectID, releaseID, authorUserID uuid.UUID) (svcmodel.Release, error)
-	ListForProject(ctx context.Context, projectID, authorUserID uuid.UUID) ([]svcmodel.Release, error)
-	SendReleaseNotification(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error
+	Create(ctx context.Context, input svcmodel.CreateReleaseInput, projectID, authUserID uuid.UUID) (svcmodel.Release, error)
+	Get(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
+	Delete(ctx context.Context, input svcmodel.DeleteReleaseInput, projectID, releaseID, authUserID uuid.UUID) error
+	Update(ctx context.Context, input svcmodel.UpdateReleaseInput, projectID, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
+	ListForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Release, error)
+	SendReleaseNotification(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
+	UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
 }
 
 type authClient interface {
