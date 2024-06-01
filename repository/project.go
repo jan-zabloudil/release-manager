@@ -524,12 +524,10 @@ func (r *ProjectRepository) UpdateMemberRole(
 }
 
 func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
-	var ownerSlugPtr, repoSlugPtr, repoRawURLPtr *string
+	var ownerSlug, repoSlug *string
 	if p.GithubRepo != nil {
-		ownerSlugPtr = &p.GithubRepo.OwnerSlug
-		repoSlugPtr = &p.GithubRepo.RepoSlug
-		repoRawURL := p.GithubRepo.URL.String()
-		repoRawURLPtr = &repoRawURL
+		ownerSlug = &p.GithubRepo.OwnerSlug
+		repoSlug = &p.GithubRepo.RepoSlug
 	}
 
 	return pgx.NamedArgs{
@@ -538,9 +536,8 @@ func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
 		"slackChannelID": p.SlackChannelID,
 		// Converted to the struct with json tags (the field is saved as json in the database).
 		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		"githubOwnerSlug":           ownerSlugPtr,
-		"githubRepoSlug":            repoSlugPtr,
-		"githubRepoURL":             repoRawURLPtr,
+		"githubOwnerSlug":           ownerSlug,
+		"githubRepoSlug":            repoSlug,
 		"updatedAt":                 p.UpdatedAt,
 	}
 }

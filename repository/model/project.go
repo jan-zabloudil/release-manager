@@ -2,8 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"fmt"
-	"net/url"
 	"time"
 
 	svcmodel "release-manager/service/model"
@@ -18,7 +16,6 @@ type Project struct {
 	ReleaseNotificationConfig ReleaseNotificationConfig `db:"release_notification_config"`
 	GithubOwnerSlug           sql.NullString            `db:"github_owner_slug"`
 	GithubRepoSlug            sql.NullString            `db:"github_repo_slug"`
-	GithubRepoURL             sql.NullString            `db:"github_repo_url"`
 	CreatedAt                 time.Time                 `db:"created_at"`
 	UpdatedAt                 time.Time                 `db:"updated_at"`
 }
@@ -34,14 +31,8 @@ type ReleaseNotificationConfig struct {
 
 func ToSvcProject(p Project) (svcmodel.Project, error) {
 	var githubRepo *svcmodel.GithubRepo
-	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid && p.GithubRepoURL.Valid {
-		u, err := url.Parse(p.GithubRepoURL.String)
-		if err != nil {
-			return svcmodel.Project{}, fmt.Errorf("failed to parse github repo URL: %w", err)
-		}
-
+	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
 		githubRepo = &svcmodel.GithubRepo{
-			URL:       *u,
 			OwnerSlug: p.GithubOwnerSlug.String,
 			RepoSlug:  p.GithubRepoSlug.String,
 		}
