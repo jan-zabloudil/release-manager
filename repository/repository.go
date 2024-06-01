@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,6 +14,10 @@ type querier interface {
 	Query(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error)
 }
 
+type githubURLGenerator interface {
+	GenerateRepoURL(owner, repo string) (url.URL, error)
+}
+
 type Repository struct {
 	User     *UserRepository
 	Project  *ProjectRepository
@@ -20,10 +25,10 @@ type Repository struct {
 	Release  *ReleaseRepository
 }
 
-func NewRepository(client *supabase.Client, pool *pgxpool.Pool) *Repository {
+func NewRepository(client *supabase.Client, pool *pgxpool.Pool, urlGenerator githubURLGenerator) *Repository {
 	return &Repository{
 		User:     NewUserRepository(client, pool),
-		Project:  NewProjectRepository(pool),
+		Project:  NewProjectRepository(pool, urlGenerator),
 		Settings: NewSettingsRepository(pool),
 		Release:  NewReleaseRepository(pool),
 	}

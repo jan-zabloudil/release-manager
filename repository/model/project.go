@@ -29,36 +29,14 @@ type ReleaseNotificationConfig struct {
 	ShowSourceCode     bool   `json:"show_source_code"`
 }
 
-func ToSvcProject(p Project) (svcmodel.Project, error) {
-	var githubRepo *svcmodel.GithubRepo
-	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
-		githubRepo = &svcmodel.GithubRepo{
-			OwnerSlug: p.GithubOwnerSlug.String,
-			RepoSlug:  p.GithubRepoSlug.String,
-		}
-	}
-
+func ToSvcProject(p Project, repo *svcmodel.GithubRepo) svcmodel.Project {
 	return svcmodel.Project{
 		ID:                        p.ID,
 		Name:                      p.Name,
 		SlackChannelID:            p.SlackChannelID,
 		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		GithubRepo:                githubRepo,
+		GithubRepo:                repo,
 		CreatedAt:                 p.CreatedAt,
 		UpdatedAt:                 p.UpdatedAt,
-	}, nil
-}
-
-func ToSvcProjects(projects []Project) ([]svcmodel.Project, error) {
-	p := make([]svcmodel.Project, 0, len(projects))
-	for _, project := range projects {
-		svcProject, err := ToSvcProject(project)
-		if err != nil {
-			return nil, err
-		}
-
-		p = append(p, svcProject)
 	}
-
-	return p, nil
 }
