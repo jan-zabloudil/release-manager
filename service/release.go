@@ -105,9 +105,18 @@ func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authorUs
 	return rls, nil
 }
 
-func (s *ReleaseService) Delete(ctx context.Context, projectID, releaseID, authorUserID uuid.UUID) error {
+// Delete deletes a release. If deleteGithubRelease is true, it will also delete associacted GitHub release (if exists).
+// Deleting GitHub release is idempotent, so if the release does not exist on GitHub, it will not return an error.
+func (s *ReleaseService) Delete(ctx context.Context, input model.DeleteReleaseInput, projectID, releaseID, authorUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authorUserID); err != nil {
 		return fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	if input.DeleteGithubRelease {
+		err := s.deleteGithubRelease(ctx, projectID, releaseID, authorUserID)
+		if err != nil && !svcerrors.IsGithubReleaseNotFoundError(err) {
+			return fmt.Errorf("deleting github release: %w", err)
+		}
 	}
 
 	if err := s.repo.Delete(ctx, projectID, releaseID); err != nil {
@@ -190,6 +199,33 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 
 	if err := s.slackNotifier.SendReleaseNotification(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls)); err != nil {
 		return fmt.Errorf("sending slack notification: %w", err)
+	}
+
+	return nil
+}
+
+func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error {
+	tkn, err := s.settingsGetter.GetGithubToken(ctx)
+	if err != nil {
+		return fmt.Errorf("getting github token: %w", err)
+	}
+
+	p, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
+	if err != nil {
+		return fmt.Errorf("getting project: %w", err)
+	}
+
+	rls, err := s.repo.Read(ctx, projectID, releaseID)
+	if err != nil {
+		return fmt.Errorf("reading release: %w", err)
+	}
+
+	if !p.IsGithubRepoSet() {
+		return svcerrors.NewGithubRepoNotSetForProjectError()
+	}
+
+	if err := s.githubManager.DeleteReleaseByTag(ctx, tkn, *p.GithubRepo, rls.GitTagName); err != nil {
+		return fmt.Errorf("deleting github release: %w", err)
 	}
 
 	return nil

@@ -45,8 +45,15 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
+	var input model.DeleteReleaseInput
+	if err := util.UnmarshalRequest(r, &input); err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	if err := h.ReleaseSvc.Delete(
 		r.Context(),
+		model.ToSvcDeleteReleaseInput(input),
 		util.ContextProjectID(r),
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),

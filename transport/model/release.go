@@ -19,6 +19,10 @@ type UpdateReleaseInput struct {
 	ReleaseNotes *string `json:"release_notes"`
 }
 
+type DeleteReleaseInput struct {
+	DeleteGithubRelease bool `json:"delete_github_release"`
+}
+
 type Release struct {
 	ID           uuid.UUID `json:"id"`
 	ReleaseTitle string    `json:"release_title"`
@@ -39,6 +43,12 @@ func ToSvcUpdateReleaseInput(r UpdateReleaseInput) svcmodel.UpdateReleaseInput {
 	return svcmodel.UpdateReleaseInput{
 		ReleaseTitle: r.ReleaseTitle,
 		ReleaseNotes: r.ReleaseNotes,
+	}
+}
+
+func ToSvcDeleteReleaseInput(r DeleteReleaseInput) svcmodel.DeleteReleaseInput {
+	return svcmodel.DeleteReleaseInput{
+		DeleteGithubRelease: r.DeleteGithubRelease,
 	}
 }
 

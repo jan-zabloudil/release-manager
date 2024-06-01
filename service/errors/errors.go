@@ -311,6 +311,10 @@ func IsSlackIntegrationNotEnabledError(err error) bool {
 	return isErrorWithCode(err, ErrCodeSlackIntegrationNotEnabled)
 }
 
+func IsGithubReleaseNotFoundError(err error) bool {
+	return isErrorWithCode(err, ErrCodeGithubReleaseNotFound)
+}
+
 func isErrorWithCode(err error, code string) bool {
 	var svcErr *Error
 	if errors.As(err, &svcErr) {
