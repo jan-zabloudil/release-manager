@@ -15,7 +15,8 @@ type querier interface {
 }
 
 type githubURLGenerator interface {
-	GenerateRepoURL(owner, repo string) (url.URL, error)
+	GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error)
+	GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error)
 }
 
 type Repository struct {
@@ -30,6 +31,6 @@ func NewRepository(client *supabase.Client, pool *pgxpool.Pool, urlGenerator git
 		User:     NewUserRepository(client, pool),
 		Project:  NewProjectRepository(pool, urlGenerator),
 		Settings: NewSettingsRepository(pool),
-		Release:  NewReleaseRepository(pool),
+		Release:  NewReleaseRepository(pool, urlGenerator),
 	}
 }

@@ -1,6 +1,8 @@
 package model
 
 import (
+	"database/sql"
+	"net/url"
 	"time"
 
 	svcmodel "release-manager/service/model"
@@ -15,26 +17,24 @@ type Release struct {
 	ReleaseNotes string    `db:"release_notes"`
 	AuthorUserID uuid.UUID `db:"created_by"`
 	GitTagName   string    `db:"git_tag_name"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
+	// GithubRepoSlug and GithubOwnerSlug are fetched from the project
+	// and are used to generate the tag URL
+	GithubRepoSlug  sql.NullString `db:"github_repo_slug"`
+	GithubOwnerSlug sql.NullString `db:"github_owner_slug"`
+	CreatedAt       time.Time      `db:"created_at"`
+	UpdatedAt       time.Time      `db:"updated_at"`
 }
 
-func ToSvcRelease(rls Release) svcmodel.Release {
+func ToSvcRelease(rls Release, tagURL url.URL) svcmodel.Release {
 	return svcmodel.Release{
 		ID:           rls.ID,
 		ProjectID:    rls.ProjectID,
 		ReleaseTitle: rls.ReleaseTitle,
 		ReleaseNotes: rls.ReleaseNotes,
+		GitTagName:   rls.GitTagName,
+		GitTagURL:    tagURL,
 		AuthorUserID: rls.AuthorUserID,
 		CreatedAt:    rls.CreatedAt,
 		UpdatedAt:    rls.UpdatedAt,
 	}
-}
-
-func ToSvcReleases(releases []Release) []svcmodel.Release {
-	r := make([]svcmodel.Release, 0, len(releases))
-	for _, release := range releases {
-		r = append(r, ToSvcRelease(release))
-	}
-	return r
 }
