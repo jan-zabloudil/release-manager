@@ -225,6 +225,16 @@ func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 	return nil
 }
 
+func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
+	rawURL := fmt.Sprintf("https://github.com/%s/%s", ownerSlug, repoSlug)
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	return *u, nil
+}
+
 func (c *Client) GenerateGitTagURL(repo svcmodel.GithubRepo, tagName string) (url.URL, error) {
 	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", repo.OwnerSlug, repo.RepoSlug, tagName)
 	u, err := url.Parse(rawURL)

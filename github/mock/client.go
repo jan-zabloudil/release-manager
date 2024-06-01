@@ -42,3 +42,8 @@ func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 	args := c.Called(ctx, tkn, repo, rls)
 	return args.Error(0)
 }
+
+func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
+	args := c.Called(ownerSlug, repoSlug)
+	return args.Get(0).(url.URL), args.Error(1)
+}
