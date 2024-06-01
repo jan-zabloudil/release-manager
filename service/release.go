@@ -107,13 +107,13 @@ func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authUser
 
 // Delete deletes a release. If deleteGithubRelease is true, it will also delete associacted GitHub release (if exists).
 // Deleting GitHub release is idempotent, so if the release does not exist on GitHub, it will not return an error.
-func (s *ReleaseService) Delete(ctx context.Context, input model.DeleteReleaseInput, projectID, releaseID, authorUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authorUserID); err != nil {
+func (s *ReleaseService) Delete(ctx context.Context, input model.DeleteReleaseInput, projectID, releaseID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
 	if input.DeleteGithubRelease {
-		err := s.deleteGithubRelease(ctx, projectID, releaseID, authorUserID)
+		err := s.deleteGithubRelease(ctx, projectID, releaseID, authUserID)
 		if err != nil && !svcerrors.IsGithubReleaseNotFoundError(err) {
 			return fmt.Errorf("deleting github release: %w", err)
 		}
