@@ -52,11 +52,11 @@ type settingsRepository interface {
 }
 
 type releaseRepository interface {
-	Create(ctx context.Context, r model.Release) error
-	Read(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
-	Delete(ctx context.Context, projectID, releaseID uuid.UUID) error
-	ListForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
-	Update(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
+	CreateRelease(ctx context.Context, r model.Release) error
+	ReadRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
+	DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error
+	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
+	UpdateRelease(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
 	ListDeploymentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Deployment, error)

@@ -31,7 +31,7 @@ func NewReleaseRepository(pool *pgxpool.Pool) *ReleaseRepository {
 	}
 }
 
-func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) error {
+func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Release) error {
 	_, err := r.dbpool.Exec(ctx, query.CreateRelease, pgx.NamedArgs{
 		"id":           rls.ID,
 		"projectID":    rls.ProjectID,
@@ -51,17 +51,17 @@ func (r *ReleaseRepository) Create(ctx context.Context, rls svcmodel.Release) er
 	return nil
 }
 
-func (r *ReleaseRepository) Read(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
+func (r *ReleaseRepository) ReadRelease(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service
-	return r.read(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{
+	return r.readRelease(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
 	})
 }
 
-func (r *ReleaseRepository) read(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.Release, error) {
+func (r *ReleaseRepository) readRelease(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.Release, error) {
 	var rls model.Release
 
 	err := pgxscan.Get(ctx, q, &rls, readQuery, args)
@@ -76,7 +76,7 @@ func (r *ReleaseRepository) read(ctx context.Context, q querier, readQuery strin
 	return model.ToSvcRelease(rls), nil
 }
 
-func (r *ReleaseRepository) Update(
+func (r *ReleaseRepository) UpdateRelease(
 	ctx context.Context,
 	projectID,
 	releaseID uuid.UUID,
@@ -93,7 +93,7 @@ func (r *ReleaseRepository) Update(
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service
-	rls, err = r.read(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
+	rls, err = r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
 	})
@@ -120,7 +120,7 @@ func (r *ReleaseRepository) Update(
 	return rls, nil
 }
 
-func (r *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uuid.UUID) error {
+func (r *ReleaseRepository) DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error {
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service
@@ -139,7 +139,7 @@ func (r *ReleaseRepository) Delete(ctx context.Context, projectID, releaseID uui
 	return nil
 }
 
-func (r *ReleaseRepository) ListForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
+func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
 	var rls []model.Release
 
 	err := pgxscan.Select(ctx, r.dbpool, &rls, query.ListReleasesForProject, pgx.NamedArgs{

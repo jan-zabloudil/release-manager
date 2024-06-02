@@ -15,7 +15,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rls, err := h.ReleaseSvc.Create(
+	rls, err := h.ReleaseSvc.CreateRelease(
 		r.Context(),
 		model.ToSvcCreateReleaseInput(input),
 		util.ContextProjectID(r),
@@ -30,7 +30,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
-	rls, err := h.ReleaseSvc.Get(
+	rls, err := h.ReleaseSvc.GetRelease(
 		r.Context(),
 		util.ContextProjectID(r),
 		util.ContextReleaseID(r),
@@ -51,7 +51,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.ReleaseSvc.Delete(
+	if err := h.ReleaseSvc.DeleteRelease(
 		r.Context(),
 		model.ToSvcDeleteReleaseInput(input),
 		util.ContextProjectID(r),
@@ -66,7 +66,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
-	rls, err := h.ReleaseSvc.ListForProject(
+	rls, err := h.ReleaseSvc.ListReleasesForProject(
 		r.Context(),
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),
@@ -86,7 +86,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rls, err := h.ReleaseSvc.Update(
+	rls, err := h.ReleaseSvc.UpdateRelease(
 		r.Context(),
 		model.ToSvcUpdateReleaseInput(input),
 		util.ContextProjectID(r),
