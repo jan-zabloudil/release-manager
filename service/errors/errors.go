@@ -315,10 +315,6 @@ func IsInsufficientUserRoleError(err error) bool {
 	return isErrorWithCode(err, ErrCodeForbiddenInsufficientUserRole)
 }
 
-func IsSlackIntegrationNotEnabledError(err error) bool {
-	return isErrorWithCode(err, ErrCodeSlackIntegrationNotEnabled)
-}
-
 func IsGithubReleaseNotFoundError(err error) bool {
 	return isErrorWithCode(err, ErrCodeGithubReleaseNotFound)
 }
