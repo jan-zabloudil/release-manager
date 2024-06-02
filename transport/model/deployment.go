@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	svcmodel "release-manager/service/model"
@@ -28,6 +30,41 @@ func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDepl
 		ReleaseID:     input.ReleaseID,
 		EnvironmentID: input.EnvironmentID,
 	}
+}
+
+func ToSvcDeploymentFilterParams(releaseIDParam, environmentIDParam, latestOnlyParam string) (svcmodel.DeploymentFilterParams, error) {
+	var releaseID, environmentID *uuid.UUID
+	var latestOnly *bool
+
+	if releaseIDParam != "" {
+		id, err := uuid.Parse(releaseIDParam)
+		if err != nil {
+			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for release id: %w", err)
+		}
+		releaseID = &id
+	}
+
+	if environmentIDParam != "" {
+		id, err := uuid.Parse(environmentIDParam)
+		if err != nil {
+			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for environment id: %w", err)
+		}
+		environmentID = &id
+	}
+
+	if latestOnlyParam != "" {
+		latestOnlyValue, err := strconv.ParseBool(latestOnlyParam)
+		if err != nil {
+			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid boolean provided for latest only: %w", err)
+		}
+		latestOnly = &latestOnlyValue
+	}
+
+	return svcmodel.DeploymentFilterParams{
+		ReleaseID:     releaseID,
+		EnvironmentID: environmentID,
+		LatestOnly:    latestOnly,
+	}, nil
 }
 
 func ToDeployment(dpl svcmodel.Deployment) Deployment {

@@ -308,6 +308,7 @@ func (s *ReleaseService) CreateDeployment(
 
 func (s *ReleaseService) ListDeploymentsForProject(
 	ctx context.Context,
+	input model.DeploymentFilterParams,
 	projectID,
 	authUserID uuid.UUID,
 ) ([]model.Deployment, error) {
@@ -315,7 +316,7 @@ func (s *ReleaseService) ListDeploymentsForProject(
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	// TODO add filtering options
+	// TODO add filtering options (use model.CreateDeploymentInput)
 	dpls, err := s.repo.ListDeploymentsForProject(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("listing deployments: %w", err)
