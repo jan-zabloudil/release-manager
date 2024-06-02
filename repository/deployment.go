@@ -3,9 +3,12 @@ package repository
 import (
 	"context"
 
+	"release-manager/repository/model"
 	"release-manager/repository/query"
 	svcmodel "release-manager/service/model"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -33,4 +36,16 @@ func (r *DeploymentRepository) Create(ctx context.Context, dpl svcmodel.Deployme
 	}
 
 	return nil
+}
+
+func (r *DeploymentRepository) ListForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+	var dpls []model.Deployment
+
+	if err := pgxscan.Select(ctx, r.dbpool, &dpls, query.ListDeploymentsForProject, pgx.NamedArgs{
+		"projectID": projectID,
+	}); err != nil {
+		return nil, err
+	}
+
+	return model.ToSvcDeployments(dpls)
 }

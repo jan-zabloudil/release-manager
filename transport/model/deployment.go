@@ -41,3 +41,11 @@ func ToDeployment(dpl svcmodel.Deployment) Deployment {
 		DeployedAt:       dpl.DeployedAt,
 	}
 }
+
+func ToDeployments(dpls []svcmodel.Deployment) []Deployment {
+	d := make([]Deployment, 0, len(dpls))
+	for _, dpl := range dpls {
+		d = append(d, ToDeployment(dpl))
+	}
+	return d
+}

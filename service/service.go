@@ -61,6 +61,7 @@ type releaseRepository interface {
 
 type deploymentRepository interface {
 	Create(ctx context.Context, d model.Deployment) error
+	ListForProject(ctx context.Context, projectID uuid.UUID) ([]model.Deployment, error)
 }
 
 type authGuard interface {

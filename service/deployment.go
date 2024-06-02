@@ -74,3 +74,31 @@ func (s *DeploymentService) Create(
 
 	return dpl, nil
 }
+
+func (s *DeploymentService) ListForProject(
+	ctx context.Context,
+	projectID,
+	authUserID uuid.UUID,
+) ([]model.Deployment, error) {
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return nil, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	// TODO add filtering options
+	dpls, err := s.repo.ListForProject(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("listing deployments: %w", err)
+	}
+
+	if len(dpls) == 0 {
+		exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
+		if err != nil {
+			return nil, fmt.Errorf("checking if project exists: %w", err)
+		}
+		if !exists {
+			return nil, svcerrors.NewProjectNotFoundError()
+		}
+	}
+
+	return dpls, nil
+}
