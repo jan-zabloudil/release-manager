@@ -75,6 +75,9 @@ func (h *Handler) setupRoutes() {
 					r.Put("/github-release", middleware.RequireAuthUser(h.upsertGithubRelease))
 				})
 			})
+			r.Route("/deployments", func(r chi.Router) {
+				r.Post("/", middleware.RequireAuthUser(h.createDeployment))
+			})
 		})
 	})
 

@@ -81,6 +81,9 @@ var (
 	ReadEnvironment string
 	//go:embed scripts/update_environment.sql
 	UpdateEnvironment string
+
+	//go:embed scripts/create_deployment.sql
+	CreateDeployment string
 )
 
 func AppendForUpdate(query string) string {

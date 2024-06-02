@@ -38,6 +38,7 @@ var (
 	ErrCodeGitTagNotFound                   = "ERR_GIT_TAG_NOT_FOUND"
 	ErrCodeGithubReleaseNotFound            = "ERR_GITHUB_RELEASE_NOT_FOUND"
 	ErrCodeReleaseGitTagAlreadyUsed         = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
+	ErrCodeDeploymentUnprocessable          = "ERR_DEPLOYMENT_UNPROCESSABLE"
 )
 
 type Error struct {
@@ -284,6 +285,13 @@ func NewReleaseGitTagAlreadyUsedError() *Error {
 	return &Error{
 		Code:    ErrCodeReleaseGitTagAlreadyUsed,
 		Message: "Git tag is already used for another release",
+	}
+}
+
+func NewDeploymentUnprocessableError() *Error {
+	return &Error{
+		Code:    ErrCodeDeploymentUnprocessable,
+		Message: "Deployment unprocessable",
 	}
 }
 

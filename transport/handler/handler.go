@@ -58,17 +58,22 @@ type releaseService interface {
 	UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
 }
 
+type deploymentService interface {
+	Create(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID, authUserID uuid.UUID) (svcmodel.Deployment, error)
+}
+
 type authClient interface {
 	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
 }
 
 type Handler struct {
-	Mux         *chi.Mux
-	AuthClient  authClient
-	UserSvc     userService
-	ProjectSvc  projectService
-	SettingsSvc settingsService
-	ReleaseSvc  releaseService
+	Mux           *chi.Mux
+	AuthClient    authClient
+	UserSvc       userService
+	ProjectSvc    projectService
+	SettingsSvc   settingsService
+	ReleaseSvc    releaseService
+	DeploymentSvc deploymentService
 }
 
 func NewHandler(
@@ -77,14 +82,16 @@ func NewHandler(
 	projectSvc projectService,
 	settingsSvc settingsService,
 	releaseSvc releaseService,
+	deploymentSvc deploymentService,
 ) *Handler {
 	h := &Handler{
-		Mux:         chi.NewRouter(),
-		AuthClient:  authClient,
-		UserSvc:     userSvc,
-		ProjectSvc:  projectSvc,
-		SettingsSvc: settingsSvc,
-		ReleaseSvc:  releaseSvc,
+		Mux:           chi.NewRouter(),
+		AuthClient:    authClient,
+		UserSvc:       userSvc,
+		ProjectSvc:    projectSvc,
+		SettingsSvc:   settingsSvc,
+		ReleaseSvc:    releaseSvc,
+		DeploymentSvc: deploymentSvc,
 	}
 
 	h.setupRoutes()

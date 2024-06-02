@@ -14,17 +14,19 @@ type querier interface {
 }
 
 type Repository struct {
-	User     *UserRepository
-	Project  *ProjectRepository
-	Settings *SettingsRepository
-	Release  *ReleaseRepository
+	User       *UserRepository
+	Project    *ProjectRepository
+	Settings   *SettingsRepository
+	Release    *ReleaseRepository
+	Deployment *DeploymentRepository
 }
 
 func NewRepository(client *supabase.Client, pool *pgxpool.Pool) *Repository {
 	return &Repository{
-		User:     NewUserRepository(client, pool),
-		Project:  NewProjectRepository(pool),
-		Settings: NewSettingsRepository(pool),
-		Release:  NewReleaseRepository(pool),
+		User:       NewUserRepository(client, pool),
+		Project:    NewProjectRepository(pool),
+		Settings:   NewSettingsRepository(pool),
+		Release:    NewReleaseRepository(pool),
+		Deployment: NewDeploymentRepository(pool),
 	}
 }

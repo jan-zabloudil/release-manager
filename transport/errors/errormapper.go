@@ -48,7 +48,8 @@ func isUnprocessableModelError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
 }
 
 func isUnauthorizedError(err error) bool {
