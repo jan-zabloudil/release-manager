@@ -131,7 +131,7 @@ func NewReleaseNotification(p Project, r Release, dpl *Deployment) ReleaseNotifi
 		n.GitTagName = &r.GitTagName
 		n.GitTagURL = &r.GitTagURL
 	}
-	if p.ReleaseNotificationConfig.ShowDeployments && dpl != nil {
+	if p.ReleaseNotificationConfig.ShowLastDeployment && dpl != nil {
 		n.DeployedToEnvironment = &dpl.Environment.Name
 		n.DeployedAt = &dpl.DeployedAt
 

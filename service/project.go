@@ -531,12 +531,12 @@ func (s *ProjectService) getDefaultReleaseNotificationConfig(ctx context.Context
 	}
 
 	return model.ReleaseNotificationConfig{
-		Message:          msg,
-		ShowProjectName:  true,
-		ShowReleaseTitle: true,
-		ShowReleaseNotes: true,
-		ShowDeployments:  true,
-		ShowSourceCode:   true,
+		Message:            msg,
+		ShowProjectName:    true,
+		ShowReleaseTitle:   true,
+		ShowReleaseNotes:   true,
+		ShowLastDeployment: true,
+		ShowSourceCode:     true,
 	}, nil
 }
 

@@ -989,7 +989,7 @@ components:
             show_release_notes:
               type: boolean
               default: false
-            show_deployments:
+            show_last_deployment:
               type: boolean
               default: false
             show_source_code:
