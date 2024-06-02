@@ -15,7 +15,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dpl, err := h.DeploymentSvc.Create(
+	dpl, err := h.ReleaseSvc.CreateDeployment(
 		r.Context(),
 		model.ToSvcCreateDeploymentInput(input),
 		util.ContextProjectID(r),
@@ -30,7 +30,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Request) {
-	dpls, err := h.DeploymentSvc.ListForProject(
+	dpls, err := h.ReleaseSvc.ListDeploymentsForProject(
 		r.Context(),
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),

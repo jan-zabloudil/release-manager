@@ -56,6 +56,9 @@ type releaseService interface {
 	ListForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Release, error)
 	SendReleaseNotification(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
 	UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
+
+	CreateDeployment(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID, authUserID uuid.UUID) (svcmodel.Deployment, error)
+	ListDeploymentsForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
 }
 
 type deploymentService interface {
@@ -68,13 +71,12 @@ type authClient interface {
 }
 
 type Handler struct {
-	Mux           *chi.Mux
-	AuthClient    authClient
-	UserSvc       userService
-	ProjectSvc    projectService
-	SettingsSvc   settingsService
-	ReleaseSvc    releaseService
-	DeploymentSvc deploymentService
+	Mux         *chi.Mux
+	AuthClient  authClient
+	UserSvc     userService
+	ProjectSvc  projectService
+	SettingsSvc settingsService
+	ReleaseSvc  releaseService
 }
 
 func NewHandler(
@@ -83,16 +85,14 @@ func NewHandler(
 	projectSvc projectService,
 	settingsSvc settingsService,
 	releaseSvc releaseService,
-	deploymentSvc deploymentService,
 ) *Handler {
 	h := &Handler{
-		Mux:           chi.NewRouter(),
-		AuthClient:    authClient,
-		UserSvc:       userSvc,
-		ProjectSvc:    projectSvc,
-		SettingsSvc:   settingsSvc,
-		ReleaseSvc:    releaseSvc,
-		DeploymentSvc: deploymentSvc,
+		Mux:         chi.NewRouter(),
+		AuthClient:  authClient,
+		UserSvc:     userSvc,
+		ProjectSvc:  projectSvc,
+		SettingsSvc: settingsSvc,
+		ReleaseSvc:  releaseSvc,
 	}
 
 	h.setupRoutes()

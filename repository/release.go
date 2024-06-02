@@ -151,3 +151,30 @@ func (r *ReleaseRepository) ListForProject(ctx context.Context, projectID uuid.U
 
 	return model.ToSvcReleases(rls), nil
 }
+
+func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {
+	_, err := r.dbpool.Exec(ctx, query.CreateDeployment, pgx.NamedArgs{
+		"id":            dpl.ID,
+		"releaseID":     dpl.Release.ID,
+		"environmentID": dpl.Environment.ID,
+		"deployedBy":    dpl.DeployedByUserID,
+		"deployedAt":    dpl.DeployedAt,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+	var dpls []model.Deployment
+
+	if err := pgxscan.Select(ctx, r.dbpool, &dpls, query.ListDeploymentsForProject, pgx.NamedArgs{
+		"projectID": projectID,
+	}); err != nil {
+		return nil, err
+	}
+
+	return model.ToSvcDeployments(dpls)
+}

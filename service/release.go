@@ -11,29 +11,32 @@ import (
 )
 
 type ReleaseService struct {
-	authGuard      authGuard
-	projectGetter  projectGetter
-	settingsGetter settingsGetter
-	slackNotifier  slackNotifier
-	githubManager  githubManager
-	repo           releaseRepository
+	authGuard         authGuard
+	projectGetter     projectGetter
+	settingsGetter    settingsGetter
+	environmentGetter environmentGetter
+	slackNotifier     slackNotifier
+	githubManager     githubManager
+	repo              releaseRepository
 }
 
 func NewReleaseService(
 	authGuard authGuard,
 	projectGetter projectGetter,
 	settingsGetter settingsGetter,
+	environmentGetter environmentGetter,
 	notifier slackNotifier,
 	manager githubManager,
 	repo releaseRepository,
 ) *ReleaseService {
 	return &ReleaseService{
-		authGuard:      authGuard,
-		projectGetter:  projectGetter,
-		settingsGetter: settingsGetter,
-		slackNotifier:  notifier,
-		githubManager:  manager,
-		repo:           repo,
+		authGuard:         authGuard,
+		projectGetter:     projectGetter,
+		settingsGetter:    settingsGetter,
+		environmentGetter: environmentGetter,
+		slackNotifier:     notifier,
+		githubManager:     manager,
+		repo:              repo,
 	}
 }
 
@@ -260,4 +263,73 @@ func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, rel
 	}
 
 	return nil
+}
+
+func (s *ReleaseService) CreateDeployment(
+	ctx context.Context,
+	input model.CreateDeploymentInput,
+	projectID,
+	authUserID uuid.UUID,
+) (model.Deployment, error) {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return model.Deployment{}, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	if err := input.Validate(); err != nil {
+		return model.Deployment{}, svcerrors.NewDeploymentUnprocessableError().Wrap(err).WithMessage(err.Error())
+	}
+
+	exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
+	if err != nil {
+		return model.Deployment{}, fmt.Errorf("checking if project exists: %w", err)
+	}
+	if !exists {
+		return model.Deployment{}, svcerrors.NewProjectNotFoundError()
+	}
+
+	rls, err := s.repo.Read(ctx, projectID, input.ReleaseID)
+	if err != nil {
+		return model.Deployment{}, fmt.Errorf("getting release: %w", err)
+	}
+
+	env, err := s.environmentGetter.GetEnvironment(ctx, projectID, input.EnvironmentID, authUserID)
+	if err != nil {
+		return model.Deployment{}, fmt.Errorf("getting environment: %w", err)
+	}
+
+	dpl := model.NewDeployment(rls, env, authUserID)
+
+	if err := s.repo.CreateDeployment(ctx, dpl); err != nil {
+		return model.Deployment{}, fmt.Errorf("creating deployment: %w", err)
+	}
+
+	return dpl, nil
+}
+
+func (s *ReleaseService) ListDeploymentsForProject(
+	ctx context.Context,
+	projectID,
+	authUserID uuid.UUID,
+) ([]model.Deployment, error) {
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return nil, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	// TODO add filtering options
+	dpls, err := s.repo.ListDeploymentsForProject(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("listing deployments: %w", err)
+	}
+
+	if len(dpls) == 0 {
+		exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
+		if err != nil {
+			return nil, fmt.Errorf("checking if project exists: %w", err)
+		}
+		if !exists {
+			return nil, svcerrors.NewProjectNotFoundError()
+		}
+	}
+
+	return dpls, nil
 }
