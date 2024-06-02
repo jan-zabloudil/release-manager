@@ -27,6 +27,8 @@ type Release struct {
 	ID           uuid.UUID `json:"id"`
 	ReleaseTitle string    `json:"release_title"`
 	ReleaseNotes string    `json:"release_notes"`
+	GitTagName   string    `json:"git_tag_name"`
+	GitTagURL    string    `json:"git_tag_url"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
@@ -57,6 +59,8 @@ func ToRelease(r svcmodel.Release) Release {
 		ID:           r.ID,
 		ReleaseTitle: r.ReleaseTitle,
 		ReleaseNotes: r.ReleaseNotes,
+		GitTagName:   r.GitTagName,
+		GitTagURL:    r.GitTagURL.String(),
 		CreatedAt:    r.CreatedAt,
 		UpdatedAt:    r.UpdatedAt,
 	}
