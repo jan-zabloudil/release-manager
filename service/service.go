@@ -85,10 +85,6 @@ type projectGetter interface {
 	ProjectExists(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (bool, error)
 }
 
-type releaseGetter interface {
-	Get(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (model.Release, error)
-}
-
 type environmentGetter interface {
 	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error)
 }

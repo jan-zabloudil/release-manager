@@ -61,11 +61,6 @@ type releaseService interface {
 	ListDeploymentsForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
 }
 
-type deploymentService interface {
-	Create(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID, authUserID uuid.UUID) (svcmodel.Deployment, error)
-	ListForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
-}
-
 type authClient interface {
 	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
 }
