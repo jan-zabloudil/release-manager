@@ -1267,3 +1267,66 @@ func TestProjectService_SetGithubRepoForProject(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectService_GetGithubRepoForProject(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizeService, *repo.ProjectRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Success",
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					GithubRepo: &model.GithubRepo{
+						OwnerSlug: "test",
+						RepoSlug:  "test",
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project not found",
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Project has no github repo",
+			mockSetup: func(auth *svc.AuthorizeService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectRepo := new(repo.ProjectRepository)
+			github := new(githubmock.Client)
+			email := new(resendmock.Client)
+			userSvc := new(svc.UserService)
+			settingsSvc := new(svc.SettingsService)
+			authSvc := new(svc.AuthorizeService)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
+
+			tc.mockSetup(authSvc, projectRepo)
+
+			_, err := service.GetGithubRepoForProject(context.Background(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			authSvc.AssertExpectations(t)
+			projectRepo.AssertExpectations(t)
+		})
+	}
+}

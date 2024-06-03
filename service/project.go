@@ -181,6 +181,23 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 	return nil
 }
 
+func (s *ProjectService) GetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) (model.GithubRepo, error) {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return model.GithubRepo{}, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	p, err := s.getProject(ctx, projectID)
+	if err != nil {
+		return model.GithubRepo{}, fmt.Errorf("getting project: %w", err)
+	}
+
+	if !p.IsGithubRepoSet() {
+		return model.GithubRepo{}, svcerrors.NewGithubRepoNotSetForProjectError()
+	}
+
+	return *p.GithubRepo, nil
+}
+
 func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Environment{}, fmt.Errorf("authorizing user role: %w", err)
