@@ -52,16 +52,14 @@ type settingsRepository interface {
 }
 
 type releaseRepository interface {
-	Create(ctx context.Context, r model.Release) error
-	Read(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
-	Delete(ctx context.Context, projectID, releaseID uuid.UUID) error
-	ListForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
-	Update(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
-}
+	CreateRelease(ctx context.Context, r model.Release) error
+	ReadRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
+	DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error
+	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
+	UpdateRelease(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
 
-type deploymentRepository interface {
-	Create(ctx context.Context, d model.Deployment) error
-	ListForProject(ctx context.Context, projectID uuid.UUID) ([]model.Deployment, error)
+	CreateDeployment(ctx context.Context, d model.Deployment) error
+	ListDeploymentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Deployment, error)
 }
 
 type authGuard interface {
@@ -85,10 +83,6 @@ type userGetter interface {
 type projectGetter interface {
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
 	ProjectExists(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (bool, error)
-}
-
-type releaseGetter interface {
-	Get(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (model.Release, error)
 }
 
 type environmentGetter interface {
@@ -118,7 +112,6 @@ type Service struct {
 	Project       *ProjectService
 	Settings      *SettingsService
 	Release       *ReleaseService
-	Deployment    *DeploymentService
 }
 
 func NewService(
@@ -126,7 +119,6 @@ func NewService(
 	projectRepo projectRepository,
 	settingsRepo settingsRepository,
 	releaseRepo releaseRepository,
-	deploymentRepo deploymentRepository,
 	githubManager githubManager,
 	emailSender emailSender,
 	slackNotifier slackNotifier,
@@ -135,8 +127,7 @@ func NewService(
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)
-	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, slackNotifier, githubManager, releaseRepo)
-	deploymentSvc := NewDeploymentService(authSvc, projectSvc, releaseSvc, projectSvc, deploymentRepo)
+	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackNotifier, githubManager, releaseRepo)
 
 	return &Service{
 		Authorization: authSvc,
@@ -144,6 +135,5 @@ func NewService(
 		Project:       projectSvc,
 		Settings:      settingsSvc,
 		Release:       releaseSvc,
-		Deployment:    deploymentSvc,
 	}
 }

@@ -63,12 +63,11 @@ func run() error {
 		repo.Project,
 		repo.Settings,
 		repo.Release,
-		repo.Deployment,
 		githubClient,
 		resendClient,
 		slackClient,
 	)
-	h := handler.NewHandler(authClient, svc.User, svc.Project, svc.Settings, svc.Release, svc.Deployment)
+	h := handler.NewHandler(authClient, svc.User, svc.Project, svc.Settings, svc.Release)
 
 	serverConfig := httpx.ServerConfig{
 		Addr: fmt.Sprintf(":%d", cfg.Port),

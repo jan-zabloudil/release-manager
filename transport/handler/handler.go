@@ -49,18 +49,16 @@ type settingsService interface {
 }
 
 type releaseService interface {
-	Create(ctx context.Context, input svcmodel.CreateReleaseInput, projectID, authUserID uuid.UUID) (svcmodel.Release, error)
-	Get(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
-	Delete(ctx context.Context, input svcmodel.DeleteReleaseInput, projectID, releaseID, authUserID uuid.UUID) error
-	Update(ctx context.Context, input svcmodel.UpdateReleaseInput, projectID, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
-	ListForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Release, error)
+	CreateRelease(ctx context.Context, input svcmodel.CreateReleaseInput, projectID, authUserID uuid.UUID) (svcmodel.Release, error)
+	GetRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
+	DeleteRelease(ctx context.Context, input svcmodel.DeleteReleaseInput, projectID, releaseID, authUserID uuid.UUID) error
+	UpdateRelease(ctx context.Context, input svcmodel.UpdateReleaseInput, projectID, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
+	ListReleasesForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Release, error)
 	SendReleaseNotification(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
 	UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
-}
 
-type deploymentService interface {
-	Create(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID, authUserID uuid.UUID) (svcmodel.Deployment, error)
-	ListForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
+	CreateDeployment(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID, authUserID uuid.UUID) (svcmodel.Deployment, error)
+	ListDeploymentsForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
 }
 
 type authClient interface {
@@ -68,13 +66,12 @@ type authClient interface {
 }
 
 type Handler struct {
-	Mux           *chi.Mux
-	AuthClient    authClient
-	UserSvc       userService
-	ProjectSvc    projectService
-	SettingsSvc   settingsService
-	ReleaseSvc    releaseService
-	DeploymentSvc deploymentService
+	Mux         *chi.Mux
+	AuthClient  authClient
+	UserSvc     userService
+	ProjectSvc  projectService
+	SettingsSvc settingsService
+	ReleaseSvc  releaseService
 }
 
 func NewHandler(
@@ -83,16 +80,14 @@ func NewHandler(
 	projectSvc projectService,
 	settingsSvc settingsService,
 	releaseSvc releaseService,
-	deploymentSvc deploymentService,
 ) *Handler {
 	h := &Handler{
-		Mux:           chi.NewRouter(),
-		AuthClient:    authClient,
-		UserSvc:       userSvc,
-		ProjectSvc:    projectSvc,
-		SettingsSvc:   settingsSvc,
-		ReleaseSvc:    releaseSvc,
-		DeploymentSvc: deploymentSvc,
+		Mux:         chi.NewRouter(),
+		AuthClient:  authClient,
+		UserSvc:     userSvc,
+		ProjectSvc:  projectSvc,
+		SettingsSvc: settingsSvc,
+		ReleaseSvc:  releaseSvc,
 	}
 
 	h.setupRoutes()

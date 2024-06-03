@@ -11,33 +11,36 @@ import (
 )
 
 type ReleaseService struct {
-	authGuard      authGuard
-	projectGetter  projectGetter
-	settingsGetter settingsGetter
-	slackNotifier  slackNotifier
-	githubManager  githubManager
-	repo           releaseRepository
+	authGuard         authGuard
+	projectGetter     projectGetter
+	settingsGetter    settingsGetter
+	environmentGetter environmentGetter
+	slackNotifier     slackNotifier
+	githubManager     githubManager
+	repo              releaseRepository
 }
 
 func NewReleaseService(
 	authGuard authGuard,
 	projectGetter projectGetter,
 	settingsGetter settingsGetter,
+	environmentGetter environmentGetter,
 	notifier slackNotifier,
 	manager githubManager,
 	repo releaseRepository,
 ) *ReleaseService {
 	return &ReleaseService{
-		authGuard:      authGuard,
-		projectGetter:  projectGetter,
-		settingsGetter: settingsGetter,
-		slackNotifier:  notifier,
-		githubManager:  manager,
-		repo:           repo,
+		authGuard:         authGuard,
+		projectGetter:     projectGetter,
+		settingsGetter:    settingsGetter,
+		environmentGetter: environmentGetter,
+		slackNotifier:     notifier,
+		githubManager:     manager,
+		repo:              repo,
 	}
 }
 
-func (s *ReleaseService) Create(
+func (s *ReleaseService) CreateRelease(
 	ctx context.Context,
 	input model.CreateReleaseInput,
 	projectID,
@@ -85,19 +88,19 @@ func (s *ReleaseService) Create(
 		return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	if err := s.repo.Create(ctx, rls); err != nil {
+	if err := s.repo.CreateRelease(ctx, rls); err != nil {
 		return model.Release{}, fmt.Errorf("creating release: %w", err)
 	}
 
 	return rls, nil
 }
 
-func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (model.Release, error) {
+func (s *ReleaseService) GetRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (model.Release, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	rls, err := s.repo.Read(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
 	if err != nil {
 		return model.Release{}, fmt.Errorf("reading release: %w", err)
 	}
@@ -105,9 +108,9 @@ func (s *ReleaseService) Get(ctx context.Context, projectID, releaseID, authUser
 	return rls, nil
 }
 
-// Delete deletes a release. If deleteGithubRelease is true, it will also delete associacted GitHub release (if exists).
+// DeleteRelease deletes a release. If deleteGithubRelease is true, it will also delete associacted GitHub release (if exists).
 // Deleting GitHub release is idempotent, so if the release does not exist on GitHub, it will not return an error.
-func (s *ReleaseService) Delete(ctx context.Context, input model.DeleteReleaseInput, projectID, releaseID, authUserID uuid.UUID) error {
+func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteReleaseInput, projectID, releaseID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -119,14 +122,14 @@ func (s *ReleaseService) Delete(ctx context.Context, input model.DeleteReleaseIn
 		}
 	}
 
-	if err := s.repo.Delete(ctx, projectID, releaseID); err != nil {
+	if err := s.repo.DeleteRelease(ctx, projectID, releaseID); err != nil {
 		return fmt.Errorf("deleting release: %w", err)
 	}
 
 	return nil
 }
 
-func (s *ReleaseService) Update(
+func (s *ReleaseService) UpdateRelease(
 	ctx context.Context,
 	input model.UpdateReleaseInput,
 	projectID,
@@ -137,7 +140,7 @@ func (s *ReleaseService) Update(
 		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	rls, err := s.repo.Update(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
+	rls, err := s.repo.UpdateRelease(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
 			return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
@@ -151,12 +154,12 @@ func (s *ReleaseService) Update(
 	return rls, nil
 }
 
-func (s *ReleaseService) ListForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Release, error) {
+func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Release, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	rls, err := s.repo.ListForProject(ctx, projectID)
+	rls, err := s.repo.ListReleasesForProject(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("listing releases: %w", err)
 	}
@@ -178,7 +181,7 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	rls, err := s.repo.Read(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
 	}
@@ -219,7 +222,7 @@ func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, projectID, rel
 		return fmt.Errorf("getting project: %w", err)
 	}
 
-	rls, err := s.repo.Read(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
 	}
@@ -246,7 +249,7 @@ func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, rel
 		return fmt.Errorf("getting project: %w", err)
 	}
 
-	rls, err := s.repo.Read(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
 	}
@@ -260,4 +263,73 @@ func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, rel
 	}
 
 	return nil
+}
+
+func (s *ReleaseService) CreateDeployment(
+	ctx context.Context,
+	input model.CreateDeploymentInput,
+	projectID,
+	authUserID uuid.UUID,
+) (model.Deployment, error) {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return model.Deployment{}, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	if err := input.Validate(); err != nil {
+		return model.Deployment{}, svcerrors.NewDeploymentUnprocessableError().Wrap(err).WithMessage(err.Error())
+	}
+
+	exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
+	if err != nil {
+		return model.Deployment{}, fmt.Errorf("checking if project exists: %w", err)
+	}
+	if !exists {
+		return model.Deployment{}, svcerrors.NewProjectNotFoundError()
+	}
+
+	rls, err := s.repo.ReadRelease(ctx, projectID, input.ReleaseID)
+	if err != nil {
+		return model.Deployment{}, fmt.Errorf("getting release: %w", err)
+	}
+
+	env, err := s.environmentGetter.GetEnvironment(ctx, projectID, input.EnvironmentID, authUserID)
+	if err != nil {
+		return model.Deployment{}, fmt.Errorf("getting environment: %w", err)
+	}
+
+	dpl := model.NewDeployment(rls, env, authUserID)
+
+	if err := s.repo.CreateDeployment(ctx, dpl); err != nil {
+		return model.Deployment{}, fmt.Errorf("creating deployment: %w", err)
+	}
+
+	return dpl, nil
+}
+
+func (s *ReleaseService) ListDeploymentsForProject(
+	ctx context.Context,
+	projectID,
+	authUserID uuid.UUID,
+) ([]model.Deployment, error) {
+	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
+		return nil, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	// TODO add filtering options
+	dpls, err := s.repo.ListDeploymentsForProject(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("listing deployments: %w", err)
+	}
+
+	if len(dpls) == 0 {
+		exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
+		if err != nil {
+			return nil, fmt.Errorf("checking if project exists: %w", err)
+		}
+		if !exists {
+			return nil, svcerrors.NewProjectNotFoundError()
+		}
+	}
+
+	return dpls, nil
 }
