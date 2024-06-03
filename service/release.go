@@ -181,9 +181,9 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	tkn, err := s.settingsGetter.GetSlackToken(ctx)
 	if err != nil {
-		return fmt.Errorf("reading release: %w", err)
+		return fmt.Errorf("getting slack token: %w", err)
 	}
 
 	p, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
@@ -191,13 +191,13 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 		return fmt.Errorf("getting project: %w", err)
 	}
 
-	if !p.IsSlackChannelSet() {
-		return svcerrors.NewSlackChannelNotSetForProjectError()
+	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	if err != nil {
+		return fmt.Errorf("reading release: %w", err)
 	}
 
-	tkn, err := s.settingsGetter.GetSlackToken(ctx)
-	if err != nil {
-		return fmt.Errorf("getting slack token: %w", err)
+	if !p.IsSlackChannelSet() {
+		return svcerrors.NewSlackChannelNotSetForProjectError()
 	}
 
 	if err := s.slackNotifier.SendReleaseNotification(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls)); err != nil {
