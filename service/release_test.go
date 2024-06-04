@@ -512,7 +512,7 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name: "Send release notification",
+			name: "Send release notification with deployment",
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
@@ -520,6 +520,21 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 					SlackChannelID: "channel",
 				}, nil)
 				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				releaseRepo.On("ReadLastDeploymentForRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Deployment{}, nil)
+				slackClient.On("SendReleaseNotification", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Send release notification without deployment",
+			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					SlackChannelID: "channel",
+				}, nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				releaseRepo.On("ReadLastDeploymentForRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Deployment{}, svcerrors.NewDeploymentNotFoundError())
 				slackClient.On("SendReleaseNotification", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -558,10 +573,11 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizeService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
-				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					SlackChannelID: "",
 				}, nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				releaseRepo.On("ReadLastDeploymentForRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Deployment{}, nil)
 			},
 			wantErr: true,
 		},

@@ -178,3 +178,24 @@ func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, proje
 
 	return model.ToSvcDeployments(dpls)
 }
+
+func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Deployment, error) {
+	var dpl model.Deployment
+
+	// Project ID is not needed in the query because releaseID is primary key
+	// But it is added for security reasons
+	// To make sure that the release (and therefore deployment) belongs to the project that is passed from the service
+	err := pgxscan.Get(ctx, r.dbpool, &dpl, query.ReadLastDeploymentForRelease, pgx.NamedArgs{
+		"releaseID": releaseID,
+		"projectID": projectID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return svcmodel.Deployment{}, svcerrors.NewDeploymentNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.Deployment{}, err
+	}
+
+	return model.ToSvcDeployment(dpl)
+}

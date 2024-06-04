@@ -101,17 +101,19 @@ func (r *Release) Validate() error {
 	return nil
 }
 
-// TODO add more fields
 type ReleaseNotification struct {
-	Message      string
-	ProjectName  *string
-	ReleaseTitle *string
-	ReleaseNotes *string
-	GitTagName   *string
-	GitTagURL    *url.URL
+	Message               string
+	ProjectName           *string
+	ReleaseTitle          *string
+	ReleaseNotes          *string
+	GitTagName            *string
+	GitTagURL             *url.URL
+	DeployedToEnvironment *string
+	DeployedAt            *time.Time
+	DeployedServiceURL    *url.URL
 }
 
-func NewReleaseNotification(p Project, r Release) ReleaseNotification {
+func NewReleaseNotification(p Project, r Release, dpl *Deployment) ReleaseNotification {
 	n := ReleaseNotification{
 		Message: p.ReleaseNotificationConfig.Message,
 	}
@@ -128,6 +130,16 @@ func NewReleaseNotification(p Project, r Release) ReleaseNotification {
 	if p.ReleaseNotificationConfig.ShowSourceCode {
 		n.GitTagName = &r.GitTagName
 		n.GitTagURL = &r.GitTagURL
+	}
+	if p.ReleaseNotificationConfig.ShowDeployments && dpl != nil {
+		n.DeployedToEnvironment = &dpl.Environment.Name
+		n.DeployedAt = &dpl.DeployedAt
+
+		// Add the service URL to notification only if it is set
+		// Service URL is not required for all environments
+		if dpl.Environment.IsServiceURLSet() {
+			n.DeployedServiceURL = &dpl.Environment.ServiceURL
+		}
 	}
 
 	return n

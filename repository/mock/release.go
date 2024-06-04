@@ -47,3 +47,8 @@ func (m *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, proje
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.Deployment), args.Error(1)
 }
+
+func (m *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Deployment, error) {
+	args := m.Called(ctx, releaseID)
+	return args.Get(0).(svcmodel.Deployment), args.Error(1)
+}

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/google/uuid"
@@ -143,6 +144,36 @@ func TestEnvironment_Update(t *testing.T) {
 				assert.Equal(t, *tt.update.Name, tt.env.Name)
 				assert.Equal(t, *tt.update.ServiceRawURL, tt.env.ServiceURL.String())
 			}
+		})
+	}
+}
+
+func TestIsServiceURLSet(t *testing.T) {
+	tests := []struct {
+		name string
+		env  Environment
+		want bool
+	}{
+		{
+			name: "URL is set",
+			env: Environment{
+				ServiceURL: url.URL{
+					Scheme: "http",
+					Host:   "example.com",
+				},
+			},
+			want: true,
+		},
+		{
+			name: "URL is not set",
+			env:  Environment{},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.env.IsServiceURLSet())
 		})
 	}
 }

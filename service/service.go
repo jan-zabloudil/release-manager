@@ -60,6 +60,7 @@ type releaseRepository interface {
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
 	ListDeploymentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Deployment, error)
+	ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Deployment, error)
 }
 
 type authGuard interface {

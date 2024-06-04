@@ -37,6 +37,16 @@ func (c *Client) SendReleaseNotification(ctx context.Context, token, channelID s
 	if n.GitTagName != nil && n.GitTagURL != nil {
 		msgOptions.AddAttachmentFieldWithLink("Source code", *n.GitTagURL, *n.GitTagName)
 	}
+	if n.DeployedToEnvironment != nil {
+		if n.DeployedServiceURL != nil {
+			msgOptions.AddAttachmentFieldWithLink("Deployed to", *n.DeployedServiceURL, *n.DeployedToEnvironment)
+		} else {
+			msgOptions.AddAttachmentField("Deployed to", *n.DeployedToEnvironment)
+		}
+	}
+	if n.DeployedAt != nil {
+		msgOptions.AddAttachmentField("Deployed at", n.DeployedAt.Format("2006-01-02 15:04:05"))
+	}
 
 	return c.sendMessage(ctx, token, channelID, msgOptions.Build())
 }
