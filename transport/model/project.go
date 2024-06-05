@@ -86,3 +86,13 @@ func ToProjects(projects []svcmodel.Project) []Project {
 
 	return p
 }
+
+type GithubRepo struct {
+	GithubRepoURL string `json:"github_repo_url"`
+}
+
+func ToGithubRepo(repo svcmodel.GithubRepo) GithubRepo {
+	return GithubRepo{
+		GithubRepoURL: repo.URL.String(),
+	}
+}

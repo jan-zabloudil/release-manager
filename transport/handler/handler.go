@@ -16,7 +16,6 @@ type projectService interface {
 	ListProjects(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.Project, error)
 	UpdateProject(ctx context.Context, u svcmodel.UpdateProjectInput, projectID, authUserID uuid.UUID) (svcmodel.Project, error)
 	DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error
-	SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID uuid.UUID, authUserID uuid.UUID) error
 
 	CreateEnvironment(ctx context.Context, c svcmodel.CreateEnvironmentInput, authUserID uuid.UUID) (svcmodel.Environment, error)
 	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
@@ -24,6 +23,8 @@ type projectService interface {
 	DeleteEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) error
 	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
 
+	SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID uuid.UUID, authUserID uuid.UUID) error
+	GetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) (svcmodel.GithubRepo, error)
 	ListGithubRepoTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.GitTag, error)
 
 	Invite(ctx context.Context, c svcmodel.CreateProjectInvitationInput, authUserID uuid.UUID) (svcmodel.ProjectInvitation, error)
