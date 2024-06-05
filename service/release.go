@@ -196,11 +196,16 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 		return fmt.Errorf("reading release: %w", err)
 	}
 
+	dpl, err := s.getLastDeploymentForRelease(ctx, projectID, releaseID)
+	if err != nil {
+		return fmt.Errorf("getting last deployment for release: %w", err)
+	}
+
 	if !p.IsSlackChannelSet() {
 		return svcerrors.NewSlackChannelNotSetForProjectError()
 	}
 
-	if err := s.slackNotifier.SendReleaseNotification(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls)); err != nil {
+	if err := s.slackNotifier.SendReleaseNotification(ctx, tkn, p.SlackChannelID, model.NewReleaseNotification(p, rls, dpl)); err != nil {
 		return fmt.Errorf("sending slack notification: %w", err)
 	}
 
@@ -332,4 +337,19 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	}
 
 	return dpls, nil
+}
+
+// getLastDeploymentForRelease returns pointer to the last deployment for the release,
+// or nil if no deployment exists for the release.
+func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (*model.Deployment, error) {
+	dpl, err := s.repo.ReadLastDeploymentForRelease(ctx, projectID, releaseID)
+	if err != nil && !svcerrors.IsNotFoundError(err) {
+		return nil, fmt.Errorf("reading last deployment for release: %w", err)
+	}
+
+	if svcerrors.IsNotFoundError(err) {
+		return nil, nil
+	}
+
+	return &dpl, nil
 }

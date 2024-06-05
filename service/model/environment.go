@@ -94,6 +94,10 @@ func (e *Environment) Update(u UpdateEnvironmentInput) error {
 	return e.Validate()
 }
 
+func (e *Environment) IsServiceURLSet() bool {
+	return e.ServiceURL.String() != ""
+}
+
 func toServiceURL(rawURL string) (url.URL, error) {
 	if rawURL == "" {
 		return url.URL{}, nil

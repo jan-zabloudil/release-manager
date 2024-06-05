@@ -39,6 +39,7 @@ var (
 	ErrCodeGithubReleaseNotFound            = "ERR_GITHUB_RELEASE_NOT_FOUND"
 	ErrCodeReleaseGitTagAlreadyUsed         = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
 	ErrCodeDeploymentUnprocessable          = "ERR_DEPLOYMENT_UNPROCESSABLE"
+	ErrCodeDeploymentNotFound               = "ERR_DEPLOYMENT_NOT_FOUND"
 )
 
 type Error struct {
@@ -295,6 +296,13 @@ func NewDeploymentUnprocessableError() *Error {
 	}
 }
 
+func NewDeploymentNotFoundError() *Error {
+	return &Error{
+		Code:    ErrCodeDeploymentNotFound,
+		Message: "Deployment not found",
+	}
+}
+
 func IsNotFoundError(err error) bool {
 	return isErrorWithCode(err, ErrCodeUserNotFound) ||
 		isErrorWithCode(err, ErrCodeProjectNotFound) ||
@@ -308,7 +316,8 @@ func IsNotFoundError(err error) bool {
 		isErrorWithCode(err, ErrCodeGithubRepoInvalidURL) ||
 		isErrorWithCode(err, ErrCodeReleaseNotFound) ||
 		isErrorWithCode(err, ErrCodeGitTagNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubReleaseNotFound)
+		isErrorWithCode(err, ErrCodeGithubReleaseNotFound) ||
+		isErrorWithCode(err, ErrCodeDeploymentNotFound)
 }
 
 func IsInsufficientUserRoleError(err error) bool {
