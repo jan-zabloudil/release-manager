@@ -30,8 +30,19 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Request) {
+	filterParams, err := model.ToSvcDeploymentFilterParams(
+		util.GetQueryParam(r, "release_id"),
+		util.GetQueryParam(r, "environment_id"),
+		util.GetQueryParam(r, "latest_only"),
+	)
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	dpls, err := h.ReleaseSvc.ListDeploymentsForProject(
 		r.Context(),
+		filterParams,
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),
 	)

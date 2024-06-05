@@ -44,3 +44,9 @@ func NewDeployment(rls Release, env Environment, deployedByUserID uuid.UUID) Dep
 		DeployedAt:       time.Now(),
 	}
 }
+
+type DeploymentFilterParams struct {
+	ReleaseID     *uuid.UUID
+	EnvironmentID *uuid.UUID
+	LatestOnly    *bool
+}

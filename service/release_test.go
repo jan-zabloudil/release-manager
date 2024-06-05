@@ -870,7 +870,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.ListDeploymentsForProject(context.TODO(), uuid.Nil, uuid.Nil)
+			_, err := service.ListDeploymentsForProject(context.TODO(), model.DeploymentFilterParams{}, uuid.Nil, uuid.Nil)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
