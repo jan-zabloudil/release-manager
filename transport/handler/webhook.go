@@ -23,8 +23,18 @@ func (h *Handler) handleGithubReleaseWebhook(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// TODO get the secret from the settings
-	secret := ""
+	secret, err := h.SettingsSvc.GetGithubWebhookSecret(r.Context())
+	if err != nil {
+		if resperrors.IsGithubIntegrationNotEnabledError(err) {
+			// If the GitHub integration is not enabled, the webhook should not be processed.
+			// And we should return 204, because from the webhook perspective it is not an error case.
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
 
 	if !isValidPayload(secret, r.Header.Get(util.SignatureHeader), body) {
 		util.WriteResponseError(w, resperrors.NewUnauthorizedError())
@@ -43,10 +53,23 @@ func (h *Handler) handleGithubReleaseWebhook(w http.ResponseWriter, r *http.Requ
 	}
 
 	if r.Header.Get(util.GithubHookEvent) == githubWebhookDeleteEventName && input.RefType == gitRefTypeTag {
-		panic("implement me: handle the case when a tag is deleted")
+		ownerSlug, repoSlug, err := model.SplitGithubRepoSlugs(input.Repo.Slugs)
+		if err != nil {
+			util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err))
+			return
+		}
+
+		err = h.ReleaseSvc.DeleteReleaseByGitTag(r.Context(), ownerSlug, repoSlug, input.Ref)
+		if err != nil && !resperrors.IsNotFoundError(err) {
+			// If the release is not found, from the webhook perspective that is not an error.
+			// Webhook just notifies us that the tag is deleted but there is no release for that tag.
+			// Therefore, we want to return error only if the error is not NotFoundError.
+			util.WriteResponseError(w, resperrors.ToError(err))
+			return
+		}
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func isValidPayload(secret, signature string, payload []byte) bool {

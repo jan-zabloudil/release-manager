@@ -8,24 +8,24 @@ import (
 
 func ToError(err error) *Error {
 	switch {
-	case isUnauthorizedError(err):
+	case IsUnauthorizedError(err):
 		return NewUnauthorizedError().Wrap(err)
-	case isForbiddenError(err):
+	case IsForbiddenError(err):
 		return NewForbiddenError().Wrap(err)
-	case isNotFoundError(err):
+	case IsNotFoundError(err):
 		return NewNotFoundError().Wrap(err)
-	case isUnprocessableModelError(err):
+	case IsUnprocessableModelError(err):
 		return NewUnprocessableEntityError().Wrap(err)
-	case isConflictError(err):
+	case IsConflictError(err):
 		return NewConflictError().Wrap(err)
-	case isBadRequestError(err):
+	case IsBadRequestError(err):
 		return NewBadRequestError().Wrap(err)
 	default:
 		return NewServerError().Wrap(err)
 	}
 }
 
-func isNotFoundError(err error) bool {
+func IsNotFoundError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeUserNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectNotFound) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentNotFound) ||
@@ -42,7 +42,7 @@ func isNotFoundError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotFound)
 }
 
-func isUnprocessableModelError(err error) bool {
+func IsUnprocessableModelError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeProjectUnprocessable) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
@@ -52,29 +52,33 @@ func isUnprocessableModelError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
 }
 
-func isUnauthorizedError(err error) bool {
+func IsUnauthorizedError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeUnauthorizedUnknownUser) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackClientUnauthorized)
 }
 
-func isForbiddenError(err error) bool {
+func IsForbiddenError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientUserRole) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientForbidden) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientProjectRole) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenUserNotProjectMember)
 }
 
-func isConflictError(err error) bool {
+func IsConflictError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentDuplicateName) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseGitTagAlreadyUsed)
 }
 
-func isBadRequestError(err error) bool {
+func IsBadRequestError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotSetForProject) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled)
+}
+
+func IsGithubIntegrationNotEnabledError(err error) bool {
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled)
 }
 
 func isSvcErrorWithCode(err error, code string) bool {
