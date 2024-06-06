@@ -27,3 +27,8 @@ func (m *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, a
 	args := m.Called(ctx, projectID, envID, authUserID)
 	return args.Get(0).(model.Environment), args.Error(1)
 }
+
+func (m *ProjectService) EnvironmentExists(ctx context.Context, projectID, envID, authUserID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, projectID, envID, authUserID)
+	return args.Bool(0), args.Error(1)
+}

@@ -2,6 +2,7 @@ package query
 
 import (
 	_ "embed"
+	"strconv"
 )
 
 var (
@@ -92,4 +93,8 @@ var (
 
 func AppendForUpdate(query string) string {
 	return query + "\nFOR UPDATE"
+}
+
+func AppendLimit(query string, limit int) string {
+	return query + "\nLIMIT " + strconv.Itoa(limit)
 }

@@ -818,16 +818,21 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 }
 
 func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
+	envID := uuid.New()
+	releaseID := uuid.New()
+
 	testCases := []struct {
 		name      string
+		params    model.DeploymentFilterParams
 		mockSetup func(*svc.AuthorizeService, *svc.ProjectService, *repo.ReleaseRepository)
 		wantErr   bool
 	}{
 		{
-			name: "Deployments fetched successfully",
+			name:   "Deployments fetched successfully - without params",
+			params: model.DeploymentFilterParams{},
 			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything).Return([]model.Deployment{
+				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{
 					{
 						ID: uuid.New(),
 					},
@@ -839,10 +844,56 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Deployments fetched successfully - with valid params",
+			params: model.DeploymentFilterParams{
+				EnvironmentID: &envID,
+				ReleaseID:     &releaseID,
+			},
+			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectSvc.On("EnvironmentExists", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{
+					{
+						ID: uuid.New(),
+					},
+					{
+						ID: uuid.New(),
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Deployments fetched successfully - release provided in params not found",
+			params: model.DeploymentFilterParams{
+				EnvironmentID: &envID,
+				ReleaseID:     &releaseID,
+			},
+			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Deployments fetched successfully - env provided in params not found",
+			params: model.DeploymentFilterParams{
+				EnvironmentID: &envID,
+				ReleaseID:     &releaseID,
+			},
+			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
+				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectSvc.On("EnvironmentExists", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
+			},
+			wantErr: true,
+		},
+		{
 			name: "Deployments fetched successfully but no deployments found",
 			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything).Return([]model.Deployment{}, nil)
+				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{}, nil)
 				projectSvc.On("ProjectExists", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
 			},
 			wantErr: false,
@@ -851,7 +902,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 			name: "Project not found",
 			mockSetup: func(authSvc *svc.AuthorizeService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything).Return([]model.Deployment{}, nil)
+				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{}, nil)
 				projectSvc.On("ProjectExists", mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
 			},
 			wantErr: true,
@@ -870,7 +921,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.ListDeploymentsForProject(context.TODO(), model.DeploymentFilterParams{}, uuid.Nil, uuid.Nil)
+			_, err := service.ListDeploymentsForProject(context.TODO(), tc.params, uuid.Nil, uuid.Nil)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {

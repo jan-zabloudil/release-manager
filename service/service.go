@@ -59,7 +59,7 @@ type releaseRepository interface {
 	UpdateRelease(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
-	ListDeploymentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Deployment, error)
+	ListDeploymentsForProject(ctx context.Context, params model.DeploymentFilterParams, projectID uuid.UUID) ([]model.Deployment, error)
 	ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Deployment, error)
 }
 
@@ -88,6 +88,7 @@ type projectGetter interface {
 
 type environmentGetter interface {
 	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error)
+	EnvironmentExists(ctx context.Context, projectID, envID, authUserID uuid.UUID) (bool, error)
 }
 
 type githubManager interface {

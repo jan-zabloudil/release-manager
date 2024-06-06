@@ -201,11 +201,18 @@ func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.D
 	return nil
 }
 
-func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
 	var dpls []model.Deployment
 
-	if err := pgxscan.Select(ctx, r.dbpool, &dpls, query.ListDeploymentsForProject, pgx.NamedArgs{
+	listQuery := query.ListDeploymentsForProject
+	if params.LatestOnly != nil && *params.LatestOnly {
+		listQuery = query.AppendLimit(listQuery, 1)
+	}
+
+	if err := pgxscan.Select(ctx, r.dbpool, &dpls, listQuery, pgx.NamedArgs{
 		"projectID": projectID,
+		"releaseID": params.ReleaseID,
+		"envID":     params.EnvironmentID,
 	}); err != nil {
 		return nil, err
 	}

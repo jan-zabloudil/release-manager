@@ -21,5 +21,7 @@ JOIN environments e
     ON d.environment_id = e.id
 WHERE
     r.project_id = @projectID AND
-    e.project_id = @projectID
+    e.project_id = @projectID AND
+    (@releaseID::uuid IS NULL OR r.id = @releaseID) AND
+    (@envID::uuid IS NULL OR e.id = @envID)
 ORDER BY d.deployed_at DESC

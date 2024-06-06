@@ -313,7 +313,7 @@ func (s *ReleaseService) CreateDeployment(
 
 func (s *ReleaseService) ListDeploymentsForProject(
 	ctx context.Context,
-	input model.DeploymentFilterParams,
+	params model.DeploymentFilterParams,
 	projectID,
 	authUserID uuid.UUID,
 ) ([]model.Deployment, error) {
@@ -321,8 +321,27 @@ func (s *ReleaseService) ListDeploymentsForProject(
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	// TODO add filtering options (use model.CreateDeploymentInput)
-	dpls, err := s.repo.ListDeploymentsForProject(ctx, projectID)
+	if params.ReleaseID != nil {
+		exists, err := s.releaseExists(ctx, projectID, *params.ReleaseID)
+		if err != nil {
+			return nil, fmt.Errorf("checking if release exists: %w", err)
+		}
+		if !exists {
+			return nil, svcerrors.NewReleaseNotFoundError()
+		}
+	}
+
+	if params.EnvironmentID != nil {
+		exists, err := s.environmentGetter.EnvironmentExists(ctx, projectID, *params.EnvironmentID, authUserID)
+		if err != nil {
+			return nil, fmt.Errorf("checking if environment exists: %w", err)
+		}
+		if !exists {
+			return nil, svcerrors.NewEnvironmentNotFoundError()
+		}
+	}
+
+	dpls, err := s.repo.ListDeploymentsForProject(ctx, params, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("listing deployments: %w", err)
 	}
@@ -353,4 +372,17 @@ func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, projec
 	}
 
 	return &dpl, nil
+}
+
+func (s *ReleaseService) releaseExists(ctx context.Context, projectID, releaseID uuid.UUID) (bool, error) {
+	_, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	if err != nil && !svcerrors.IsNotFoundError(err) {
+		return false, fmt.Errorf("checking if release exists: %w", err)
+	}
+
+	if svcerrors.IsNotFoundError(err) {
+		return false, nil
+	}
+
+	return true, nil
 }
