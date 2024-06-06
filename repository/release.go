@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"release-manager/repository/model"
 	"release-manager/repository/query"
@@ -22,12 +23,14 @@ const (
 )
 
 type ReleaseRepository struct {
-	dbpool *pgxpool.Pool
+	dbpool             *pgxpool.Pool
+	githubURLGenerator githubURLGenerator
 }
 
-func NewReleaseRepository(pool *pgxpool.Pool) *ReleaseRepository {
+func NewReleaseRepository(pool *pgxpool.Pool, urlGenerator githubURLGenerator) *ReleaseRepository {
 	return &ReleaseRepository{
-		dbpool: pool,
+		dbpool:             pool,
+		githubURLGenerator: urlGenerator,
 	}
 }
 
@@ -73,7 +76,12 @@ func (r *ReleaseRepository) readRelease(ctx context.Context, q querier, readQuer
 		return svcmodel.Release{}, err
 	}
 
-	return model.ToSvcRelease(rls), nil
+	tagURL, err := r.generateGitTagURLForRelease(rls)
+	if err != nil {
+		return svcmodel.Release{}, fmt.Errorf("failed to generate tag URL: %w", err)
+	}
+
+	return model.ToSvcRelease(rls, tagURL), nil
 }
 
 func (r *ReleaseRepository) UpdateRelease(
@@ -140,16 +148,42 @@ func (r *ReleaseRepository) DeleteRelease(ctx context.Context, projectID, releas
 }
 
 func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
-	var rls []model.Release
+	var dbReleases []model.Release
 
-	err := pgxscan.Select(ctx, r.dbpool, &rls, query.ListReleasesForProject, pgx.NamedArgs{
+	err := pgxscan.Select(ctx, r.dbpool, &dbReleases, query.ListReleasesForProject, pgx.NamedArgs{
 		"projectID": projectID,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return model.ToSvcReleases(rls), nil
+	svcReleases := make([]svcmodel.Release, 0, len(dbReleases))
+	for _, rls := range dbReleases {
+		tagURL, err := r.generateGitTagURLForRelease(rls)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate tag URL: %w", err)
+		}
+
+		svcReleases = append(svcReleases, model.ToSvcRelease(rls, tagURL))
+	}
+
+	return svcReleases, nil
+}
+
+func (r *ReleaseRepository) generateGitTagURLForRelease(rls model.Release) (url.URL, error) {
+	// Slugs are fetched from the project
+	// Possible improvement: improve database model so owner and repo slugs cannot be set to null
+	// If release exists for a project
+	if !rls.GithubOwnerSlug.Valid || !rls.GithubRepoSlug.Valid {
+		return url.URL{}, nil
+	}
+
+	tagURL, err := r.githubURLGenerator.GenerateGitTagURL(rls.GithubOwnerSlug.String, rls.GithubRepoSlug.String, rls.GitTagName)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	return tagURL, nil
 }
 
 func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {

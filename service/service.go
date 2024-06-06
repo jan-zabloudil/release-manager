@@ -94,7 +94,7 @@ type githubManager interface {
 	ReadRepo(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
 	ReadTagsForRepo(ctx context.Context, token string, repo model.GithubRepo) ([]model.GitTag, error)
 	DeleteReleaseByTag(ctx context.Context, token string, repo model.GithubRepo, tagName string) error
-	GenerateGitTagURL(repo model.GithubRepo, tagName string) (url.URL, error)
+	GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error)
 	TagExists(ctx context.Context, token string, repo model.GithubRepo, tagName string) (bool, error)
 	UpsertRelease(ctx context.Context, token string, repo model.GithubRepo, rls model.Release) error
 }

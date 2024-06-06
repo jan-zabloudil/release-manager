@@ -57,7 +57,7 @@ func run() error {
 		return fmt.Errorf("pinging db: %w", err)
 	}
 
-	repo := repository.NewRepository(supaClient, dbpool)
+	repo := repository.NewRepository(supaClient, dbpool, githubClient)
 	svc := service.NewService(
 		repo.User,
 		repo.Project,

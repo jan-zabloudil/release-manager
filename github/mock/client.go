@@ -23,8 +23,8 @@ func (c *Client) ReadRepo(ctx context.Context, tkn string, rawRepoURL string) (s
 	return args.Get(0).(svcmodel.GithubRepo), args.Error(1)
 }
 
-func (c *Client) GenerateGitTagURL(repo svcmodel.GithubRepo, tagName string) (url.URL, error) {
-	args := c.Called(repo, tagName)
+func (c *Client) GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
+	args := c.Called(ownerSlug, repoSlug, tagName)
 	return args.Get(0).(url.URL), args.Error(1)
 }
 
@@ -41,4 +41,9 @@ func (c *Client) TagExists(ctx context.Context, tkn string, repo svcmodel.Github
 func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
 	args := c.Called(ctx, tkn, repo, rls)
 	return args.Error(0)
+}
+
+func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
+	args := c.Called(ownerSlug, repoSlug)
+	return args.Get(0).(url.URL), args.Error(1)
 }

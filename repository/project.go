@@ -24,12 +24,14 @@ const (
 )
 
 type ProjectRepository struct {
-	dbpool *pgxpool.Pool
+	dbpool             *pgxpool.Pool
+	githubURLGenerator githubURLGenerator
 }
 
-func NewProjectRepository(pool *pgxpool.Pool) *ProjectRepository {
+func NewProjectRepository(pool *pgxpool.Pool, urlGenerator githubURLGenerator) *ProjectRepository {
 	return &ProjectRepository{
-		dbpool: pool,
+		dbpool:             pool,
+		githubURLGenerator: urlGenerator,
 	}
 }
 
@@ -84,7 +86,7 @@ func (r *ProjectRepository) readProject(ctx context.Context, q querier, query st
 		return svcmodel.Project{}, err
 	}
 
-	return model.ToSvcProject(p)
+	return r.toSvcProject(p)
 }
 
 func (r *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Project, error) {
@@ -103,7 +105,7 @@ func (r *ProjectRepository) listProjects(ctx context.Context, readQuery string, 
 		return nil, err
 	}
 
-	return model.ToSvcProjects(p)
+	return r.toSvcProjects(p)
 }
 
 func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
@@ -524,12 +526,10 @@ func (r *ProjectRepository) UpdateMemberRole(
 }
 
 func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
-	var ownerSlugPtr, repoSlugPtr, repoRawURLPtr *string
+	var ownerSlug, repoSlug *string
 	if p.GithubRepo != nil {
-		ownerSlugPtr = &p.GithubRepo.OwnerSlug
-		repoSlugPtr = &p.GithubRepo.RepoSlug
-		repoRawURL := p.GithubRepo.URL.String()
-		repoRawURLPtr = &repoRawURL
+		ownerSlug = &p.GithubRepo.OwnerSlug
+		repoSlug = &p.GithubRepo.RepoSlug
 	}
 
 	return pgx.NamedArgs{
@@ -538,9 +538,40 @@ func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
 		"slackChannelID": p.SlackChannelID,
 		// Converted to the struct with json tags (the field is saved as json in the database).
 		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		"githubOwnerSlug":           ownerSlugPtr,
-		"githubRepoSlug":            repoSlugPtr,
-		"githubRepoURL":             repoRawURLPtr,
+		"githubOwnerSlug":           ownerSlug,
+		"githubRepoSlug":            repoSlug,
 		"updatedAt":                 p.UpdatedAt,
 	}
+}
+
+func (r *ProjectRepository) toSvcProject(p model.Project) (svcmodel.Project, error) {
+	var repo *svcmodel.GithubRepo
+	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
+		repoURL, err := r.githubURLGenerator.GenerateRepoURL(p.GithubOwnerSlug.String, p.GithubRepoSlug.String)
+		if err != nil {
+			return svcmodel.Project{}, fmt.Errorf("failed to generate github repo URL: %w", err)
+		}
+
+		repo = &svcmodel.GithubRepo{
+			OwnerSlug: p.GithubOwnerSlug.String,
+			RepoSlug:  p.GithubRepoSlug.String,
+			URL:       repoURL,
+		}
+	}
+
+	return model.ToSvcProject(p, repo), nil
+}
+
+func (r *ProjectRepository) toSvcProjects(projects []model.Project) ([]svcmodel.Project, error) {
+	p := make([]svcmodel.Project, 0, len(projects))
+	for _, project := range projects {
+		svcProject, err := r.toSvcProject(project)
+		if err != nil {
+			return nil, err
+		}
+
+		p = append(p, svcProject)
+	}
+
+	return p, nil
 }

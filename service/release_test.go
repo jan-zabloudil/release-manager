@@ -40,7 +40,7 @@ func TestReleaseService_CreateRelease(t *testing.T) {
 						RepoSlug:  "repo",
 					},
 				}, nil)
-				github.On("GenerateGitTagURL", mock.Anything, mock.Anything).Return(url.URL{
+				github.On("GenerateGitTagURL", mock.Anything, mock.Anything, mock.Anything).Return(url.URL{
 					Scheme: "https",
 					Host:   "github.com",
 					Path:   "/owner/repo/releases/tag/v1.0.0",
