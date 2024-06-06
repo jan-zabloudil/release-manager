@@ -86,7 +86,12 @@ func (r *ProjectRepository) readProject(ctx context.Context, q querier, query st
 		return svcmodel.Project{}, err
 	}
 
-	return r.toSvcProject(p)
+	repo, err := r.toSvcGithubRepo(p)
+	if err != nil {
+		return svcmodel.Project{}, fmt.Errorf("failed to convert github repo: %w", err)
+	}
+
+	return model.ToSvcProject(p, repo), nil
 }
 
 func (r *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Project, error) {
@@ -98,14 +103,23 @@ func (r *ProjectRepository) ListProjectsForUser(ctx context.Context, userID uuid
 }
 
 func (r *ProjectRepository) listProjects(ctx context.Context, readQuery string, args pgx.NamedArgs) ([]svcmodel.Project, error) {
-	var p []model.Project
+	var dbProjects []model.Project
 
-	err := pgxscan.Select(ctx, r.dbpool, &p, readQuery, args)
+	err := pgxscan.Select(ctx, r.dbpool, &dbProjects, readQuery, args)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.toSvcProjects(p)
+	svcProjects := make([]svcmodel.Project, 0, len(dbProjects))
+	for _, dbProject := range dbProjects {
+		repo, err := r.toSvcGithubRepo(dbProject)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert github repo: %w", err)
+		}
+		svcProjects = append(svcProjects, model.ToSvcProject(dbProject, repo))
+	}
+
+	return svcProjects, nil
 }
 
 func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
@@ -544,34 +558,20 @@ func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
 	}
 }
 
-func (r *ProjectRepository) toSvcProject(p model.Project) (svcmodel.Project, error) {
-	var repo *svcmodel.GithubRepo
-	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
-		repoURL, err := r.githubURLGenerator.GenerateRepoURL(p.GithubOwnerSlug.String, p.GithubRepoSlug.String)
-		if err != nil {
-			return svcmodel.Project{}, fmt.Errorf("failed to generate github repo URL: %w", err)
-		}
-
-		repo = &svcmodel.GithubRepo{
-			OwnerSlug: p.GithubOwnerSlug.String,
-			RepoSlug:  p.GithubRepoSlug.String,
-			URL:       repoURL,
-		}
+func (r *ProjectRepository) toSvcGithubRepo(p model.Project) (*svcmodel.GithubRepo, error) {
+	// Project has no GitHub repo
+	if !p.GithubOwnerSlug.Valid || !p.GithubRepoSlug.Valid {
+		return nil, nil
 	}
 
-	return model.ToSvcProject(p, repo), nil
-}
-
-func (r *ProjectRepository) toSvcProjects(projects []model.Project) ([]svcmodel.Project, error) {
-	p := make([]svcmodel.Project, 0, len(projects))
-	for _, project := range projects {
-		svcProject, err := r.toSvcProject(project)
-		if err != nil {
-			return nil, err
-		}
-
-		p = append(p, svcProject)
+	repoURL, err := r.githubURLGenerator.GenerateRepoURL(p.GithubOwnerSlug.String, p.GithubRepoSlug.String)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate github repo URL: %w", err)
 	}
 
-	return p, nil
+	return &svcmodel.GithubRepo{
+		OwnerSlug: p.GithubOwnerSlug.String,
+		RepoSlug:  p.GithubRepoSlug.String,
+		URL:       repoURL,
+	}, nil
 }
