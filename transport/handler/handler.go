@@ -59,7 +59,7 @@ type releaseService interface {
 	UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error
 
 	CreateDeployment(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID, authUserID uuid.UUID) (svcmodel.Deployment, error)
-	ListDeploymentsForProject(ctx context.Context, input svcmodel.DeploymentFilterParams, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
+	ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
 }
 
 type authClient interface {
