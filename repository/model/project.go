@@ -2,6 +2,8 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
+	"net/url"
 	"time"
 
 	svcmodel "release-manager/service/model"
@@ -29,7 +31,23 @@ type ReleaseNotificationConfig struct {
 	ShowSourceCode     bool   `json:"show_source_code"`
 }
 
-func ToSvcProject(p Project, repo *svcmodel.GithubRepo) svcmodel.Project {
+type githubRepoURLGeneratorFunc func(ownerSlug, repoSlug string) (url.URL, error)
+
+func ToSvcProject(p Project, urlGenerator githubRepoURLGeneratorFunc) (svcmodel.Project, error) {
+	var repo *svcmodel.GithubRepo
+	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
+		repoURL, err := urlGenerator(p.GithubOwnerSlug.String, p.GithubRepoSlug.String)
+		if err != nil {
+			return svcmodel.Project{}, fmt.Errorf("failed to generate repo URL: %w", err)
+		}
+
+		repo = &svcmodel.GithubRepo{
+			OwnerSlug: p.GithubOwnerSlug.String,
+			RepoSlug:  p.GithubRepoSlug.String,
+			URL:       repoURL,
+		}
+	}
+
 	return svcmodel.Project{
 		ID:                        p.ID,
 		Name:                      p.Name,
@@ -38,5 +56,19 @@ func ToSvcProject(p Project, repo *svcmodel.GithubRepo) svcmodel.Project {
 		GithubRepo:                repo,
 		CreatedAt:                 p.CreatedAt,
 		UpdatedAt:                 p.UpdatedAt,
+	}, nil
+}
+
+func ToSvcProjects(projects []Project, urlGenerator githubRepoURLGeneratorFunc) ([]svcmodel.Project, error) {
+	p := make([]svcmodel.Project, 0, len(projects))
+	for _, project := range projects {
+		svcProject, err := ToSvcProject(project, urlGenerator)
+		if err != nil {
+			return nil, err
+		}
+
+		p = append(p, svcProject)
 	}
+
+	return p, nil
 }

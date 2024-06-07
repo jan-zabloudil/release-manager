@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -25,7 +26,14 @@ type Release struct {
 	UpdatedAt       time.Time      `db:"updated_at"`
 }
 
-func ToSvcRelease(rls Release, tagURL url.URL) svcmodel.Release {
+type gitTagURLGeneratorFunc func(ownerSlug, repoSlug, tag string) (url.URL, error)
+
+func ToSvcRelease(rls Release, urlGenerator gitTagURLGeneratorFunc) (svcmodel.Release, error) {
+	tagURL, err := urlGenerator(rls.GithubOwnerSlug.String, rls.GithubRepoSlug.String, rls.GitTagName)
+	if err != nil {
+		return svcmodel.Release{}, fmt.Errorf("failed to generate tag URL: %w", err)
+	}
+
 	return svcmodel.Release{
 		ID:           rls.ID,
 		ProjectID:    rls.ProjectID,
@@ -36,5 +44,19 @@ func ToSvcRelease(rls Release, tagURL url.URL) svcmodel.Release {
 		AuthorUserID: rls.AuthorUserID,
 		CreatedAt:    rls.CreatedAt,
 		UpdatedAt:    rls.UpdatedAt,
+	}, nil
+}
+
+func ToSvcReleases(releases []Release, urlGenerator gitTagURLGeneratorFunc) ([]svcmodel.Release, error) {
+	r := make([]svcmodel.Release, 0, len(releases))
+	for _, release := range releases {
+		svcRls, err := ToSvcRelease(release, urlGenerator)
+		if err != nil {
+			return nil, err
+		}
+
+		r = append(r, svcRls)
 	}
+
+	return r, nil
 }

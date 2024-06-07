@@ -217,6 +217,10 @@ func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 }
 
 func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
+	if ownerSlug == "" || repoSlug == "" {
+		return url.URL{}, errors.New("empty owner or repo slug")
+	}
+
 	rawURL := fmt.Sprintf("https://github.com/%s/%s", ownerSlug, repoSlug)
 	u, err := url.Parse(rawURL)
 	if err != nil {
@@ -227,6 +231,10 @@ func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
 }
 
 func (c *Client) GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
+	if tagName == "" || ownerSlug == "" || repoSlug == "" {
+		return url.URL{}, errors.New("empty tag name, owner or repo slug")
+	}
+
 	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", ownerSlug, repoSlug, tagName)
 	u, err := url.Parse(rawURL)
 	if err != nil {

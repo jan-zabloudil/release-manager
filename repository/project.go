@@ -87,7 +87,7 @@ func (r *ProjectRepository) readProject(ctx context.Context, q querier, query st
 		return svcmodel.Project{}, err
 	}
 
-	return r.toSvcProject(p)
+	return model.ToSvcProject(p, r.githubURLGenerator.GenerateRepoURL)
 }
 
 func (r *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Project, error) {
@@ -99,14 +99,14 @@ func (r *ProjectRepository) ListProjectsForUser(ctx context.Context, userID uuid
 }
 
 func (r *ProjectRepository) listProjects(ctx context.Context, readQuery string, args pgx.NamedArgs) ([]svcmodel.Project, error) {
-	var p []model.Project
+	var dbProjects []model.Project
 
-	err := pgxscan.Select(ctx, r.dbpool, &p, readQuery, args)
+	err := pgxscan.Select(ctx, r.dbpool, &dbProjects, readQuery, args)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.toSvcProjects(p)
+	return model.ToSvcProjects(dbProjects, r.githubURLGenerator.GenerateRepoURL)
 }
 
 func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
@@ -547,36 +547,4 @@ func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
 		"githubRepoSlug":            repoSlug,
 		"updatedAt":                 p.UpdatedAt,
 	}
-}
-
-func (r *ProjectRepository) toSvcProject(p model.Project) (svcmodel.Project, error) {
-	var repo *svcmodel.GithubRepo
-	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
-		repoURL, err := r.githubURLGenerator.GenerateRepoURL(p.GithubOwnerSlug.String, p.GithubRepoSlug.String)
-		if err != nil {
-			return svcmodel.Project{}, fmt.Errorf("failed to generate github repo URL: %w", err)
-		}
-
-		repo = &svcmodel.GithubRepo{
-			OwnerSlug: p.GithubOwnerSlug.String,
-			RepoSlug:  p.GithubRepoSlug.String,
-			URL:       repoURL,
-		}
-	}
-
-	return model.ToSvcProject(p, repo), nil
-}
-
-func (r *ProjectRepository) toSvcProjects(projects []model.Project) ([]svcmodel.Project, error) {
-	p := make([]svcmodel.Project, 0, len(projects))
-	for _, project := range projects {
-		svcProject, err := r.toSvcProject(project)
-		if err != nil {
-			return nil, err
-		}
-
-		p = append(p, svcProject)
-	}
-
-	return p, nil
 }

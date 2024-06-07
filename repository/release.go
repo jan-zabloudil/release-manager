@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 
 	"release-manager/repository/model"
 	"release-manager/repository/query"
@@ -76,12 +75,7 @@ func (r *ReleaseRepository) readRelease(ctx context.Context, q querier, readQuer
 		return svcmodel.Release{}, err
 	}
 
-	tagURL, err := r.generateGitTagURLForRelease(rls)
-	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("failed to generate tag URL: %w", err)
-	}
-
-	return model.ToSvcRelease(rls, tagURL), nil
+	return model.ToSvcRelease(rls, r.githubURLGenerator.GenerateGitTagURL)
 }
 
 func (r *ReleaseRepository) UpdateRelease(
@@ -169,33 +163,7 @@ func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectI
 		return nil, err
 	}
 
-	svcReleases := make([]svcmodel.Release, 0, len(dbReleases))
-	for _, rls := range dbReleases {
-		tagURL, err := r.generateGitTagURLForRelease(rls)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate tag URL: %w", err)
-		}
-
-		svcReleases = append(svcReleases, model.ToSvcRelease(rls, tagURL))
-	}
-
-	return svcReleases, nil
-}
-
-func (r *ReleaseRepository) generateGitTagURLForRelease(rls model.Release) (url.URL, error) {
-	// Slugs are fetched from the project
-	// Possible improvement: improve database model so owner and repo slugs cannot be set to null
-	// If release exists for a project
-	if !rls.GithubOwnerSlug.Valid || !rls.GithubRepoSlug.Valid {
-		return url.URL{}, nil
-	}
-
-	tagURL, err := r.githubURLGenerator.GenerateGitTagURL(rls.GithubOwnerSlug.String, rls.GithubRepoSlug.String, rls.GitTagName)
-	if err != nil {
-		return url.URL{}, err
-	}
-
-	return tagURL, nil
+	return model.ToSvcReleases(dbReleases, r.githubURLGenerator.GenerateGitTagURL)
 }
 
 func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {
