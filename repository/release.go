@@ -75,12 +75,7 @@ func (r *ReleaseRepository) readRelease(ctx context.Context, q querier, readQuer
 		return svcmodel.Release{}, err
 	}
 
-	tagURL, err := r.githubURLGenerator.GenerateGitTagURL(rls.GithubOwnerSlug.String, rls.GithubRepoSlug.String, rls.GitTagName)
-	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("failed to generate tag URL: %w", err)
-	}
-
-	return model.ToSvcRelease(rls, tagURL), nil
+	return model.ToSvcRelease(rls, r.githubURLGenerator.GenerateGitTagURL)
 }
 
 func (r *ReleaseRepository) UpdateRelease(
@@ -156,17 +151,7 @@ func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectI
 		return nil, err
 	}
 
-	svcReleases := make([]svcmodel.Release, 0, len(dbReleases))
-	for _, rls := range dbReleases {
-		tagURL, err := r.githubURLGenerator.GenerateGitTagURL(rls.GithubOwnerSlug.String, rls.GithubRepoSlug.String, rls.GitTagName)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate tag URL: %w", err)
-		}
-
-		svcReleases = append(svcReleases, model.ToSvcRelease(rls, tagURL))
-	}
-
-	return svcReleases, nil
+	return model.ToSvcReleases(dbReleases, r.githubURLGenerator.GenerateGitTagURL)
 }
 
 func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {
