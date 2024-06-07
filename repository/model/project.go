@@ -31,9 +31,9 @@ type ReleaseNotificationConfig struct {
 	ShowSourceCode     bool   `json:"show_source_code"`
 }
 
-type repoURLGeneratorFunc func(ownerSlug, repoSlug string) (url.URL, error)
+type githubRepoURLGeneratorFunc func(ownerSlug, repoSlug string) (url.URL, error)
 
-func ToSvcProject(p Project, urlGenerator repoURLGeneratorFunc) (svcmodel.Project, error) {
+func ToSvcProject(p Project, urlGenerator githubRepoURLGeneratorFunc) (svcmodel.Project, error) {
 	var repo *svcmodel.GithubRepo
 	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
 		repoURL, err := urlGenerator(p.GithubOwnerSlug.String, p.GithubRepoSlug.String)
@@ -59,7 +59,7 @@ func ToSvcProject(p Project, urlGenerator repoURLGeneratorFunc) (svcmodel.Projec
 	}, nil
 }
 
-func ToSvcProjects(projects []Project, urlGenerator repoURLGeneratorFunc) ([]svcmodel.Project, error) {
+func ToSvcProjects(projects []Project, urlGenerator githubRepoURLGeneratorFunc) ([]svcmodel.Project, error) {
 	p := make([]svcmodel.Project, 0, len(projects))
 	for _, project := range projects {
 		svcProject, err := ToSvcProject(project, urlGenerator)
