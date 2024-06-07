@@ -21,6 +21,7 @@ import (
 const (
 	uniqueEnvironmentNamePerProjectConstraintName = "unique_environment_name_per_project"
 	uniqueInvitationPerProjectConstraintName      = "unique_invitation_per_project"
+	uniqueGithubRepoConstraintName                = "unique_github_repo"
 )
 
 type ProjectRepository struct {
@@ -142,6 +143,10 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 
 	_, err = tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p))
 	if err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueGithubRepoConstraintName) {
+			return svcmodel.Project{}, svcerrors.NewProjectGithubRepoAlreadyUsedError().Wrap(err)
+		}
+
 		return svcmodel.Project{}, fmt.Errorf("failed to update project: %w", err)
 	}
 
