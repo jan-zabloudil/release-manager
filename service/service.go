@@ -55,6 +55,7 @@ type releaseRepository interface {
 	CreateRelease(ctx context.Context, r model.Release) error
 	ReadRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
 	DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error
+	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
 	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
 	UpdateRelease(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
 

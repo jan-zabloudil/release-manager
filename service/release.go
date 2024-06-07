@@ -129,6 +129,14 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 	return nil
 }
 
+func (s *ReleaseService) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {
+	if err := s.repo.DeleteReleaseByGitTag(ctx, githubOwnerSlug, githubRepoSlug, gitTag); err != nil {
+		return fmt.Errorf("deleting release by git tag: %w", err)
+	}
+
+	return nil
+}
+
 func (s *ReleaseService) UpdateRelease(
 	ctx context.Context,
 	input model.UpdateReleaseInput,

@@ -128,14 +128,26 @@ func (r *ReleaseRepository) UpdateRelease(
 	return rls, nil
 }
 
+func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {
+	return r.deleteRelease(ctx, query.DeleteReleaseByGitTag, pgx.NamedArgs{
+		"ownerSlug":  githubOwnerSlug,
+		"repoSlug":   githubRepoSlug,
+		"gitTagName": gitTag,
+	})
+}
+
 func (r *ReleaseRepository) DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error {
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service
-	result, err := r.dbpool.Exec(ctx, query.DeleteRelease, pgx.NamedArgs{
+	return r.deleteRelease(ctx, query.DeleteRelease, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
 	})
+}
+
+func (r *ReleaseRepository) deleteRelease(ctx context.Context, deleteQuery string, args pgx.NamedArgs) error {
+	result, err := r.dbpool.Exec(ctx, deleteQuery, args)
 	if err != nil {
 		return err
 	}
