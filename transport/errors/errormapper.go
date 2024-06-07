@@ -69,7 +69,8 @@ func IsConflictError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentDuplicateName) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseGitTagAlreadyUsed)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseGitTagAlreadyUsed) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectGithubRepoAlreadyUsed)
 }
 
 func IsBadRequestError(err error) bool {

@@ -40,6 +40,7 @@ var (
 	ErrCodeReleaseGitTagAlreadyUsed         = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
 	ErrCodeDeploymentUnprocessable          = "ERR_DEPLOYMENT_UNPROCESSABLE"
 	ErrCodeDeploymentNotFound               = "ERR_DEPLOYMENT_NOT_FOUND"
+	ErrCodeProjectGithubRepoAlreadyUsed     = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
 )
 
 type Error struct {
@@ -300,6 +301,13 @@ func NewDeploymentNotFoundError() *Error {
 	return &Error{
 		Code:    ErrCodeDeploymentNotFound,
 		Message: "Deployment not found",
+	}
+}
+
+func NewProjectGithubRepoAlreadyUsedError() *Error {
+	return &Error{
+		Code:    ErrCodeProjectGithubRepoAlreadyUsed,
+		Message: "Github repo is already used for another project.",
 	}
 }
 
