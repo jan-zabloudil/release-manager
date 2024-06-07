@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"release-manager/github/model"
+	"release-manager/github/util"
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
@@ -45,18 +46,11 @@ func (c *Client) ReadRepo(ctx context.Context, tkn string, rawRepoURL string) (s
 	repo, _, err := c.getGithubClient(tkn).Repositories.Get(ctx, ownerSlug, repoSlug)
 	if err != nil {
 		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) {
-			switch githubErr.Response.StatusCode {
-			case http.StatusUnauthorized:
-				return svcmodel.GithubRepo{}, svcerrors.NewGithubClientUnauthorizedError().Wrap(err)
-			case http.StatusForbidden:
-				return svcmodel.GithubRepo{}, svcerrors.NewGithubClientForbiddenError().Wrap(err)
-			case http.StatusNotFound:
-				return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
-			}
+		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+			return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
 		}
 
-		return svcmodel.GithubRepo{}, err
+		return svcmodel.GithubRepo{}, util.TranslateGithubAuthError(err)
 	}
 
 	u, err := url.Parse(repo.GetHTMLURL())
@@ -83,18 +77,11 @@ func (c *Client) ReadTagsForRepo(ctx context.Context, tkn string, repo svcmodel.
 	)
 	if err != nil {
 		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) {
-			switch githubErr.Response.StatusCode {
-			case http.StatusUnauthorized:
-				return nil, svcerrors.NewGithubClientUnauthorizedError().Wrap(err)
-			case http.StatusForbidden:
-				return nil, svcerrors.NewGithubClientForbiddenError().Wrap(err)
-			case http.StatusNotFound:
-				return nil, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
-			}
+		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+			return nil, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
 		}
 
-		return nil, err
+		return nil, util.TranslateGithubAuthError(err)
 	}
 
 	return model.ToSvcGitTags(t), nil
@@ -120,7 +107,7 @@ func (c *Client) TagExists(ctx context.Context, tkn string, repo svcmodel.Github
 			return false, nil
 		}
 
-		return false, err
+		return false, util.TranslateGithubAuthError(err)
 	}
 
 	return true, nil
@@ -161,7 +148,7 @@ func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmod
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to delete release: %w", err)
+		return fmt.Errorf("failed to delete release: %w", util.TranslateGithubAuthError(err))
 	}
 
 	return nil
@@ -181,18 +168,22 @@ func (c *Client) createRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 		Name:    &rls.ReleaseTitle,
 		Body:    &rls.ReleaseNotes,
 	})
-	var githubErr *github.ErrorResponse
-	if errors.As(err, &githubErr) && githubErr.Errors != nil {
-		// GitHub returns error response as an array of errors
-		// Each error contains fields (code, resource, field)
-		for _, e := range githubErr.Errors {
-			if e.Code == errCodeAlreadyExists && e.Field == gitTagNameField {
-				return errGithubReleaseAlreadyExists
+	if err != nil {
+		var githubErr *github.ErrorResponse
+		if errors.As(err, &githubErr) && githubErr.Errors != nil {
+			// GitHub returns error response as an array of errors
+			// Each error contains fields (code, resource, field)
+			for _, e := range githubErr.Errors {
+				if e.Code == errCodeAlreadyExists && e.Field == gitTagNameField {
+					return errGithubReleaseAlreadyExists
+				}
 			}
 		}
+
+		return util.TranslateGithubAuthError(err)
 	}
 
-	return err
+	return nil
 }
 
 func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
@@ -219,7 +210,7 @@ func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("failed to update release: %w", err)
+		return fmt.Errorf("failed to update release: %w", util.TranslateGithubAuthError(err))
 	}
 
 	return nil
@@ -263,7 +254,7 @@ func (c *Client) getReleaseIDByTag(ctx context.Context, tkn string, repo svcmode
 			return 0, errGithubReleaseNotFound
 		}
 
-		return 0, err
+		return 0, util.TranslateGithubAuthError(err)
 	}
 
 	return rls.GetID(), nil
