@@ -1,17 +1,19 @@
 openapi: '3.0.0'
 info:
-  version: 1.0.0
-  title: STRV ReleaseManager
+  version: 0.1.0
+  title: ReleaseManager
 tags:
   - name: Ping
   - name: Settings
   - name: Users
   - name: Projects
-  - name: Environments
+  - name: Project environments
   - name: Project invitations
   - name: Project members
-  - name: SCM repository
+  - name: Project GitHub repo
   - name: Releases
+  - name: Deployments
+  - name: Webhooks
 
 paths:
   /ping:
@@ -240,7 +242,7 @@ paths:
   /projects/{project-id}/environments:
     post:
       tags:
-        - Environments
+        - Project environments
       parameters:
         - $ref: '#/components/parameters/ProjectIdParam'
       summary: 'Create environment'
@@ -266,33 +268,11 @@ paths:
         '403':
           $ref: '#/components/responses/ForbiddenErrorResponse'
     get:
-      summary: "List environments for project"
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
+      summary: 'Get environments for project'
       tags:
-        - Environments
-      parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
-      responses:
-        '200':
-          description: 'Environments fetched'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EnvironmentResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-          $ref: '#/components/responses/ForbiddenErrorResponse'
-  /projects/{project-id}/environments/{environment-id}:
-    get:
-      security:
-        - bearerAuth: []
-      summary: 'Get project by ID'
-      tags:
-        - Projects
+        - Project environments
       parameters:
         - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/EnvIdParam'
@@ -309,12 +289,35 @@ paths:
           $ref: '#/components/responses/UnauthorizedErrorResponse'
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/environments/{environment_id}:
+    get:
+      security:
+        - bearerAuth: [ ]
+      summary: 'Get environment'
+      tags:
+        - Project environments
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/EnvIdParam'
+      responses:
+        '200':
+          description: 'Environment fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
     patch:
       security:
         - bearerAuth: []
       summary: 'Update environment'
       tags:
-        - Environments
+        - Project environments
       parameters:
         - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/EnvIdParam'
@@ -341,7 +344,7 @@ paths:
       security:
         - bearerAuth: []
       tags:
-        - Environments
+        - Project environments
       parameters:
         - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/EnvIdParam'
@@ -435,10 +438,9 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
-
   /projects/invitations/accept:
     get:
-      summary: 'accept invitation'
+      summary: 'Accept invitation'
       parameters:
         - $ref: '#/components/parameters/InvitationIdParam'
         - $ref: '#/components/parameters/InvitationToken'
@@ -451,7 +453,7 @@ paths:
             $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/invitations/reject:
     get:
-      summary: 'reject invitation'
+      summary: 'Reject invitation'
       parameters:
         - $ref: '#/components/parameters/InvitationIdParam'
         - $ref: '#/components/parameters/InvitationToken'
@@ -534,7 +536,76 @@ paths:
               $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /project/{project-id}/releases:
+  /projects/{project-id}/github-repo:
+    post:
+      summary: 'Connect GitHub repo to the project'
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Project GitHub repo
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectGithubRepoRequest'
+      responses:
+        '204':
+          description: 'GitHub repo connected'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+    get:
+      summary: 'Get GitHub repo connected to the project'
+      security:
+        - bearerAuth: []
+      tags:
+        - Project GitHub repo
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      responses:
+        '200':
+          description: 'GitHub repo fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectGithubRepoResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/github-repo/tags:
+    get:
+      summary: 'List GitHub repo tags'
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Project GitHub repo
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      responses:
+        '200':
+          description: 'Retrieves tags from GitHub repo'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GitTagResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/releases:
     post:
       summary: 'Create release'
       security:
@@ -548,14 +619,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReleasePostRequest'
+              $ref: '#/components/schemas/ReleasePatchRequest'
       responses:
         '200':
           description: 'Release created'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReleaseCreatedResponse'
+                $ref: '#/components/schemas/ReleaseResponse'
         '400':
               $ref: '#/components/responses/BadRequestErrorResponse'
         '401':
@@ -587,7 +658,7 @@ paths:
               $ref: '#/components/responses/UnauthorizedErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /releases/{release-id}:
+  /projects/{project-id}/releases/{release-id}:
     get:
       summary: 'Get release by ID'
       security:
@@ -595,6 +666,7 @@ paths:
       tags:
         - Releases
       parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/ReleaseIdParam'
       responses:
         '200':
@@ -653,58 +725,44 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
-  /releases/{release-id}/actions:
+  /webhooks/github/tags:
     post:
-      summary: "Perform release actions"
-      security:
-        - bearerAuth: []
-      tags:
-        - Releases
-      parameters:
-        - $ref: '#/components/parameters/ReleaseIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReleaseActions'
-      responses:
-        '204':
-          description: 'Action completed'
-        '400':
-            $ref: '#/components/responses/BadRequestErrorResponse'
-        '401':
-              $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-              $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
-  /releases/{release-id}/attachments:
-    post:
-      summary: 'Add new attachment to relaase'
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - Releases
-      parameters:
-        - $ref: '#/components/parameters/ReleaseIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/AttachmentRequest'
-      responses:
-        '200':
-          description: 'Signed url for uploaded provided'
+        summary: 'Endpoint for GitHub webhook to notify about tag deletion'
+        tags:
+            - Webhooks
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AttachmentCreatedResponse'
+                $ref: '#/components/schemas/GithubWebhookTagDeletedRequest'
+        responses:
+            '204':
+                description: 'Webhook received'
+            '401':
+                $ref: '#/components/responses/UnauthorizedErrorResponse'
+  /projects/{project-id}/deployments:
+    post:
+      summary: 'Create deployment record'
+      security:
+        - bearerAuth: []
+      tags:
+        - Deployments
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeploymentRequest'
+      responses:
+        '201':
+          description: 'Deployment record created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResponse'
         '400':
           $ref: '#/components/responses/BadRequestErrorResponse'
         '401':
@@ -713,49 +771,35 @@ paths:
           $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
-        422:
-          $ref: '#/components/schemas/UnprocesssableEntityError'
-  /releases/{release-id}/attachments/{attachment-id}:
-    delete:
-      summary: 'Delete release attachment'
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - Releases
-      parameters:
-        - $ref: '#/components/parameters/ReleaseIdParam'
-        - $ref: '#/components/parameters/AttachmentIdParam'
-      responses:
-        '204':
-          description: 'Attachment deleted'
-        '401':
-          $ref: '#/components/responses/UnauthorizedErrorResponse'
-        '403':
-          $ref: '#/components/responses/ForbiddenErrorResponse'
-        '404':
-          $ref: '#/components/responses/NotFoundErrorResponse'
-  /projects/{project-id}/repository/tags:
     get:
-      summary: 'List repository tags'
-      security:
-        - bearerAuth: []
-      tags:
-        - SCM repository
-      parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
-      responses:
-        '200':
-          description: 'Retrieves 20 newest tags in git repository'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/GitTagResponse'
-        '401':
-              $ref: '#/components/responses/GitRepositoryUnauthorizedErrorResponse'
-        '404':
-              $ref: '#/components/responses/NotFoundErrorResponse'
+        summary: 'List deployment records'
+        security:
+            - bearerAuth: []
+        tags:
+            - Deployments
+        parameters:
+            - $ref: '#/components/parameters/ProjectIdParam'
+            - $ref: '#/components/parameters/DeploymentFilterReleaseIdParam'
+            - $ref: '#/components/parameters/DeploymentFilterEnvironmentIdParam'
+            - $ref: '#/components/parameters/DeploymentFilterLastOnlyParam'
+        responses:
+          '200':
+            description: 'Deployment records fetched'
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeploymentResponse'
+          '400':
+            $ref: '#/components/responses/BadRequestErrorResponse'
+          '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+          '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+          '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+
 components:
   responses:
     UnauthorizedErrorResponse:
@@ -764,14 +808,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UnauthorizedError'
-    GitRepositoryUnauthorizedErrorResponse:
-      description: "Authentication was not successful. Either because of an user's invalid access token or an issue with accessing the GitHub API due to an invalid GitHub token."
-      content:
-        application/json:
-          schema:
-            oneOf:
-              - $ref: '#/components/schemas/UnauthorizedErrorGitRepository'
-              - $ref: '#/components/schemas/UnauthorizedError'
     NotFoundErrorResponse:
       description: 'Resource does not exist or user cannot access this resource at all.'
       content:
@@ -853,14 +889,29 @@ components:
       schema:
         type: string
         format: uuid
-    AttachmentIdParam:
-      name: attachment-id
-      in: path
-      description: Attachment ID
-      required: true
+    DeploymentFilterReleaseIdParam:
+      name: release-id
+      in: query
+      description: Release ID
+      required: false
       schema:
         type: string
         format: uuid
+    DeploymentFilterEnvironmentIdParam:
+      name: environment-id
+      in: query
+      description: Environment ID
+      required: false
+      schema:
+        type: string
+        format: uuid
+    DeploymentFilterLastOnlyParam:
+      name: last_only
+      in: query
+      description: Fetch only last deployment
+      required: false
+      schema:
+        type: boolean
   schemas:
     UnprocesssableEntityError:
       description: 'Validation error'
@@ -914,15 +965,6 @@ components:
         errorMessage:
           type: string
           example: 'JWT token is missing or invalid.'
-    UnauthorizedErrorGitRepository:
-      type: object
-      properties:
-        errorCode:
-          type: string
-          example: '401'
-        errorMessage:
-          type: string
-          example: 'Authentication to https://github.com/organization/repo failed. Organization token for GitHub API is missing.'
     ForbiddenError:
       type: object
       properties:
@@ -995,10 +1037,6 @@ components:
             show_source_code:
               type: boolean
               default: false
-        github_repository_url:
-          type: string
-          format: url
-          example: "htttp://github.com/owner/repo"
       required:
         - name
     ProjectResponse:
@@ -1027,31 +1065,35 @@ components:
           enum:
             - editor
             - viewer
+            - owner
     ProjectMemberResponse:
         allOf:
           - $ref: '#/components/schemas/ProjectMemberRole'
           - type: object
             properties:
-              id:
+              user_id:
                 type: string
                 format: uuid
-              user:
-                $ref: '#/components/schemas/UserResponse'
-              invited_by_user_id:
+              name:
                 type: string
-                format: uuid
+                example: 'John Doe'
+              email:
+                type: string
+                format: email
+                example: 'test@test.tt'
               created_at:
                 type: string
                 format: date-time
               updated_at:
                 type: string
                 format: date-time
-            required:
-              - id
-              - user
-              - invited_by_user_id
-              - created_at
-              - updated_at
+        required:
+          - user_id
+          - name
+          - email
+          - project_role
+          - created_at
+          - updated_at
     ProjectInvitationRequest:
       allOf:
         - $ref: '#/components/schemas/ProjectMemberRole'
@@ -1093,9 +1135,6 @@ components:
           type: string
         service_url:
           type: string
-        deployed_release_id:
-          type: string
-          format: uuid
       required:
         - name
     EnvironmentResponse:
@@ -1108,9 +1147,6 @@ components:
           type: string
         service_url:
           type: string
-        deployed_release_id:
-          type: string
-          format: uuid
         created_at:
           type: string
           format: date-time
@@ -1122,113 +1158,67 @@ components:
         - name
         - created_at
         - updated_at
+    ProjectGithubRepoRequest:
+      type: object
+      properties:
+        github_repo_url:
+          type: string
+          format: url
+          example: "htttp://github.com/owner/repo"
+      required:
+        - github_repo_url
+    ProjectGithubRepoResponse:
+      type: object
+      properties:
+        github_repo_url:
+          type: string
+          format: url
+          example: "htttp://github.com/owner/repo"
+      required:
+        - github_repo_url
+    ReleaseCreateRequest:
+      type: object
+      properties:
+        release_title:
+          type: string
+          example: "V 0.1.1"
+        release_notes:
+          type: string
+          example: "Logging improved"
+        git_tag_name:
+          type: string
+          example: "v0.0.1"
+      required:
+        - release_title
+        - git_tag_name
     ReleasePatchRequest:
       type: object
       properties:
-        name:
+        release_title:
           type: string
           example: "V 0.1.1"
-        changelog:
+        release_notes:
           type: string
           example: "Logging improved"
-        deployed_to_environment_ids:
-          type: array
-          items:
-            type: string
-            format: uuid
-        git_tag_sha:
-          type: string 
-        github_release_url:
-          type: string
-    ReleasePostRequest:
-      allOf:
-        - $ref: '#/components/schemas/ReleasePatchRequest'
-        - type: object
-          properties:
-            actions:
-              type: object
-              $ref: '#/components/schemas/ReleaseActions'
-            attachments:
-              type: array
-              items:
-                $ref: '#/components/schemas/AttachmentRequest'
-          required:
-            - name
-    ReleaseActions:
-      type: object
-      properties:
-        create_github_release:
-          type: boolean
-        send_release_message:
-          type: boolean
-    AttachmentRequest:
-      type: object
-      properties:
-        file_name:
-          type: string
-          example: 'api-specification.yaml'
-      required:
-        - file
-        - file_name
-    AttachmentResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        original_name:
-          type: string
-          example: 'open-api.yaml'
-        download_url:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-      required:
-        - id
-        - original_name
-        - download_url
-        - created_at
-    AttachmentCreatedResponse:
-      type: object
-      properties:
-        file_name:
-          type: string
-          example: 'open-api.yaml'
-        upload_url:
-          type: string
-      required:
-        - file_name
-        - upload_url
     ReleaseResponse:
       type: object
       properties:
         id:
           type: string
           format: uuid
-        name:
+        release_title:
           type: string
           example: "V 0.1.1"
-        changelog:
+        release_notes:
           type: string
           example: "Improved logging"
-        git_tag:
-          $ref: '#/components/schemas/GitTagResponse'
-        github_release_url:
+        git_tag_name:
+          type: string
+          example: "v0.0.1"
+        git_tag_url:
           type: string
           format: url
-        deployed_to_environment_ids:
-          type: array
-          items:
-            type: string
-            format: uuid
-        created_by_user_id:
-          type: string
-          format: uuid
-        attachments:
-          type: array
-          items:
-            $ref: '#/components/schemas/AttachmentResponse'
+          example: "https://github.com/owner/repo/releases/tag/v0.0.1"
         created_at:
           type: string
           format: date-time
@@ -1237,55 +1227,10 @@ components:
           format: date-time
       required:
         - id
-        - name
-        - changelog
-        - git_tag
-        - github_release_url
-        - created_by_user_id
-        - created_at
-        - updated_at
-    ReleaseCreatedResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-          example: "V 0.1.1"
-        changelog:
-          type: string
-          example: "Improved logging"
-        git_tag:
-          $ref: '#/components/schemas/GitTagResponse'
-        github_release_url:
-          type: string
-          format: url
-        deployed_to_environment_ids:
-          type: array
-          items:
-            type: string
-            format: uuid
-        created_by_user_id:
-          type: string
-          format: uuid
-        attachments:
-          type: array
-          items:
-            $ref: '#/components/schemas/AttachmentCreatedResponse'
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-      required:
-        - id
-        - name
-        - changelog
-        - git_tag
-        - github_release_url
-        - created_by_user_id
+        - release_title
+        - release_notes
+        - git_tag_name
+        - git_tag_url
         - created_at
         - updated_at
     GitTagResponse:
@@ -1294,52 +1239,8 @@ components:
         name:
           type: string
           example: "v0.0.1"
-        sha:
-          type: string
-          example: "940bd336248efae0f9ee5bc7b2d5c985887b16ac"
-        html_url:
-          type: string
-          example: "https://www.github.com/repos/octocat/Hello-World/git/tags/940bd336248efae0f9ee5bc7b2d5c985887b16ac"
-        message:
-          type: string
-          example: "initial version"
-        tagger:
-          $ref: '#/components/schemas/GitUser'
-        commit:
-          type: object
-          properties:
-            sha:
-              type: string
-              example: "c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c"
-            html_url:
-              type: string
-              example: "https://www.github.com/repos/octocat/Hello-World/git/commits/c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c"
-          required:
-            - sha
-            - html_url
       required:
         - name
-        - sha
-        - html_url
-        - message
-        - tagger
-        - commit
-    GitUser:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Jan zabloudil"
-        email:
-          type: string
-          format: email
-        date:
-          type: string
-          format: date-time
-      required:
-        - name
-        - email
-        - date
     Settings:
       type: object
       properties:
@@ -1368,6 +1269,64 @@ components:
             webhook_secret:
               type: string
               example: 'secret'
+    GithubWebhookTagDeletedRequest:
+      type: object
+      properties:
+        ref:
+          type: string
+          example: "v0.0.1"
+        ref_type:
+          type: string
+          example: "tag"
+        repository:
+          type: object
+          properties:
+            full_name:
+              type: string
+              example: "owner/repo"
+    DeploymentRequest:
+      type: object
+      properties:
+        environment_id:
+          type: string
+          format: uuid
+        release_id:
+          type: string
+          format: uuid
+      required:
+        - environment_id
+        - release_id
+    DeploymentResponse:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          release_id:
+            type: string
+            format: uuid
+          release_title:
+            type: string
+            example: "V 0.1.1"
+          environment_id:
+            type: string
+            format: uuid
+          environment_name:
+            type: string
+            example: "Production"
+          deployed_by_user_id:
+            type: string
+            format: uuid
+          deployed_at:
+            type: string
+            format: date-time
+        required:
+            - id
+            - environment_id
+            - release_id
+            - created_at
+            - updated_at
+            - deployed_by_user_id
   securitySchemes:
     bearerAuth:
       type: http
