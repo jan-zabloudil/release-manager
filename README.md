@@ -1,4 +1,23 @@
-# ReleaseManager
+<div align="center">
+  <h1>ReleaseManager</h1>
+  <p>Platform-agnostic tool that streamlines daily operations in release management, planning and deployments.</p>
+  <br />
+  <img src="https://i.ibb.co/gF7QHDp/release-manager.png" alt="ReleaseManager" width="500">
+</div>
+
+## About
+
+The vision is to develop a cloud and platform-agnostic tool that streamlines daily operations in release management, planning and deployments.
+
+The current state of the project is a minimal viable product (MVP). More features to implement:
+
+- [ ] Integration with AWS and GCP for deployment automation
+- [ ] Release planning
+- [ ] Integration with Jira for issue tracking
+
+## Motivation
+
+Currently, there aren’t many tools available, especially tools that are cloud and platform-agnostic, meaning that can be used to manage releases and deployments to various cloud providers, such as AWS or GCP, and that would be suitable for platforms like the backend, web or mobile.
 
 ## How to run the app?
 
@@ -53,6 +72,10 @@ If you want to run the REST API locally, navigate to the project folder and run 
 If you want to run the REST API in Docker, navigate to the project folder and run `make run_docker`.
 
 If you want to rebuild the image and run the REST API, run `make run_docker_rebuild`.
+
+## REST API Documentation
+
+See [API documentation](api-doc.yaml).
 
 ## App configuration
 
