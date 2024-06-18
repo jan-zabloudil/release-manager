@@ -32,7 +32,7 @@ func (c *Client) Authenticate(ctx context.Context, token string) (uuid.UUID, err
 			return uuid.UUID{}, fmt.Errorf("%w: %s", ErrInvalidOrExpiredToken, errResponse.Message)
 		}
 
-		return uuid.UUID{}, err
+		return uuid.UUID{}, fmt.Errorf("authenticating user: %w", err)
 	}
 
 	id, err := uuid.Parse(user.ID)
