@@ -28,14 +28,11 @@ func (c *Client) Authenticate(ctx context.Context, token string) (uuid.UUID, err
 	user, err := c.client.Auth.User(ctx, token)
 	if err != nil {
 		var errResponse *supabase.ErrorResponse
-		if errors.As(err, &errResponse) {
-			switch errResponse.Code {
-			case http.StatusUnauthorized, http.StatusNotFound: // 404 is returned if valid token is provided but user no longer exists
-				return uuid.UUID{}, fmt.Errorf("%w: %s", ErrInvalidOrExpiredToken, errResponse.Message)
-			}
+		if errors.As(err, &errResponse) && errResponse.Code == http.StatusForbidden {
+			return uuid.UUID{}, fmt.Errorf("%w: %s", ErrInvalidOrExpiredToken, errResponse.Message)
 		}
 
-		return uuid.UUID{}, err
+		return uuid.UUID{}, fmt.Errorf("authenticating user: %w", err)
 	}
 
 	id, err := uuid.Parse(user.ID)
