@@ -97,7 +97,7 @@ func (h *Handler) setupRoutes() {
 	h.Mux.Post("/webhooks/github/tags", h.handleGithubReleaseWebhook)
 
 	h.Mux.Get("/ping", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNoContent)
 	})
 	h.Mux.NotFound(func(w http.ResponseWriter, _ *http.Request) {
 		util.WriteResponseError(w, resperrors.NewNotFoundError())
