@@ -725,6 +725,44 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/releases/{release-id}/slack-notifications:
+    post:
+      summary: 'Send release notification to Slack'
+      security:
+        - bearerAuth: []
+      tags:
+        - Releases
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      responses:
+        '204':
+          description: 'Slack notification sent'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/releases/{release-id}/github-release:
+    put:
+      summary: 'Upsert GitHub release'
+      security:
+        - bearerAuth: []
+      tags:
+        - Releases
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      responses:
+        '204':
+          description: 'GitHub release created or updated (if release with the same tag already exists)'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+            $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+            $ref: '#/components/responses/NotFoundErrorResponse'
   /webhooks/github/tags:
     post:
         summary: 'Endpoint for GitHub webhook to notify about tag deletion'
