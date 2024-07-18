@@ -5,11 +5,11 @@ services:
     build: '.'
     restart: on-failure
     ports:
-      - '${HOST_PORT}:${APP_PORT}'
+      - '${HOST_PORT}:${PORT}'
     env_file:
         - .env
     healthcheck:
-      test: [ "CMD", "curl", "http://localhost:${APP_PORT}/ping" ]
+      test: [ "CMD", "curl", "http://localhost:${PORT}/ping" ]
       interval: 2m
       timeout: 10s
       retries: 3
