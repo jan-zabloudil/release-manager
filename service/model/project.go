@@ -84,6 +84,11 @@ func (p *Project) SetGithubRepo(repo *GithubRepo) {
 	p.UpdatedAt = time.Now()
 }
 
+func (p *Project) UnsetGithubRepo() {
+	p.GithubRepo = nil
+	p.UpdatedAt = time.Now()
+}
+
 type UpdateProjectFunc func(p Project) (Project, error)
 
 func (p *Project) Update(u UpdateProjectInput) error {

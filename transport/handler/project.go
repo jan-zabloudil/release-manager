@@ -113,6 +113,19 @@ func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (h *Handler) unsetGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
+	if err := h.ProjectSvc.UnsetGithubRepoForProject(
+		r.Context(),
+		util.ContextProjectID(r),
+		util.ContextAuthUserID(r),
+	); err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *Handler) getGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
 	repo, err := h.ProjectSvc.GetGithubRepoForProject(
 		r.Context(),
