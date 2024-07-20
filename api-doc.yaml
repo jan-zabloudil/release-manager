@@ -714,6 +714,12 @@ paths:
         - Releases
       parameters:
         - $ref: '#/components/parameters/ReleaseIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseDeleteRequest'
       responses:
         '204':
           description: 'Release deleted'
@@ -1236,6 +1242,12 @@ components:
         release_notes:
           type: string
           example: "Logging improved"
+    ReleaseDeleteRequest:
+      type: object
+      properties:
+        delete_github_release:
+          type: boolean
+          default: false
     ReleaseResponse:
       type: object
       properties:
