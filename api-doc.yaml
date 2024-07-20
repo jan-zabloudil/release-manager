@@ -442,7 +442,6 @@ paths:
     get:
       summary: 'Accept invitation'
       parameters:
-        - $ref: '#/components/parameters/InvitationIdParam'
         - $ref: '#/components/parameters/InvitationToken'
       tags:
         - Project invitations
@@ -455,7 +454,6 @@ paths:
     get:
       summary: 'Reject invitation'
       parameters:
-        - $ref: '#/components/parameters/InvitationIdParam'
         - $ref: '#/components/parameters/InvitationToken'
       tags:
         - Project invitations
@@ -874,7 +872,7 @@ components:
     InvitationToken:
       name: token
       in: query
-      description: Token to confirm invitation
+      description: Invitation token
       required: true
       schema:
         type: string
