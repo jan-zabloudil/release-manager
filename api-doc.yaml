@@ -1350,6 +1350,9 @@ components:
           environment_name:
             type: string
             example: "Production"
+          environment_service_url:
+            type: string
+            example: "https://www.example.com"
           deployed_by_user_id:
             type: string
             format: uuid
