@@ -24,6 +24,7 @@ type projectService interface {
 	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
 
 	SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID uuid.UUID, authUserID uuid.UUID) error
+	UnsetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) error
 	GetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) (svcmodel.GithubRepo, error)
 	ListGithubRepoTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.GitTag, error)
 

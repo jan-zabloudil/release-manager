@@ -181,6 +181,26 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 	return nil
 }
 
+func (s *ProjectService) UnsetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	if _, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
+		if !p.IsGithubRepoSet() {
+			return p, svcerrors.NewGithubRepoNotSetForProjectError()
+		}
+
+		p.UnsetGithubRepo()
+
+		return p, nil
+	}); err != nil {
+		return fmt.Errorf("unsetting project's github repo: %w", err)
+	}
+
+	return nil
+}
+
 func (s *ProjectService) GetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) (model.GithubRepo, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return model.GithubRepo{}, fmt.Errorf("authorizing project member: %w", err)
