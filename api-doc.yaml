@@ -617,7 +617,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReleasePatchRequest'
+              $ref: '#/components/schemas/ReleaseCreateRequest'
       responses:
         '200':
           description: 'Release created'
