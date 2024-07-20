@@ -114,13 +114,13 @@ func (c *Client) TagExists(ctx context.Context, tkn string, repo svcmodel.Github
 }
 
 func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
-	err := c.createRelease(ctx, tkn, repo, rls)
-	if err != nil {
+	if err := c.createRelease(ctx, tkn, repo, rls); err != nil {
 		if errors.Is(err, errGithubReleaseAlreadyExists) {
-			err = c.updateRelease(ctx, tkn, repo, rls)
-			if err != nil {
+			if err := c.updateRelease(ctx, tkn, repo, rls); err != nil {
 				return fmt.Errorf("failed to update release: %w", err)
 			}
+
+			return nil
 		}
 
 		return fmt.Errorf("failed to create release: %w", err)
