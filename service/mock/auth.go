@@ -3,8 +3,6 @@ package mock
 import (
 	"context"
 
-	"release-manager/service/model"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
@@ -18,8 +16,8 @@ func (m *AuthorizeService) AuthorizeUserRoleAdmin(ctx context.Context, userID uu
 	return args.Error(0)
 }
 
-func (m *AuthorizeService) AuthorizeUserRole(ctx context.Context, userID uuid.UUID, role model.UserRole) error {
-	args := m.Called(ctx, userID, role)
+func (m *AuthorizeService) AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error {
+	args := m.Called(ctx, userID)
 	return args.Error(0)
 }
 

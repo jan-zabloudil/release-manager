@@ -58,7 +58,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjec
 		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	u, err := s.userGetter.Get(ctx, authUserID, authUserID)
+	u, err := s.userGetter.Get(ctx, authUserID)
 	if err != nil {
 		return model.Project{}, fmt.Errorf("reading user: %w", err)
 	}

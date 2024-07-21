@@ -66,7 +66,7 @@ type releaseRepository interface {
 
 type authGuard interface {
 	AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error
-	AuthorizeUserRole(ctx context.Context, userID uuid.UUID, model model.UserRole) error
+	AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error
 	AuthorizeProjectRoleEditor(ctx context.Context, projectID, userID uuid.UUID) error
 	AuthorizeProjectRoleViewer(ctx context.Context, projectID, userID uuid.UUID) error
 }
@@ -78,7 +78,7 @@ type settingsGetter interface {
 }
 
 type userGetter interface {
-	Get(ctx context.Context, userID, authUserID uuid.UUID) (model.User, error)
+	Get(ctx context.Context, userID uuid.UUID) (model.User, error)
 	GetByEmail(ctx context.Context, email string) (model.User, error)
 }
 

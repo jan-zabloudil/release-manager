@@ -35,7 +35,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settings.On("GetDefaultReleaseMessage", mock.Anything).Return("message", nil)
-				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
+				user.On("Get", mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -49,7 +49,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizeService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				user.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
+				user.On("Get", mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,

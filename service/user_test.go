@@ -53,7 +53,7 @@ func TestUserService_Get(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.Get(context.Background(), testUserID, authUserID)
+			_, err := userService.GetForAdmin(context.Background(), testUserID, authUserID)
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -103,7 +103,7 @@ func TestUserService_GetAll(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.ListAll(context.Background(), authUserID)
+			_, err := userService.ListAllForAdmin(context.Background(), authUserID)
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -165,7 +165,7 @@ func TestUserService_Delete(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			err := userService.Delete(context.Background(), testUserID, authUserID)
+			err := userService.DeleteForAdmin(context.Background(), testUserID, authUserID)
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
