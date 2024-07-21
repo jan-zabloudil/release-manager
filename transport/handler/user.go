@@ -8,6 +8,16 @@ import (
 	"release-manager/transport/util"
 )
 
+func (h *Handler) getAuthUser(w http.ResponseWriter, r *http.Request) {
+	u, err := h.UserSvc.Get(r.Context(), util.ContextAuthUserID(r))
+	if err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, http.StatusOK, model.ToUser(u))
+}
+
 func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 	u, err := h.UserSvc.GetForAdmin(
 		r.Context(),

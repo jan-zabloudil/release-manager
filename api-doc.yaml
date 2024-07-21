@@ -68,6 +68,22 @@ paths:
           $ref: '#/components/responses/ForbiddenErrorResponse'
         '422':
               $ref: '#/components/responses/UnprocesssableEntityResponse'
+  /auth/user:
+    get:
+      summary: "Get authenticated user"
+      security:
+        - bearerAuth: []
+      tags:
+        - Users
+      responses:
+        '200':
+          description: 'User fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+            $ref: '#/components/responses/UnauthorizedErrorResponse'
   /admin/users:
     get:
       summary: "List organization's users"
