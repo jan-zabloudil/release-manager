@@ -18,11 +18,13 @@ func (h *Handler) setupRoutes() {
 	h.Mux.Use(httpx.RecoverMiddleware(slog.Default().WithGroup("recover")))
 	h.Mux.Use(middleware.Auth(h.AuthClient))
 
-	h.Mux.Get("/admin/users", middleware.RequireAuthUser(h.listUsers))
-	h.Mux.Route("/admin/users/{id}", func(r chi.Router) {
-		r.Use(middleware.HandleResourceID("id", util.ContextSetUserID))
-		r.Get("/", middleware.RequireAuthUser(h.getUser))
-		r.Delete("/", middleware.RequireAuthUser(h.deleteUser))
+	h.Mux.Route("/admin/users", func(r chi.Router) {
+		r.Get("/", middleware.RequireAuthUser(h.listUsers))
+		r.Route("/{id}", func(r chi.Router) {
+			r.Use(middleware.HandleResourceID("id", util.ContextSetUserID))
+			r.Get("/", middleware.RequireAuthUser(h.getUser))
+			r.Delete("/", middleware.RequireAuthUser(h.deleteUser))
+		})
 	})
 
 	h.Mux.Route("/projects", func(r chi.Router) {

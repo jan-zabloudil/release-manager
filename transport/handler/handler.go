@@ -40,9 +40,9 @@ type projectService interface {
 }
 
 type userService interface {
-	Get(ctx context.Context, id, authUserID uuid.UUID) (svcmodel.User, error)
-	ListAll(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.User, error)
-	Delete(ctx context.Context, id, authUserID uuid.UUID) error
+	GetForAdmin(ctx context.Context, userID, authUserID uuid.UUID) (svcmodel.User, error)
+	ListAllForAdmin(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.User, error)
+	DeleteForAdmin(ctx context.Context, userID, authUserID uuid.UUID) error
 }
 
 type settingsService interface {

@@ -66,6 +66,59 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 	}
 }
 
+func TestAuthService_AuthorizeUserRoleUser(t *testing.T) {
+	adminUser := model.User{Role: model.UserRoleAdmin}
+	user := model.User{Role: model.UserRoleUser}
+
+	testCases := []struct {
+		name      string
+		mockSetup func(*repo.UserRepository)
+		wantErr   bool
+	}{
+		{
+			name: "User role admin",
+			mockSetup: func(userRepo *repo.UserRepository) {
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "User role user",
+			mockSetup: func(userRepo *repo.UserRepository) {
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "User not found",
+			mockSetup: func(userRepo *repo.UserRepository) {
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			userRepo := new(repo.UserRepository)
+			projectRepo := new(repo.ProjectRepository)
+			service := NewAuthorizationService(userRepo, projectRepo)
+
+			tc.mockSetup(userRepo)
+
+			err := service.AuthorizeUserRoleUser(context.Background(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			userRepo.AssertExpectations(t)
+		})
+	}
+}
+
 func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 	adminUser := model.User{Role: model.UserRoleAdmin}
 	user := model.User{Role: model.UserRoleUser}

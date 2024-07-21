@@ -22,11 +22,15 @@ func NewAuthorizationService(userRepo userRepository, projectRepo projectReposit
 	}
 }
 
-func (s *AuthorizationService) AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error {
-	return s.AuthorizeUserRole(ctx, userID, model.UserRoleAdmin)
+func (s *AuthorizationService) AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error {
+	return s.authorizeUserRole(ctx, userID, model.UserRoleUser)
 }
 
-func (s *AuthorizationService) AuthorizeUserRole(ctx context.Context, userID uuid.UUID, role model.UserRole) error {
+func (s *AuthorizationService) AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error {
+	return s.authorizeUserRole(ctx, userID, model.UserRoleAdmin)
+}
+
+func (s *AuthorizationService) authorizeUserRole(ctx context.Context, userID uuid.UUID, role model.UserRole) error {
 	user, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {

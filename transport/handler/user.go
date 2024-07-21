@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
-	u, err := h.UserSvc.Get(
+	u, err := h.UserSvc.GetForAdmin(
 		r.Context(),
 		util.ContextUserID(r),
 		util.ContextAuthUserID(r),
@@ -23,7 +23,7 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.UserSvc.ListAll(r.Context(), util.ContextAuthUserID(r))
+	users, err := h.UserSvc.ListAllForAdmin(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
@@ -33,7 +33,7 @@ func (h *Handler) listUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
-	if err := h.UserSvc.Delete(
+	if err := h.UserSvc.DeleteForAdmin(
 		r.Context(),
 		util.ContextUserID(r),
 		util.ContextAuthUserID(r),
