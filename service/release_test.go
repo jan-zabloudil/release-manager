@@ -717,6 +717,122 @@ func TestReleaseService_UpsertGithubRelease(t *testing.T) {
 	}
 }
 
+func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
+	gitTagName := "v2.0.0"
+	previousGitTagName := "v1.0.0"
+
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizeService, *svc.SettingsService, *svc.ProjectService, *github.Client, *repo.ReleaseRepository)
+		input     model.GithubGeneratedReleaseNotesInput
+		wantErr   bool
+	}{
+		{
+			name: "Success",
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					GithubRepo: &model.GithubRepo{
+						OwnerSlug: "owner",
+						RepoSlug:  "repo",
+					},
+				}, nil)
+				github.On("GenerateReleaseNotes", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubGeneratedReleaseNotes{}, nil)
+			},
+			input: model.GithubGeneratedReleaseNotesInput{
+				GitTagName:         &gitTagName,
+				PreviousGitTagName: &previousGitTagName,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid input",
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					GithubRepo: &model.GithubRepo{
+						OwnerSlug: "owner",
+						RepoSlug:  "repo",
+					},
+				}, nil)
+			},
+			input: model.GithubGeneratedReleaseNotesInput{
+				GitTagName:         nil,
+				PreviousGitTagName: &previousGitTagName,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Github integration not enabled",
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("", svcerrors.NewGithubIntegrationNotEnabledError())
+			},
+			input: model.GithubGeneratedReleaseNotesInput{
+				GitTagName:         &gitTagName,
+				PreviousGitTagName: &previousGitTagName,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Project not found",
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
+			},
+			input: model.GithubGeneratedReleaseNotesInput{
+				GitTagName:         &gitTagName,
+				PreviousGitTagName: &previousGitTagName,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Github repo not set for project",
+			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+			},
+			input: model.GithubGeneratedReleaseNotesInput{
+				GitTagName:         &gitTagName,
+				PreviousGitTagName: &previousGitTagName,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			authSvc := new(svc.AuthorizeService)
+			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
+			releaseRepo := new(repo.ReleaseRepository)
+			slackClient := new(slack.Client)
+			githubClient := new(github.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+
+			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
+
+			_, err := service.GenerateGithubReleaseNotes(context.TODO(), tc.input, uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			authSvc.AssertExpectations(t)
+			settingsSvc.AssertExpectations(t)
+			projectSvc.AssertExpectations(t)
+			githubClient.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}
+
 func TestReleaseService_CreateDeployment(t *testing.T) {
 	testCases := []struct {
 		name      string

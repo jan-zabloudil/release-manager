@@ -169,3 +169,47 @@ func TestCreateReleaseInput_ValidateGitTagName(t *testing.T) {
 		})
 	}
 }
+
+func TestGithubGeneratedReleaseNotesInput_Validate(t *testing.T) {
+	validGitTagName := "v1.0.0"
+	emptyGitTagName := ""
+
+	tests := []struct {
+		name    string
+		input   GithubGeneratedReleaseNotesInput
+		wantErr bool
+	}{
+		{
+			name: "Valid GitTagName",
+			input: GithubGeneratedReleaseNotesInput{
+				GitTagName: &validGitTagName,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Nil GitTagName",
+			input: GithubGeneratedReleaseNotesInput{
+				GitTagName: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Empty GitTagName",
+			input: GithubGeneratedReleaseNotesInput{
+				GitTagName: &emptyGitTagName,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.input.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
