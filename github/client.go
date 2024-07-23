@@ -21,6 +21,9 @@ const (
 	// GitHub API error codes
 	errCodeAlreadyExists = "already_exists"
 
+	// GitHub API error messages
+	errMessageInvalidPreviousTag = "Invalid previous_tag parameter"
+
 	// GitHub API error fields
 	gitTagNameField = "tag_name"
 )
@@ -152,6 +155,45 @@ func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmod
 	}
 
 	return nil
+}
+
+func (c *Client) GenerateReleaseNotes(
+	ctx context.Context,
+	tkn string,
+	repo svcmodel.GithubRepo,
+	input svcmodel.GithubGeneratedReleaseNotesInput,
+) (svcmodel.GithubGeneratedReleaseNotes, error) {
+	// Generates release notes based on git tag and previous git tag name
+	// Git tag name must be present, and it can be either existing tag or new tag that will be created
+	// Previous git tag name is optional field
+	//
+	// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#generate-release-notes-content-for-a-release
+	notes, _, err := c.getGithubClient(tkn).Repositories.GenerateReleaseNotes(
+		ctx,
+		repo.OwnerSlug,
+		repo.RepoSlug,
+		&github.GenerateNotesOptions{
+			TagName:         input.GetGitTagName(),
+			PreviousTagName: input.PreviousGitTagName,
+		},
+	)
+
+	if err != nil {
+		var githubErr *github.ErrorResponse
+		if errors.As(err, &githubErr) &&
+			githubErr.Response.StatusCode == http.StatusBadRequest &&
+			githubErr.Message == errMessageInvalidPreviousTag {
+			return svcmodel.GithubGeneratedReleaseNotes{},
+				svcerrors.NewGithubGeneratedNotesInvalidInputError().Wrap(err).WithMessage("Invalid previous git tag")
+		}
+
+		return svcmodel.GithubGeneratedReleaseNotes{}, fmt.Errorf("failed to generate release notes: %w", util.TranslateGithubAuthError(err))
+	}
+
+	return svcmodel.GithubGeneratedReleaseNotes{
+		Title: notes.Name,
+		Notes: notes.Body,
+	}, nil
 }
 
 // createRelease is an internal method for creating a release.

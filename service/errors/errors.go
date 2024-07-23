@@ -41,6 +41,7 @@ var (
 	ErrCodeDeploymentUnprocessable          = "ERR_DEPLOYMENT_UNPROCESSABLE"
 	ErrCodeDeploymentNotFound               = "ERR_DEPLOYMENT_NOT_FOUND"
 	ErrCodeProjectGithubRepoAlreadyUsed     = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
+	ErrCodeGithubGeneratedNotesInvalidInput = "ERR_GITHUB_GENERATED_NOTES_INVALID_INPUT"
 )
 
 type Error struct {
@@ -308,6 +309,13 @@ func NewProjectGithubRepoAlreadyUsedError() *Error {
 	return &Error{
 		Code:    ErrCodeProjectGithubRepoAlreadyUsed,
 		Message: "Github repo is already used for another project.",
+	}
+}
+
+func NewGithubGeneratedNotesInvalidInputError() *Error {
+	return &Error{
+		Code:    ErrCodeGithubGeneratedNotesInvalidInput,
+		Message: "Invalid input for generating release notes",
 	}
 }
 

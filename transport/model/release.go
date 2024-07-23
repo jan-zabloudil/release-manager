@@ -73,3 +73,27 @@ func ToReleases(releases []svcmodel.Release) []Release {
 	}
 	return r
 }
+
+type GithubGeneratedReleaseNotesInput struct {
+	GitTagName         *string `json:"git_tag_name"`
+	PreviousGitTagName *string `json:"previous_git_tag_name"`
+}
+
+type GithubGeneratedReleaseNotes struct {
+	Title string `json:"title"`
+	Notes string `json:"notes"`
+}
+
+func ToSvcGithubGeneratedReleaseNotesInput(n GithubGeneratedReleaseNotesInput) svcmodel.GithubGeneratedReleaseNotesInput {
+	return svcmodel.GithubGeneratedReleaseNotesInput{
+		GitTagName:         n.GitTagName,
+		PreviousGitTagName: n.PreviousGitTagName,
+	}
+}
+
+func ToGithubGeneratedReleaseNotes(n svcmodel.GithubGeneratedReleaseNotes) GithubGeneratedReleaseNotes {
+	return GithubGeneratedReleaseNotes{
+		Title: n.Title,
+		Notes: n.Notes,
+	}
+}

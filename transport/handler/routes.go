@@ -68,6 +68,7 @@ func (h *Handler) setupRoutes() {
 				r.Delete("/", middleware.RequireAuthUser(h.unsetGithubRepoForProject))
 				r.Get("/", middleware.RequireAuthUser(h.getGithubRepoForProject))
 				r.Get("/tags", middleware.RequireAuthUser(h.listGithubRepoTags))
+				r.Post("/release-notes", middleware.RequireAuthUser(h.generateGithubReleaseNotes))
 			})
 			r.Route("/releases", func(r chi.Router) {
 				r.Get("/", middleware.RequireAuthUser(h.listReleases))

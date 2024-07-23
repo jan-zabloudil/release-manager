@@ -128,3 +128,24 @@ func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Request) {
+	var input model.GithubGeneratedReleaseNotesInput
+	if err := util.UnmarshalRequest(r, &input); err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	notes, err := h.ReleaseSvc.GenerateGithubReleaseNotes(
+		r.Context(),
+		model.ToSvcGithubGeneratedReleaseNotesInput(input),
+		util.ContextProjectID(r),
+		util.ContextAuthUserID(r),
+	)
+	if err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, http.StatusOK, model.ToGithubGeneratedReleaseNotes(notes))
+}
