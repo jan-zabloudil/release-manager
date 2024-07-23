@@ -159,6 +159,9 @@ func (i GithubGeneratedReleaseNotesInput) Validate() error {
 	if i.GitTagName == nil {
 		return errGithubGeneratedNotesGitTagRequired
 	}
+	if *i.GitTagName == "" {
+		return errGithubGeneratedNotesGitTagRequired
+	}
 
 	return nil
 }
