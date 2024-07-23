@@ -129,6 +129,8 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 	return nil
 }
 
+// DeleteReleaseByGitTag deletes a release by its git tag name.
+// Function is used when the release is deleted on GitHub and webhook is triggered to delete the release in the database.
 func (s *ReleaseService) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {
 	if err := s.repo.DeleteReleaseByGitTag(ctx, githubOwnerSlug, githubRepoSlug, gitTag); err != nil {
 		return fmt.Errorf("deleting release by git tag: %w", err)
