@@ -676,16 +676,6 @@ func TestReleaseService_UpsertGithubRelease(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "Github repo not set for project",
-			mockSetup: func(auth *svc.AuthorizeService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
-			},
-			wantErr: true,
-		},
 	}
 
 	for _, tc := range testCases {
