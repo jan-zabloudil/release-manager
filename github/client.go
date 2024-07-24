@@ -16,15 +16,6 @@ import (
 
 const (
 	tagsToFetch = 100
-
-	// GitHub API error codes
-	errCodeAlreadyExists = "already_exists"
-
-	// GitHub API error messages
-	errMessageInvalidPreviousTag = "Invalid previous_tag parameter"
-
-	// GitHub API error fields
-	gitTagNameField = "tag_name"
 )
 
 var (
