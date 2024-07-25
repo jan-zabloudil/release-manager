@@ -150,8 +150,8 @@ func (c *Client) GenerateReleaseNotes(
 	repo svcmodel.GithubRepo,
 	input svcmodel.GithubGeneratedReleaseNotesInput,
 ) (svcmodel.GithubGeneratedReleaseNotes, error) {
-	// Generates release notes based on git tag and previous git tag name
-	// Git tag name must be present, and it can be either existing tag or new tag that will be created
+	// Generates release notes based on git tag and previous git tag
+	// Git tag must be present, and it can be either existing tag or new tag that will be created
 	// Previous git tag name is optional field
 	//
 	// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#generate-release-notes-content-for-a-release
