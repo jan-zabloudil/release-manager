@@ -99,6 +99,7 @@ type githubManager interface {
 	GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error)
 	TagExists(ctx context.Context, token string, repo model.GithubRepo, tagName string) (bool, error)
 	UpsertRelease(ctx context.Context, token string, repo model.GithubRepo, rls model.Release) error
+	GenerateReleaseNotes(ctx context.Context, token string, repo model.GithubRepo, input model.GithubGeneratedReleaseNotesInput) (model.GithubGeneratedReleaseNotes, error)
 }
 
 type emailSender interface {

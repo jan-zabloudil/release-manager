@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 
 	"release-manager/github/model"
@@ -17,12 +16,6 @@ import (
 
 const (
 	tagsToFetch = 100
-
-	// GitHub API error codes
-	errCodeAlreadyExists = "already_exists"
-
-	// GitHub API error fields
-	gitTagNameField = "tag_name"
 )
 
 var (
@@ -45,8 +38,7 @@ func (c *Client) ReadRepo(ctx context.Context, tkn string, rawRepoURL string) (s
 	// Docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
 	repo, _, err := c.getGithubClient(tkn).Repositories.Get(ctx, ownerSlug, repoSlug)
 	if err != nil {
-		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+		if util.IsGithubNotFoundError(err) {
 			return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
 		}
 
@@ -76,8 +68,7 @@ func (c *Client) ReadTagsForRepo(ctx context.Context, tkn string, repo svcmodel.
 		&github.ListOptions{PerPage: tagsToFetch},
 	)
 	if err != nil {
-		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+		if util.IsGithubNotFoundError(err) {
 			return nil, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
 		}
 
@@ -102,8 +93,7 @@ func (c *Client) TagExists(ctx context.Context, tkn string, repo svcmodel.Github
 		fmt.Sprintf("tags/%s", tagName),
 	)
 	if err != nil {
-		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+		if util.IsGithubNotFoundError(err) {
 			return false, nil
 		}
 
@@ -154,6 +144,43 @@ func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmod
 	return nil
 }
 
+func (c *Client) GenerateReleaseNotes(
+	ctx context.Context,
+	tkn string,
+	repo svcmodel.GithubRepo,
+	input svcmodel.GithubGeneratedReleaseNotesInput,
+) (svcmodel.GithubGeneratedReleaseNotes, error) {
+	// Generates release notes based on git tag and previous git tag
+	// Git tag must be present, and it can be either existing tag or new tag that will be created
+	// Previous git tag name is optional field
+	//
+	// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#generate-release-notes-content-for-a-release
+	notes, _, err := c.getGithubClient(tkn).Repositories.GenerateReleaseNotes(
+		ctx,
+		repo.OwnerSlug,
+		repo.RepoSlug,
+		&github.GenerateNotesOptions{
+			TagName:         input.GetGitTagName(),
+			PreviousTagName: input.PreviousGitTagName,
+		},
+	)
+
+	if err != nil {
+		if util.IsGithubInvalidPreviousTagError(err) {
+			return svcmodel.GithubGeneratedReleaseNotes{},
+				svcerrors.NewGithubGeneratedNotesInvalidInputError().Wrap(err).WithMessage("Invalid previous git tag")
+		}
+
+		return svcmodel.GithubGeneratedReleaseNotes{},
+			fmt.Errorf("failed to generate release notes: %w", util.TranslateGithubAuthError(err))
+	}
+
+	return svcmodel.GithubGeneratedReleaseNotes{
+		Title: notes.Name,
+		Notes: notes.Body,
+	}, nil
+}
+
 // createRelease is an internal method for creating a release.
 // returns internal errGithubReleaseAlreadyExists if the release already exists
 func (c *Client) createRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
@@ -169,15 +196,8 @@ func (c *Client) createRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 		Body:    &rls.ReleaseNotes,
 	})
 	if err != nil {
-		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) && githubErr.Errors != nil {
-			// GitHub returns error response as an array of errors
-			// Each error contains fields (code, resource, field)
-			for _, e := range githubErr.Errors {
-				if e.Code == errCodeAlreadyExists && e.Field == gitTagNameField {
-					return errGithubReleaseAlreadyExists
-				}
-			}
+		if util.IsGithubReleaseAlreadyExistsError(err) {
+			return errGithubReleaseAlreadyExists
 		}
 
 		return util.TranslateGithubAuthError(err)
@@ -257,8 +277,7 @@ func (c *Client) getReleaseIDByTag(ctx context.Context, tkn string, repo svcmode
 		tagName,
 	)
 	if err != nil {
-		var githubErr *github.ErrorResponse
-		if errors.As(err, &githubErr) && githubErr.Response.StatusCode == http.StatusNotFound {
+		if util.IsGithubNotFoundError(err) {
 			return 0, errGithubReleaseNotFound
 		}
 

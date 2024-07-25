@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	errReleaseTitleRequired     = errors.New("release title is required")
-	errReleaseGitTagRequired    = errors.New("git tag name is required")
-	errReleaseGitTagURLRequired = errors.New("git tag URL is required")
+	errReleaseTitleRequired               = errors.New("release title is required")
+	errReleaseGitTagRequired              = errors.New("git tag name is required")
+	errReleaseGitTagURLRequired           = errors.New("git tag URL is required")
+	errGithubGeneratedNotesGitTagRequired = errors.New("git tag name is required")
 )
 
 type CreateReleaseInput struct {
@@ -147,4 +148,33 @@ func NewReleaseNotification(p Project, r Release, dpl *Deployment) ReleaseNotifi
 
 type DeleteReleaseInput struct {
 	DeleteGithubRelease bool
+}
+
+type GithubGeneratedReleaseNotesInput struct {
+	GitTagName         *string
+	PreviousGitTagName *string
+}
+
+func (i GithubGeneratedReleaseNotesInput) Validate() error {
+	if i.GitTagName == nil {
+		return errGithubGeneratedNotesGitTagRequired
+	}
+	if *i.GitTagName == "" {
+		return errGithubGeneratedNotesGitTagRequired
+	}
+
+	return nil
+}
+
+func (i GithubGeneratedReleaseNotesInput) GetGitTagName() string {
+	if i.GitTagName != nil {
+		return *i.GitTagName
+	}
+
+	return ""
+}
+
+type GithubGeneratedReleaseNotes struct {
+	Title string
+	Notes string
 }

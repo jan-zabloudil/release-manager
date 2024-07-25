@@ -129,6 +129,7 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 	return nil
 }
 
+// DeleteReleaseByGitTag is used when the release is deleted on GitHub and webhook is triggered to delete the release in the database.
 func (s *ReleaseService) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {
 	if err := s.repo.DeleteReleaseByGitTag(ctx, githubOwnerSlug, githubRepoSlug, gitTag); err != nil {
 		return fmt.Errorf("deleting release by git tag: %w", err)
@@ -276,6 +277,42 @@ func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, rel
 	}
 
 	return nil
+}
+
+func (s *ReleaseService) GenerateGithubReleaseNotes(
+	ctx context.Context,
+	input model.GithubGeneratedReleaseNotesInput,
+	projectID,
+	authUserID uuid.UUID,
+) (model.GithubGeneratedReleaseNotes, error) {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	tkn, err := s.settingsGetter.GetGithubToken(ctx)
+	if err != nil {
+		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("getting Github token: %w", err)
+	}
+
+	project, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
+	if err != nil {
+		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("reading project: %w", err)
+	}
+
+	if !project.IsGithubRepoSet() {
+		return model.GithubGeneratedReleaseNotes{}, svcerrors.NewGithubRepoNotSetForProjectError()
+	}
+
+	if err := input.Validate(); err != nil {
+		return model.GithubGeneratedReleaseNotes{}, svcerrors.NewGithubGeneratedNotesInvalidInputError().WithMessage(err.Error())
+	}
+
+	notes, err := s.githubManager.GenerateReleaseNotes(ctx, tkn, *project.GithubRepo, input)
+	if err != nil {
+		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("generating release notes: %w", err)
+	}
+
+	return notes, nil
 }
 
 func (s *ReleaseService) CreateDeployment(

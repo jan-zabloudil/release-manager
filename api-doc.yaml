@@ -636,6 +636,34 @@ paths:
           $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/github-repo/release-notes:
+    post:
+      summary: 'Generate release notes'
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Project GitHub repo
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GithubGeneratedReleaseNotesRequest'
+      responses:
+        '200':
+          description: 'Release notes generated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GithubGeneratedReleaseNotesResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/releases:
     post:
       summary: 'Create release'
@@ -1251,6 +1279,24 @@ components:
           example: "htttp://github.com/owner/repo"
       required:
         - github_repo_url
+    GithubGeneratedReleaseNotesRequest:
+      type: object
+      properties:
+        git_tag_name:
+          type: string
+          example: "v0.5.0"
+        previous_git_tag_name:
+          type: string
+          example: "v0.4.0"
+      required:
+        - git_tag_name
+    GithubGeneratedReleaseNotesResponse:
+      type: object
+      properties:
+        title:
+          type: string
+        notes:
+          type: string
     ReleaseCreateRequest:
       type: object
       properties:

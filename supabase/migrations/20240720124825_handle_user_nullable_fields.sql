@@ -20,6 +20,16 @@ BEGIN
                new.created_at,
                new.updated_at
            );
+
+    -- If user has accepted an invitation(s) before signing up, add them to the project(s)
+    INSERT INTO public.project_members (user_id, project_id, project_role, created_at, updated_at)
+    SELECT NEW.id, project_id, project_role, NEW.created_at, NEW.updated_at
+    FROM public.project_invitations
+    WHERE email = NEW.email AND status = 'accepted_awaiting_registration';
+
+    DELETE FROM public.project_invitations
+    WHERE email = NEW.email AND status = 'accepted_awaiting_registration';
+
     RETURN new;
 END;
 $function$;
