@@ -87,12 +87,15 @@ See [API documentation](api-doc.yaml).
 
 Instructions on how to configure the app.
 
-### How to create admin user?
+### How to assign admin role to a user?
 
-1. Sign up as a regular user.
-2. Navigate to Supabase Studio.
-3. Go to *Your project > SQL Editor*.
-3. Change `public.users.role` to `admin`.
+To assign an admin role to an already registered user, you need to update their role in the database. As a superadmin (with database access), change the value of `public.users.role` to `admin`.
+
+If you want to pre-define users who should be granted the admin role upon signing up, add their emails to the `pending_admin_user_role_assignments` table.
+
+> The admin role will be assigned to a user upon registration only if their email is verified. _(For users logging in via Google SSO, the email is verified automatically.)_ 
+>
+> This check prevents granting the admin role to users with unverified emails, which is particularly important if email sign-up is allowed in the future.
 
 ### How to enable GitHub integration?
 
