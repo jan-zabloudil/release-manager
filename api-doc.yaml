@@ -595,23 +595,6 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
-    delete:
-        summary: "Unset project's GitHub repo"
-        security:
-            - bearerAuth: []
-        tags:
-            - Project GitHub repo
-        parameters:
-            - $ref: '#/components/parameters/ProjectIdParam'
-        responses:
-            '204':
-              description: 'GitHub repo unset'
-            '401':
-                $ref: '#/components/responses/UnauthorizedErrorResponse'
-            '403':
-                $ref: '#/components/responses/ForbiddenErrorResponse'
-            '404':
-                $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/github-repo/tags:
     get:
       summary: 'List GitHub repo tags'
