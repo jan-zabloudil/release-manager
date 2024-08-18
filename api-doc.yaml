@@ -552,7 +552,7 @@ paths:
               $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/github-repo:
     post:
-      summary: 'Set GitHub repo for the project'
+      summary: 'Connect GitHub repo to the project'
       security:
         - bearerAuth: [ ]
       tags:
@@ -567,7 +567,7 @@ paths:
               $ref: '#/components/schemas/ProjectGithubRepoRequest'
       responses:
         '204':
-          description: 'GitHub repo set'
+          description: 'GitHub repo connected'
         '401':
           $ref: '#/components/responses/UnauthorizedErrorResponse'
         '403':
@@ -575,7 +575,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundErrorResponse'
     get:
-      summary: "Get project's GitHub repo"
+      summary: 'Get GitHub repo connected to the project'
       security:
         - bearerAuth: []
       tags:
@@ -595,23 +595,6 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
-    delete:
-        summary: "Unset project's GitHub repo"
-        security:
-            - bearerAuth: []
-        tags:
-            - Project GitHub repo
-        parameters:
-            - $ref: '#/components/parameters/ProjectIdParam'
-        responses:
-            '204':
-              description: 'GitHub repo unset'
-            '401':
-                $ref: '#/components/responses/UnauthorizedErrorResponse'
-            '403':
-                $ref: '#/components/responses/ForbiddenErrorResponse'
-            '404':
-                $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/github-repo/tags:
     get:
       summary: 'List GitHub repo tags'
