@@ -62,7 +62,8 @@ func IsForbiddenError(err error) bool {
 	return isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientUserRole) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientForbidden) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientProjectRole) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenUserNotProjectMember)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenUserNotProjectMember) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeAdminUserCannotBeDeleted)
 }
 
 func IsConflictError(err error) bool {

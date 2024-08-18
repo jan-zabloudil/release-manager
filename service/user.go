@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -62,12 +63,17 @@ func (s *UserService) GetForAdmin(ctx context.Context, userID uuid.UUID, authUse
 // DeleteForAdmin deletes a user by ID, can be accessed only by admin user.
 func (s *UserService) DeleteForAdmin(ctx context.Context, userID uuid.UUID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return err
+		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	_, err := s.GetForAdmin(ctx, userID, authUserID)
+	u, err := s.GetForAdmin(ctx, userID, authUserID)
 	if err != nil {
 		return fmt.Errorf("getting user: %w", err)
+	}
+
+	// Admin user can be deleted only directly from the database.
+	if u.IsAdmin() {
+		return svcerrors.NewAdminUserCannotBeDeletedError()
 	}
 
 	return s.repository.Delete(ctx, userID)

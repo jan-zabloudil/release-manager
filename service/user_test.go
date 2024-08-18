@@ -131,11 +131,22 @@ func TestUserService_Delete(t *testing.T) {
 				mockAuthSvc := new(svcmock.AuthorizeService)
 				mockUserRepo := new(repomock.UserRepository)
 				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
-				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, nil)
+				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{Role: model.UserRoleUser}, nil)
 				mockUserRepo.On("Delete", mock.Anything, testUserID).Return(nil)
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: false,
+		},
+		{
+			name: "Cannot delete admin user",
+			setupMocks: func() (*svcmock.AuthorizeService, *repomock.UserRepository) {
+				mockAuthSvc := new(svcmock.AuthorizeService)
+				mockUserRepo := new(repomock.UserRepository)
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
+				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{Role: model.UserRoleAdmin}, nil)
+				return mockAuthSvc, mockUserRepo
+			},
+			expectErr: true,
 		},
 		{
 			name: "AuthorizationFailure",
