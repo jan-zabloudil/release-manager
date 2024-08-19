@@ -24,7 +24,7 @@ func TestSettingsService_Update(t *testing.T) {
 		name      string
 		userID    uuid.UUID
 		update    model.UpdateSettingsInput
-		mockSetup func(*svc.AuthorizeService, *repo.SettingsRepository)
+		mockSetup func(*svc.AuthorizationService, *repo.SettingsRepository)
 		expectErr bool
 	}{
 		{
@@ -37,7 +37,7 @@ func TestSettingsService_Update(t *testing.T) {
 					Token:   &validToken,
 				},
 			},
-			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
+			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(model.Settings{}, nil)
 			},
@@ -53,7 +53,7 @@ func TestSettingsService_Update(t *testing.T) {
 					Token:   &invalidToken,
 				},
 			},
-			mockSetup: func(authSvc *svc.AuthorizeService, settingsRepo *repo.SettingsRepository) {
+			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(model.Settings{}, svcerrors.NewSettingsUnprocessableError())
 			},
@@ -63,7 +63,7 @@ func TestSettingsService_Update(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			authSvc := new(svc.AuthorizeService)
+			authSvc := new(svc.AuthorizationService)
 			settingsRepo := new(repo.SettingsRepository)
 			settingsSvc := NewSettingsService(authSvc, settingsRepo)
 
