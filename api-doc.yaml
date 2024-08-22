@@ -23,7 +23,7 @@ paths:
       responses:
         204:
           description: 'API is running'
-  /organization/settings:
+  /settings:
     get:
       summary: "Get settings values"
       tags:

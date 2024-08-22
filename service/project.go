@@ -38,22 +38,22 @@ func NewProjectService(
 	}
 }
 
-func (s *ProjectService) CreateProject(ctx context.Context, c model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) CreateProject(ctx context.Context, input model.CreateProjectInput, authUserID uuid.UUID) (model.Project, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Project{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	// If empty release notification config is provided, use default config
-	if c.ReleaseNotificationConfig.IsEmpty() {
+	if input.ReleaseNotificationConfig.IsEmpty() {
 		defaultCfg, err := s.getDefaultReleaseNotificationConfig(ctx)
 		if err != nil {
 			return model.Project{}, fmt.Errorf("getting default release notification config: %w", err)
 		}
 
-		c.ReleaseNotificationConfig = defaultCfg
+		input.ReleaseNotificationConfig = defaultCfg
 	}
 
-	p, err := model.NewProject(c)
+	p, err := model.NewProject(input)
 	if err != nil {
 		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
@@ -128,13 +128,13 @@ func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID,
 	return nil
 }
 
-func (s *ProjectService) UpdateProject(ctx context.Context, u model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return model.Project{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
 	p, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
-		if err := p.Update(u); err != nil {
+		if err := p.Update(input); err != nil {
 			return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
@@ -198,17 +198,17 @@ func (s *ProjectService) GetGithubRepoForProject(ctx context.Context, projectID,
 	return *p.GithubRepo, nil
 }
 
-func (s *ProjectService) CreateEnvironment(ctx context.Context, c model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {
+func (s *ProjectService) CreateEnvironment(ctx context.Context, input model.CreateEnvironmentInput, authUserID uuid.UUID) (model.Environment, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Environment{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	_, err := s.getProject(ctx, c.ProjectID)
+	_, err := s.getProject(ctx, input.ProjectID)
 	if err != nil {
 		return model.Environment{}, fmt.Errorf("reading project: %w", err)
 	}
 
-	env, err := model.NewEnvironment(c)
+	env, err := model.NewEnvironment(input)
 	if err != nil {
 		return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
@@ -235,7 +235,7 @@ func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID, a
 
 func (s *ProjectService) UpdateEnvironment(
 	ctx context.Context,
-	u model.UpdateEnvironmentInput,
+	input model.UpdateEnvironmentInput,
 	projectID,
 	envID,
 	authUserID uuid.UUID,
@@ -245,7 +245,7 @@ func (s *ProjectService) UpdateEnvironment(
 	}
 
 	env, err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
-		if err := e.Update(u); err != nil {
+		if err := e.Update(input); err != nil {
 			return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
@@ -338,12 +338,12 @@ func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, auth
 	return t, nil
 }
 
-func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvitationInput, authUserID uuid.UUID) (model.ProjectInvitation, error) {
+func (s *ProjectService) Invite(ctx context.Context, input model.CreateProjectInvitationInput, authUserID uuid.UUID) (model.ProjectInvitation, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.ProjectInvitation{}, err
 	}
 
-	p, err := s.getProject(ctx, c.ProjectID)
+	p, err := s.getProject(ctx, input.ProjectID)
 	if err != nil {
 		return model.ProjectInvitation{}, fmt.Errorf("reading project: %w", err)
 	}
@@ -353,7 +353,7 @@ func (s *ProjectService) Invite(ctx context.Context, c model.CreateProjectInvita
 		return model.ProjectInvitation{}, fmt.Errorf("creating token: %w", err)
 	}
 
-	i, err := model.NewProjectInvitation(c, tkn, authUserID)
+	i, err := model.NewProjectInvitation(input, tkn, authUserID)
 	if err != nil {
 		return model.ProjectInvitation{}, svcerrors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
@@ -512,7 +512,8 @@ func (s *ProjectService) UpdateMemberRole(
 	ctx context.Context,
 	newRole model.ProjectRole,
 	projectID,
-	userID, authUserID uuid.UUID,
+	userID,
+	authUserID uuid.UUID,
 ) (model.ProjectMember, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.ProjectMember{}, fmt.Errorf("authorizing user role: %w", err)
