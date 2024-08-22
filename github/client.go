@@ -181,6 +181,36 @@ func (c *Client) GenerateReleaseNotes(
 	}, nil
 }
 
+func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
+	if ownerSlug == "" || repoSlug == "" {
+		return url.URL{}, errors.New("empty owner or repo slug")
+	}
+
+	rawURL := fmt.Sprintf("https://github.com/%s/%s", ownerSlug, repoSlug)
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	return *u, nil
+}
+
+func (c *Client) GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
+	if tagName == "" || ownerSlug == "" || repoSlug == "" {
+		return url.URL{}, errors.New("empty tag name, owner or repo slug")
+	}
+
+	// For ReleaseManager users it is the most beneficial to see GitHub tag page (that is also a release page)
+	// This page is available even if GitHub release is not created yet
+	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", ownerSlug, repoSlug, tagName)
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	return *u, nil
+}
+
 // createRelease is an internal method for creating a release.
 // returns internal errGithubReleaseAlreadyExists if the release already exists
 func (c *Client) createRelease(ctx context.Context, tkn string, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
@@ -234,34 +264,6 @@ func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 	}
 
 	return nil
-}
-
-func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
-	if ownerSlug == "" || repoSlug == "" {
-		return url.URL{}, errors.New("empty owner or repo slug")
-	}
-
-	rawURL := fmt.Sprintf("https://github.com/%s/%s", ownerSlug, repoSlug)
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return url.URL{}, err
-	}
-
-	return *u, nil
-}
-
-func (c *Client) GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
-	if tagName == "" || ownerSlug == "" || repoSlug == "" {
-		return url.URL{}, errors.New("empty tag name, owner or repo slug")
-	}
-
-	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", ownerSlug, repoSlug, tagName)
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return url.URL{}, err
-	}
-
-	return *u, nil
 }
 
 // getReleaseByTag is an internal method for fetching a release ID.
