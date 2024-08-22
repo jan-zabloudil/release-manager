@@ -113,7 +113,7 @@ func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 			return nil
 		}
 
-		return fmt.Errorf("failed to create release: %w", err)
+		return fmt.Errorf("failed to upsert release: %w", err)
 	}
 
 	return nil
