@@ -94,7 +94,7 @@ func (h *Handler) setupRoutes() {
 		r.Get("/reject", h.rejectInvitation)
 	})
 
-	h.Mux.Route("/organization/settings", func(r chi.Router) {
+	h.Mux.Route("/settings", func(r chi.Router) {
 		r.Get("/", middleware.RequireAuthUser(h.getSettings))
 		r.Patch("/", middleware.RequireAuthUser(h.updateSettings))
 	})
