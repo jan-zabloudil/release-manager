@@ -422,9 +422,17 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 }
 
 func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+	return r.listMembers(ctx, r.dbpool, query.ListMembersForProject, pgx.NamedArgs{"projectID": projectID})
+}
+
+func (r *ProjectRepository) ListMembersForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+	return r.listMembers(ctx, r.dbpool, query.ListMembersForUser, pgx.NamedArgs{"userID": userID})
+}
+
+func (r *ProjectRepository) listMembers(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) ([]svcmodel.ProjectMember, error) {
 	var m []svcmodel.ProjectMember
 
-	rows, err := r.dbpool.Query(ctx, query.ListMembersForProject, pgx.NamedArgs{"projectID": projectID})
+	rows, err := q.Query(ctx, readQuery, args)
 	if err != nil {
 		return nil, err
 	}

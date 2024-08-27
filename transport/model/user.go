@@ -13,7 +13,7 @@ type User struct {
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`
 	AvatarURL string    `json:"avatar_url"`
-	Role      string    `json:"role"`
+	Role      string    `json:"user_role"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -37,4 +37,33 @@ func ToUsers(users []svcmodel.User) []User {
 	}
 
 	return u
+}
+
+type AuthUser struct {
+	User               User                `json:"user"`
+	ProjectMemberships []ProjectMembership `json:"project_memberships"`
+}
+
+type ProjectMembership struct {
+	ProjectID   uuid.UUID `json:"project_id"`
+	ProjectRole string    `json:"project_role"`
+}
+
+func ToProjectMemberships(pm []svcmodel.ProjectMember) []ProjectMembership {
+	m := make([]ProjectMembership, 0, len(pm))
+	for _, member := range pm {
+		m = append(m, ProjectMembership{
+			ProjectID:   member.ProjectID,
+			ProjectRole: string(member.ProjectRole),
+		})
+	}
+
+	return m
+}
+
+func ToAuthUser(u svcmodel.User, m []svcmodel.ProjectMember) AuthUser {
+	return AuthUser{
+		User:               ToUser(u),
+		ProjectMemberships: ToProjectMemberships(m),
+	}
 }

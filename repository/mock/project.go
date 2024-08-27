@@ -109,6 +109,11 @@ func (m *ProjectRepository) ListMembersForProject(ctx context.Context, projectID
 	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
 }
 
+func (m *ProjectRepository) ListMembersForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
+}
+
 func (m *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
 	args := m.Called(ctx, projectID, userID)
 	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)

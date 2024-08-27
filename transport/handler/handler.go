@@ -33,7 +33,8 @@ type projectService interface {
 	AcceptInvitation(ctx context.Context, tkn cryptox.Token) error
 	RejectInvitation(ctx context.Context, tkn cryptox.Token) error
 
-	ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectMember, error)
+	ListMembersForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectMember, error)
+	ListMembersForUser(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error
 	UpdateMemberRole(ctx context.Context, newRole svcmodel.ProjectRole, projectID, userID, authUserID uuid.UUID) (svcmodel.ProjectMember, error)
 }

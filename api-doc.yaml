@@ -70,7 +70,7 @@ paths:
               $ref: '#/components/responses/UnprocesssableEntityResponse'
   /auth/user:
     get:
-      summary: "Get authenticated user"
+      summary: "Get authenticated user and their project memberships"
       security:
         - bearerAuth: []
       tags:
@@ -81,7 +81,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/AuthUserResponse'
         '401':
             $ref: '#/components/responses/UnauthorizedErrorResponse'
   /admin/users:
@@ -515,7 +515,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectMemberRole'
+              properties:
+                project_role:
+                  $ref: '#/components/schemas/ProjectMemberRole'
       responses:
         '200':
           description: 'Member role updated'
@@ -1075,7 +1077,7 @@ components:
           example: 'Jan Zabloudil'
         avatar_image_url:
           type: string
-        role:
+        user_role:
           type: string
           example: admin
         created_at:
@@ -1092,6 +1094,21 @@ components:
         - is_admin
         - created_at
         - updated_at
+    AuthUserResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        project_memberships:
+          type: array
+          items:
+            type: object
+            properties:
+              project_id:
+                type: string
+                format: uuid
+              project_role:
+                $ref: '#/components/schemas/ProjectMemberRole'
     ProjectRequest:
       type: object
       properties:
@@ -1143,53 +1160,44 @@ components:
             - id
             - created_at
             - updated_at
-    ProjectMemberRole:
+    ProjectMemberResponse:
       type: object
       properties:
-        project_role:
+        user_id:
           type: string
-          enum:
-            - editor
-            - viewer
-            - owner
-    ProjectMemberResponse:
-        allOf:
-          - $ref: '#/components/schemas/ProjectMemberRole'
-          - type: object
-            properties:
-              user_id:
-                type: string
-                format: uuid
-              name:
-                type: string
-                example: 'John Doe'
-              email:
-                type: string
-                format: email
-                example: 'test@test.tt'
-              created_at:
-                type: string
-                format: date-time
-              updated_at:
-                type: string
-                format: date-time
-        required:
-          - user_id
-          - name
-          - email
-          - project_role
-          - created_at
-          - updated_at
+          format: uuid
+        name:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          format: email
+          example: 'test@test.tt'
+        project_role:
+          $ref: '#/components/schemas/ProjectMemberRole'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - user_id
+        - name
+        - email
+        - project_role
+        - created_at
+        - updated_at
     ProjectInvitationRequest:
-      allOf:
-        - $ref: '#/components/schemas/ProjectMemberRole'
-        - type: object
-          properties:
-            email:
-              type: string
-              format: email
-          required:
-            - email
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        project_role:
+          $ref: '#/components/schemas/ProjectMemberRole'
+      required:
+        - email
     ProjectInvitationResponse:
       allOf:
         - $ref: '#/components/schemas/ProjectInvitationRequest'
@@ -1440,6 +1448,12 @@ components:
             - created_at
             - updated_at
             - deployed_by_user_id
+    ProjectMemberRole:
+      type: string
+      enum:
+        - editor
+        - viewer
+        - owner
   securitySchemes:
     bearerAuth:
       type: http

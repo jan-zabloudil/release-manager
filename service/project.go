@@ -473,14 +473,14 @@ func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token
 	return nil
 }
 
-func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectMember, error) {
+func (s *ProjectService) ListMembersForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.ProjectMember, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}
 
 	m, err := s.repo.ListMembersForProject(ctx, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("listing members: %w", err)
+		return nil, fmt.Errorf("listing members for project: %w", err)
 	}
 
 	if len(m) == 0 {
@@ -491,6 +491,19 @@ func (s *ProjectService) ListMembers(ctx context.Context, projectID, authUserID 
 		if !exists {
 			return nil, svcerrors.NewProjectNotFoundError()
 		}
+	}
+
+	return m, nil
+}
+
+func (s *ProjectService) ListMembersForUser(ctx context.Context, authUserID uuid.UUID) ([]model.ProjectMember, error) {
+	if err := s.authGuard.AuthorizeUserRoleUser(ctx, authUserID); err != nil {
+		return nil, fmt.Errorf("authorizing user role: %w", err)
+	}
+
+	m, err := s.repo.ListMembersForUser(ctx, authUserID)
+	if err != nil {
+		return nil, fmt.Errorf("listing members for user: %w", err)
 	}
 
 	return m, nil
