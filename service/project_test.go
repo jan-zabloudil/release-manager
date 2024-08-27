@@ -1019,7 +1019,7 @@ func TestProjectService_RejectInvitation(t *testing.T) {
 	}
 }
 
-func TestProjectService_ListMembers(t *testing.T) {
+func TestProjectService_ListMembersForProject(t *testing.T) {
 	testCases := []struct {
 		name      string
 		projectID uuid.UUID
@@ -1072,7 +1072,49 @@ func TestProjectService_ListMembers(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.ListMembers(context.Background(), tc.projectID, uuid.New())
+			_, err := service.ListMembersForProject(context.Background(), tc.projectID, uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			authSvc.AssertExpectations(t)
+			projectRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestProjectService_ListMembersForUser(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizationService, *repo.ProjectRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Success",
+			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeUserRoleUser", mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("ListMembersForUser", mock.Anything, mock.Anything).Return([]model.ProjectMember{}, nil)
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectRepo := new(repo.ProjectRepository)
+			github := new(githubmock.Client)
+			email := new(resendmock.Client)
+			userSvc := new(svc.UserService)
+			settingsSvc := new(svc.SettingsService)
+			authSvc := new(svc.AuthorizationService)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
+
+			tc.mockSetup(authSvc, projectRepo)
+
+			_, err := service.ListMembersForUser(context.Background(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)

@@ -9,13 +9,21 @@ import (
 )
 
 func (h *Handler) getAuthUser(w http.ResponseWriter, r *http.Request) {
-	u, err := h.UserSvc.Get(r.Context(), util.ContextAuthUserID(r))
+	authUserID := util.ContextAuthUserID(r)
+
+	u, err := h.UserSvc.Get(r.Context(), authUserID)
 	if err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
-	util.WriteJSONResponse(w, http.StatusOK, model.ToUser(u))
+	m, err := h.ProjectSvc.ListMembersForUser(r.Context(), authUserID)
+	if err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, http.StatusOK, model.ToAuthUser(u, m))
 }
 
 func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {

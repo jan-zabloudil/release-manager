@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
-	m, err := h.ProjectSvc.ListMembers(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
+	m, err := h.ProjectSvc.ListMembersForProject(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return

@@ -33,6 +33,7 @@ type projectRepository interface {
 
 	CreateMember(ctx context.Context, member model.ProjectMember) error
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
+	ListMembersForUser(ctx context.Context, userID uuid.UUID) ([]model.ProjectMember, error)
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
 	ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (model.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
