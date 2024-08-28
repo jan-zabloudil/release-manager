@@ -12,7 +12,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/joho/godotenv v1.5.1
-	github.com/nedpals/postgrest-go v0.1.3
 	github.com/nedpals/supabase-go v0.4.0
 	github.com/resend/resend-go/v2 v2.6.0
 	github.com/sethvargo/go-envconfig v1.0.1
@@ -34,6 +33,7 @@ require (
 	github.com/kamilsk/retry/v5 v5.0.0-rc8 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/nedpals/postgrest-go v0.1.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
@@ -45,5 +45,3 @@ require (
 )
 
 replace github.com/nedpals/supabase-go => github.com/jan-zabloudil/supabase-go v0.0.0-20240229160758-916b4e4b1b63
-
-replace github.com/nedpals/postgrest-go => github.com/jan-zabloudil/postgrest-go v0.1.4-0.20240504155537-5b7dad2b7e87
