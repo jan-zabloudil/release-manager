@@ -1337,6 +1337,10 @@ components:
           type: string
           format: url
           example: "https://github.com/owner/repo/releases/tag/v0.0.1"
+        attachments:
+          type: array
+          items:
+              $ref: '#/components/schemas/ReleaseAttachment'
         created_at:
           type: string
           format: date-time
@@ -1454,6 +1458,21 @@ components:
         - editor
         - viewer
         - owner
+    ReleaseAttachment:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          name:
+            type: string
+          url:
+            type: string
+            format: url
+        required:
+            - id
+            - name
+            - url
   securitySchemes:
     bearerAuth:
       type: http

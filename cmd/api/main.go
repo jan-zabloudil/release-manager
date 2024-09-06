@@ -13,6 +13,7 @@ import (
 	resendx "release-manager/resend"
 	"release-manager/service"
 	"release-manager/slack"
+	"release-manager/storage"
 	"release-manager/transport/handler"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -45,6 +46,7 @@ func run() error {
 	githubClient := githubx.NewClient()
 	resendClient := resendx.NewClient(taskManager, cfg.Resend, cfg.ClientService)
 	authClient := auth.NewClient(supaClient)
+	storageClient := storage.NewClient(supaClient)
 	slackClient := slack.NewClient()
 
 	dbpool, err := pgxpool.New(ctx, cfg.Supabase.DatabaseURL)
@@ -57,7 +59,7 @@ func run() error {
 		return fmt.Errorf("pinging db: %w", err)
 	}
 
-	repo := repository.NewRepository(supaClient, dbpool, githubClient)
+	repo := repository.NewRepository(supaClient, dbpool, githubClient, storageClient)
 	svc := service.NewService(
 		repo.User,
 		repo.Project,

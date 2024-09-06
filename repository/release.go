@@ -24,12 +24,18 @@ const (
 type ReleaseRepository struct {
 	dbpool             *pgxpool.Pool
 	githubURLGenerator githubURLGenerator
+	fileURLGenerator   fileURLGenerator
 }
 
-func NewReleaseRepository(pool *pgxpool.Pool, urlGenerator githubURLGenerator) *ReleaseRepository {
+func NewReleaseRepository(
+	pool *pgxpool.Pool,
+	tagURLGenerator githubURLGenerator,
+	fileURLGenerator fileURLGenerator,
+) *ReleaseRepository {
 	return &ReleaseRepository{
 		dbpool:             pool,
-		githubURLGenerator: urlGenerator,
+		githubURLGenerator: tagURLGenerator,
+		fileURLGenerator:   fileURLGenerator,
 	}
 }
 
@@ -75,7 +81,7 @@ func (r *ReleaseRepository) readRelease(ctx context.Context, q querier, readQuer
 		return svcmodel.Release{}, err
 	}
 
-	return model.ToSvcRelease(rls, r.githubURLGenerator.GenerateGitTagURL)
+	return model.ToSvcRelease(rls, r.githubURLGenerator.GenerateGitTagURL, r.fileURLGenerator.GenerateFileURL)
 }
 
 func (r *ReleaseRepository) UpdateRelease(
@@ -163,7 +169,7 @@ func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectI
 		return nil, err
 	}
 
-	return model.ToSvcReleases(dbReleases, r.githubURLGenerator.GenerateGitTagURL)
+	return model.ToSvcReleases(dbReleases, r.githubURLGenerator.GenerateGitTagURL, r.fileURLGenerator.GenerateFileURL)
 }
 
 func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {
