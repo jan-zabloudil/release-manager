@@ -24,13 +24,20 @@ type DeleteReleaseInput struct {
 }
 
 type Release struct {
-	ID           uuid.UUID `json:"id"`
-	ReleaseTitle string    `json:"release_title"`
-	ReleaseNotes string    `json:"release_notes"`
-	GitTagName   string    `json:"git_tag_name"`
-	GitTagURL    string    `json:"git_tag_url"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID           uuid.UUID           `json:"id"`
+	ReleaseTitle string              `json:"release_title"`
+	ReleaseNotes string              `json:"release_notes"`
+	GitTagName   string              `json:"git_tag_name"`
+	GitTagURL    string              `json:"git_tag_url"`
+	Attachments  []ReleaseAttachment `json:"attachments"`
+	CreatedAt    time.Time           `json:"created_at"`
+	UpdatedAt    time.Time           `json:"updated_at"`
+}
+
+type ReleaseAttachment struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+	URL  string    `json:"url"`
 }
 
 func ToSvcCreateReleaseInput(r CreateReleaseInput) svcmodel.CreateReleaseInput {
@@ -61,8 +68,25 @@ func ToRelease(r svcmodel.Release) Release {
 		ReleaseNotes: r.ReleaseNotes,
 		GitTagName:   r.GitTagName,
 		GitTagURL:    r.GitTagURL.String(),
+		Attachments:  ToReleaseAttachments(r.Attachments),
 		CreatedAt:    r.CreatedAt,
 		UpdatedAt:    r.UpdatedAt,
+	}
+}
+
+func ToReleaseAttachments(attachments []svcmodel.ReleaseAttachment) []ReleaseAttachment {
+	a := make([]ReleaseAttachment, 0, len(attachments))
+	for _, attachment := range attachments {
+		a = append(a, ToReleaseAttachment(attachment))
+	}
+	return a
+}
+
+func ToReleaseAttachment(a svcmodel.ReleaseAttachment) ReleaseAttachment {
+	return ReleaseAttachment{
+		ID:   a.ID,
+		Name: a.Name,
+		URL:  a.URL.String(),
 	}
 }
 

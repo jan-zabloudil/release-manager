@@ -19,6 +19,10 @@ type githubURLGenerator interface {
 	GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error)
 }
 
+type fileURLGenerator interface {
+	GenerateFileURL(filePath string) (url.URL, error)
+}
+
 type Repository struct {
 	User     *UserRepository
 	Project  *ProjectRepository
@@ -26,11 +30,16 @@ type Repository struct {
 	Release  *ReleaseRepository
 }
 
-func NewRepository(client *supabase.Client, pool *pgxpool.Pool, urlGenerator githubURLGenerator) *Repository {
+func NewRepository(
+	client *supabase.Client,
+	pool *pgxpool.Pool,
+	githubURLGenerator githubURLGenerator,
+	fileURLGenerator fileURLGenerator,
+) *Repository {
 	return &Repository{
 		User:     NewUserRepository(client, pool),
-		Project:  NewProjectRepository(pool, urlGenerator),
+		Project:  NewProjectRepository(pool, githubURLGenerator),
 		Settings: NewSettingsRepository(pool),
-		Release:  NewReleaseRepository(pool, urlGenerator),
+		Release:  NewReleaseRepository(pool, githubURLGenerator, fileURLGenerator),
 	}
 }

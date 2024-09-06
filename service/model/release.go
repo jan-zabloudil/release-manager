@@ -50,6 +50,15 @@ type Release struct {
 	UpdatedAt    time.Time
 	GitTagName   string
 	GitTagURL    url.URL
+	Attachments  []ReleaseAttachment
+}
+
+type ReleaseAttachment struct {
+	ID        uuid.UUID
+	Name      string
+	FilePath  string
+	URL       url.URL
+	CreatedAt time.Time
 }
 
 func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Release, error) {
