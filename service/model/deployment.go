@@ -13,8 +13,8 @@ var (
 )
 
 type CreateDeploymentInput struct {
-	ReleaseID     uuid.UUID `json:"release_id"`
-	EnvironmentID uuid.UUID `json:"environment_id"`
+	ReleaseID     uuid.UUID
+	EnvironmentID uuid.UUID
 }
 
 func (i CreateDeploymentInput) Validate() error {
