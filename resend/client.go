@@ -36,7 +36,7 @@ func (c *Client) SendProjectInvitationEmailAsync(
 ) {
 	parsedTmpl, err := ParseProjectInvitationTemplate(data, c.clientSvcCfg)
 	if err != nil {
-		slog.Error("failed to parse project invitation email template", "error", err)
+		slog.Error("parsing project invitation template", "error", err)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (c *Client) sendEmailAsync(ctx context.Context, subject, text, html string,
 		Fn: func(ctx context.Context) error {
 			_, err := c.client.Emails.SendWithContext(ctx, req)
 			if err != nil {
-				return fmt.Errorf("failed to send email via Resend: %w", err)
+				return fmt.Errorf("sending email via Resend: %w", err)
 			}
 
 			return nil
