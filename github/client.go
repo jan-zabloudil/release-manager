@@ -47,7 +47,7 @@ func (c *Client) ReadRepo(ctx context.Context, tkn string, rawRepoURL string) (s
 
 	u, err := url.Parse(repo.GetHTMLURL())
 	if err != nil {
-		return svcmodel.GithubRepo{}, fmt.Errorf("failed to parse repo URL: %w", err)
+		return svcmodel.GithubRepo{}, fmt.Errorf("parsing GitHub repo URL: %w", err)
 	}
 
 	return svcmodel.GithubRepo{
@@ -107,13 +107,13 @@ func (c *Client) UpsertRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 	if err := c.createRelease(ctx, tkn, repo, rls); err != nil {
 		if errors.Is(err, errGithubReleaseAlreadyExists) {
 			if err := c.updateRelease(ctx, tkn, repo, rls); err != nil {
-				return fmt.Errorf("failed to update release: %w", err)
+				return fmt.Errorf("updating release: %w", err)
 			}
 
 			return nil
 		}
 
-		return fmt.Errorf("failed to upsert release: %w", err)
+		return fmt.Errorf("creating release: %w", err)
 	}
 
 	return nil
@@ -128,7 +128,7 @@ func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmod
 			return svcerrors.NewGithubReleaseNotFoundError().Wrap(err)
 		}
 
-		return fmt.Errorf("failed to get release ID: %w", err)
+		return fmt.Errorf("getting release by ID: %w", err)
 	}
 
 	_, err = c.getGithubClient(tkn).Repositories.DeleteRelease(
@@ -138,7 +138,7 @@ func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn string, repo svcmod
 		id,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to delete release: %w", util.TranslateGithubAuthError(err))
+		return fmt.Errorf("deleting release: %w", util.TranslateGithubAuthError(err))
 	}
 
 	return nil
@@ -172,7 +172,7 @@ func (c *Client) GenerateReleaseNotes(
 		}
 
 		return svcmodel.GithubGeneratedReleaseNotes{},
-			fmt.Errorf("failed to generate release notes: %w", util.TranslateGithubAuthError(err))
+			fmt.Errorf("generating release notes: %w", util.TranslateGithubAuthError(err))
 	}
 
 	return svcmodel.GithubGeneratedReleaseNotes{
@@ -241,7 +241,7 @@ func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 	// Therefore I need to get release ID first
 	id, err := c.getReleaseIDByTag(ctx, tkn, repo, rls.GitTagName)
 	if err != nil {
-		return fmt.Errorf("failed to get release ID: %w", err)
+		return fmt.Errorf("getting release by id: %w", err)
 	}
 
 	// Updates a release
@@ -260,7 +260,7 @@ func (c *Client) updateRelease(ctx context.Context, tkn string, repo svcmodel.Gi
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("failed to update release: %w", util.TranslateGithubAuthError(err))
+		return fmt.Errorf("updating release: %w", util.TranslateGithubAuthError(err))
 	}
 
 	return nil
