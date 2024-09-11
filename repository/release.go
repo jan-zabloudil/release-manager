@@ -92,7 +92,7 @@ func (r *ReleaseRepository) UpdateRelease(
 ) (rls svcmodel.Release, err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("failed to start transaction: %w", err)
+		return svcmodel.Release{}, fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
@@ -106,7 +106,7 @@ func (r *ReleaseRepository) UpdateRelease(
 		"releaseID": releaseID,
 	})
 	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("failed to read release: %w", err)
+		return svcmodel.Release{}, fmt.Errorf("reading release: %w", err)
 	}
 
 	// Update the release
@@ -122,7 +122,7 @@ func (r *ReleaseRepository) UpdateRelease(
 		"updatedAt":    rls.UpdatedAt,
 	})
 	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("failed to update release: %w", err)
+		return svcmodel.Release{}, fmt.Errorf("updating release: %w", err)
 	}
 
 	return rls, nil
