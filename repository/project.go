@@ -39,7 +39,7 @@ func NewProjectRepository(pool *pgxpool.Pool, urlGenerator githubURLGenerator) *
 func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmodel.Project, owner svcmodel.ProjectMember) (err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
@@ -54,7 +54,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		"updatedAt":                 p.UpdatedAt,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create project: %w", err)
+		return fmt.Errorf("creating project: %w", err)
 	}
 
 	_, err = tx.Exec(ctx, query.CreateMember, pgx.NamedArgs{
@@ -65,7 +65,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 		"updatedAt":   owner.UpdatedAt,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create project member: %w", err)
+		return fmt.Errorf("creating project member: %w", err)
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) (p svcmodel.Project, err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return svcmodel.Project{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return svcmodel.Project{}, fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
@@ -133,7 +133,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 
 	p, err = r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
 	if err != nil {
-		return svcmodel.Project{}, fmt.Errorf("failed to read project: %w", err)
+		return svcmodel.Project{}, fmt.Errorf("reading project: %w", err)
 	}
 
 	p, err = fn(p)
@@ -147,7 +147,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 			return svcmodel.Project{}, svcerrors.NewProjectGithubRepoAlreadyUsedError().Wrap(err)
 		}
 
-		return svcmodel.Project{}, fmt.Errorf("failed to update project: %w", err)
+		return svcmodel.Project{}, fmt.Errorf("updating project: %w", err)
 	}
 
 	return p, nil
@@ -233,7 +233,7 @@ func (r *ProjectRepository) UpdateEnvironment(
 ) (env svcmodel.Environment, err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return svcmodel.Environment{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return svcmodel.Environment{}, fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
@@ -241,7 +241,7 @@ func (r *ProjectRepository) UpdateEnvironment(
 
 	env, err = r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), projectID, envID)
 	if err != nil {
-		return svcmodel.Environment{}, fmt.Errorf("failed to read environment: %w", err)
+		return svcmodel.Environment{}, fmt.Errorf("reading environment: %w", err)
 	}
 
 	env, err = fn(env)
@@ -260,7 +260,7 @@ func (r *ProjectRepository) UpdateEnvironment(
 			return svcmodel.Environment{}, svcerrors.NewEnvironmentDuplicateNameError().Wrap(err)
 		}
 
-		return svcmodel.Environment{}, fmt.Errorf("failed to update environment: %w", err)
+		return svcmodel.Environment{}, fmt.Errorf("updating environment: %w", err)
 	}
 
 	return env, nil
@@ -294,7 +294,7 @@ func (r *ProjectRepository) AcceptPendingInvitation(
 ) (err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
@@ -302,7 +302,7 @@ func (r *ProjectRepository) AcceptPendingInvitation(
 
 	invitation, err := r.readPendingInvitationForUpdate(ctx, invitationID)
 	if err != nil {
-		return fmt.Errorf("failed to read project invitation: %w", err)
+		return fmt.Errorf("reading project invitation: %w", err)
 	}
 
 	// Accept the invitation
@@ -314,7 +314,7 @@ func (r *ProjectRepository) AcceptPendingInvitation(
 		"updatedAt":    invitation.UpdatedAt,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to update project invitation: %w", err)
+		return fmt.Errorf("updating project invitation: %w", err)
 	}
 
 	return nil
@@ -395,7 +395,7 @@ func (r *ProjectRepository) deleteInvitation(ctx context.Context, deleteQuery st
 func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.ProjectMember) (err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
@@ -408,14 +408,14 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 		"createdAt":   m.CreatedAt,
 		"updatedAt":   m.UpdatedAt,
 	}); err != nil {
-		return fmt.Errorf("failed to create project member: %w", err)
+		return fmt.Errorf("creating project member: %w", err)
 	}
 
 	if err = r.deleteInvitation(ctx, query.DeleteInvitationByEmailAndProjectID, pgx.NamedArgs{
 		"email":     m.User.Email,
 		"projectID": m.ProjectID,
 	}); err != nil {
-		return fmt.Errorf("failed to delete project invitation: %w", err)
+		return fmt.Errorf("deleting project invitation: %w", err)
 	}
 
 	return nil
@@ -505,7 +505,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 ) (m svcmodel.ProjectMember, err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return svcmodel.ProjectMember{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return svcmodel.ProjectMember{}, fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
@@ -516,7 +516,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 		"userID":    userID,
 	})
 	if err != nil {
-		return svcmodel.ProjectMember{}, fmt.Errorf("failed to read project member: %w", err)
+		return svcmodel.ProjectMember{}, fmt.Errorf("reading project member: %w", err)
 	}
 
 	// Update member's role
@@ -532,7 +532,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 		"updatedAt":   m.UpdatedAt,
 	})
 	if err != nil {
-		return svcmodel.ProjectMember{}, fmt.Errorf("failed to update project member: %w", err)
+		return svcmodel.ProjectMember{}, fmt.Errorf("updating project member: %w", err)
 	}
 
 	return m, err
