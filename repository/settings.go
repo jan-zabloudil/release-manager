@@ -45,7 +45,7 @@ func (r *SettingsRepository) Update(
 ) (s svcmodel.Settings, err error) {
 	tx, err := r.dbpool.Begin(ctx)
 	if err != nil {
-		return svcmodel.Settings{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return svcmodel.Settings{}, fmt.Errorf("beginning transaction: %w", err)
 	}
 	defer func() {
 		err = util.FinishTransaction(ctx, tx, err)
