@@ -62,7 +62,7 @@ func (c *Client) sendMessage(ctx context.Context, token, channelID string, msgOp
 			return svcerrors.NewSlackChannelNotFoundError().Wrap(err).
 				WithMessage(fmt.Sprintf("slack channel (ID: %s) not found", channelID))
 		default:
-			return fmt.Errorf("failed to send message to slack channel (ID: %s): %w", channelID, err)
+			return fmt.Errorf("sending message to Slack channel (ID: %s): %w", channelID, err)
 		}
 	}
 

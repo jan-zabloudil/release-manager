@@ -38,7 +38,7 @@ func ToSvcProject(p Project, urlGenerator githubRepoURLGeneratorFunc) (svcmodel.
 	if p.GithubOwnerSlug.Valid && p.GithubRepoSlug.Valid {
 		repoURL, err := urlGenerator(p.GithubOwnerSlug.String, p.GithubRepoSlug.String)
 		if err != nil {
-			return svcmodel.Project{}, fmt.Errorf("failed to generate repo URL: %w", err)
+			return svcmodel.Project{}, fmt.Errorf("generating repo URL: %w", err)
 		}
 
 		repo = &svcmodel.GithubRepo{
