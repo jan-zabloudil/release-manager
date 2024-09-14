@@ -1,8 +1,10 @@
 package model
 
 import (
-	"net/url"
 	"testing"
+
+	"release-manager/pkg/pointer"
+	"release-manager/pkg/urlx"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -88,11 +90,6 @@ func TestEnvironment_Validate(t *testing.T) {
 }
 
 func TestEnvironment_Update(t *testing.T) {
-	validName := "New Name"
-	validURL := "http://new.example.com"
-	invalidName := ""
-	invalidURL := "example"
-
 	tests := []struct {
 		name    string
 		env     Environment
@@ -105,8 +102,8 @@ func TestEnvironment_Update(t *testing.T) {
 				Name: "Old Name",
 			},
 			update: UpdateEnvironmentInput{
-				Name:          &validName,
-				ServiceRawURL: &validURL,
+				Name:          pointer.StringPtr("New name"),
+				ServiceRawURL: pointer.StringPtr("https://new.example.com"),
 			},
 			wantErr: false,
 		},
@@ -116,8 +113,8 @@ func TestEnvironment_Update(t *testing.T) {
 				Name: "Old Name",
 			},
 			update: UpdateEnvironmentInput{
-				Name:          &validName,
-				ServiceRawURL: &invalidURL,
+				Name:          pointer.StringPtr("New name"),
+				ServiceRawURL: pointer.StringPtr("relative-url"),
 			},
 			wantErr: true,
 		},
@@ -127,8 +124,8 @@ func TestEnvironment_Update(t *testing.T) {
 				Name: "Old Name",
 			},
 			update: UpdateEnvironmentInput{
-				Name:          &invalidName,
-				ServiceRawURL: &validURL,
+				Name:          pointer.StringPtr(""),
+				ServiceRawURL: pointer.StringPtr("https://example.com"),
 			},
 			wantErr: true,
 		},
@@ -149,6 +146,8 @@ func TestEnvironment_Update(t *testing.T) {
 }
 
 func TestIsServiceURLSet(t *testing.T) {
+	serviceURL := urlx.MustParse("http://example.com")
+
 	tests := []struct {
 		name string
 		env  Environment
@@ -157,10 +156,7 @@ func TestIsServiceURLSet(t *testing.T) {
 		{
 			name: "URL is set",
 			env: Environment{
-				ServiceURL: url.URL{
-					Scheme: "http",
-					Host:   "example.com",
-				},
+				ServiceURL: *serviceURL,
 			},
 			want: true,
 		},

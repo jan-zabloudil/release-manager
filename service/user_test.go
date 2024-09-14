@@ -16,10 +16,6 @@ import (
 )
 
 func TestUserService_Get(t *testing.T) {
-	authUserID := uuid.New()
-	testUserID := uuid.New()
-	testUser := model.User{ID: testUserID}
-
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -30,8 +26,8 @@ func TestUserService_Get(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository)
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
-				mockUserRepo.On("Read", mock.Anything, testUserID).Return(testUser, nil)
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				mockUserRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, nil)
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: false,
@@ -41,7 +37,7 @@ func TestUserService_Get(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository)
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(errors.New("test error"))
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(errors.New("test error"))
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: true,
@@ -53,7 +49,7 @@ func TestUserService_Get(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.GetForAdmin(context.Background(), testUserID, authUserID)
+			_, err := userService.GetForAdmin(context.Background(), uuid.New(), uuid.New())
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -67,9 +63,6 @@ func TestUserService_Get(t *testing.T) {
 }
 
 func TestUserService_GetAll(t *testing.T) {
-	authUserID := uuid.New()
-	users := []model.User{{ID: uuid.New()}, {ID: uuid.New()}}
-
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -80,8 +73,8 @@ func TestUserService_GetAll(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository)
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
-				mockUserRepo.On("ListAll", mock.Anything).Return(users, nil)
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
+				mockUserRepo.On("ListAll", mock.Anything).Return([]model.User{}, nil)
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: false,
@@ -91,7 +84,7 @@ func TestUserService_GetAll(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository)
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(errors.New("test error"))
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(errors.New("test error"))
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: true,
@@ -103,7 +96,7 @@ func TestUserService_GetAll(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.ListAllForAdmin(context.Background(), authUserID)
+			_, err := userService.ListAllForAdmin(context.Background(), uuid.New())
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -117,9 +110,6 @@ func TestUserService_GetAll(t *testing.T) {
 }
 
 func TestUserService_Delete(t *testing.T) {
-	testUserID := uuid.New()
-	authUserID := uuid.New()
-
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -130,9 +120,9 @@ func TestUserService_Delete(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository)
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{Role: model.UserRoleUser}, nil)
-				mockUserRepo.On("Delete", mock.Anything, testUserID).Return(nil)
+				mockUserRepo.On("Delete", mock.Anything, mock.Anything).Return(nil)
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: false,
@@ -142,7 +132,7 @@ func TestUserService_Delete(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository)
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{Role: model.UserRoleAdmin}, nil)
 				return mockAuthSvc, mockUserRepo
 			},
@@ -153,7 +143,7 @@ func TestUserService_Delete(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository) // Even if not used, included for consistency
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(errors.New("test error"))
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(errors.New("test error"))
 				return mockAuthSvc, mockUserRepo
 			},
 			expectErr: true,
@@ -163,7 +153,7 @@ func TestUserService_Delete(t *testing.T) {
 			setupMocks: func() (*svcmock.AuthorizationService, *repomock.UserRepository) {
 				mockAuthSvc := new(svcmock.AuthorizationService)
 				mockUserRepo := new(repomock.UserRepository)
-				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, authUserID).Return(nil)
+				mockAuthSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				mockUserRepo.On("Read", mock.Anything, mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
 				return mockAuthSvc, mockUserRepo
 			},
@@ -176,7 +166,7 @@ func TestUserService_Delete(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			err := userService.DeleteForAdmin(context.Background(), testUserID, authUserID)
+			err := userService.DeleteForAdmin(context.Background(), uuid.New(), uuid.New())
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {

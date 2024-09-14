@@ -3,6 +3,8 @@ package model
 import (
 	"testing"
 
+	"release-manager/pkg/pointer"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,10 +24,10 @@ func TestSettings_Update(t *testing.T) {
 				Github:                GithubSettings{Enabled: false, Token: ""},
 			},
 			update: UpdateSettingsInput{
-				OrganizationName:  stringPtr("New Organization"),
-				DefaultReleaseMsg: stringPtr("New Message"),
-				Slack:             UpdateSlackSettingsInput{Enabled: boolPtr(true), Token: stringPtr("newToken")},
-				Github:            UpdateGithubSettingsInput{Enabled: boolPtr(true), Token: stringPtr("newToken")},
+				OrganizationName:  pointer.StringPtr("New Organization"),
+				DefaultReleaseMsg: pointer.StringPtr("New Message"),
+				Slack:             UpdateSlackSettingsInput{Enabled: pointer.BoolPtr(true), Token: pointer.StringPtr("newToken")},
+				Github:            UpdateGithubSettingsInput{Enabled: pointer.BoolPtr(true), Token: pointer.StringPtr("newToken")},
 			},
 			wantErr: false,
 		},
@@ -38,7 +40,7 @@ func TestSettings_Update(t *testing.T) {
 				Github:                GithubSettings{Enabled: false, Token: ""},
 			},
 			update: UpdateSettingsInput{
-				Slack: UpdateSlackSettingsInput{Enabled: boolPtr(true), Token: nil},
+				Slack: UpdateSlackSettingsInput{Enabled: pointer.BoolPtr(true), Token: nil},
 			},
 			wantErr: true,
 		},
@@ -51,7 +53,7 @@ func TestSettings_Update(t *testing.T) {
 				Github:                GithubSettings{Enabled: false, Token: ""},
 			},
 			update: UpdateSettingsInput{
-				Github: UpdateGithubSettingsInput{Enabled: boolPtr(true), Token: nil},
+				Github: UpdateGithubSettingsInput{Enabled: pointer.BoolPtr(true), Token: nil},
 			},
 			wantErr: true,
 		},
@@ -64,7 +66,7 @@ func TestSettings_Update(t *testing.T) {
 				Github:                GithubSettings{Enabled: false, Token: ""},
 			},
 			update: UpdateSettingsInput{
-				OrganizationName: stringPtr(""),
+				OrganizationName: pointer.StringPtr(""),
 			},
 			wantErr: true,
 		},
@@ -77,7 +79,7 @@ func TestSettings_Update(t *testing.T) {
 				Github:                GithubSettings{Enabled: false, Token: ""},
 			},
 			update: UpdateSettingsInput{
-				DefaultReleaseMsg: stringPtr(""),
+				DefaultReleaseMsg: pointer.StringPtr(""),
 			},
 			wantErr: true,
 		},
@@ -169,12 +171,4 @@ func TestSettings_Validate(t *testing.T) {
 			}
 		})
 	}
-}
-
-func stringPtr(s string) *string {
-	return &s
-}
-
-func boolPtr(b bool) *bool {
-	return &b
 }

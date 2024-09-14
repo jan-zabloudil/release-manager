@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"release-manager/pkg/pointer"
 	repo "release-manager/repository/mock"
 	svcerrors "release-manager/service/errors"
 	svc "release-manager/service/mock"
@@ -15,11 +16,6 @@ import (
 )
 
 func TestSettingsService_Update(t *testing.T) {
-	validName := "new name"
-	enabled := true
-	validToken := "valid token"
-	invalidToken := ""
-
 	testCases := []struct {
 		name      string
 		userID    uuid.UUID
@@ -31,10 +27,10 @@ func TestSettingsService_Update(t *testing.T) {
 			name:   "Success",
 			userID: uuid.New(),
 			update: model.UpdateSettingsInput{
-				OrganizationName: &validName,
+				OrganizationName: pointer.StringPtr("New Organization"),
 				Slack: model.UpdateSlackSettingsInput{
-					Enabled: &enabled,
-					Token:   &validToken,
+					Enabled: pointer.BoolPtr(true),
+					Token:   pointer.StringPtr("newToken"),
 				},
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {
@@ -47,10 +43,10 @@ func TestSettingsService_Update(t *testing.T) {
 			name:   "Error - invalid update input",
 			userID: uuid.New(),
 			update: model.UpdateSettingsInput{
-				OrganizationName: &validName,
+				OrganizationName: pointer.StringPtr("New Organization"),
 				Slack: model.UpdateSlackSettingsInput{
-					Enabled: &enabled,
-					Token:   &invalidToken,
+					Enabled: pointer.BoolPtr(true),
+					Token:   pointer.StringPtr(""),
 				},
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {

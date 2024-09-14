@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"release-manager/pkg/pointer"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -67,10 +69,6 @@ func TestRelease_NewRelease(t *testing.T) {
 }
 
 func TestRelease_Update(t *testing.T) {
-	validTitle := "Updated Title"
-	validNotes := "Updated Notes"
-	InvalidTitle := ""
-
 	tests := []struct {
 		name    string
 		input   UpdateReleaseInput
@@ -80,12 +78,12 @@ func TestRelease_Update(t *testing.T) {
 		{
 			name: "Valid update",
 			input: UpdateReleaseInput{
-				ReleaseTitle: &validTitle,
-				ReleaseNotes: &validNotes,
+				ReleaseTitle: pointer.StringPtr("Valid title"),
+				ReleaseNotes: pointer.StringPtr("Valid notes"),
 			},
 			want: Release{
-				ReleaseTitle: validTitle,
-				ReleaseNotes: validNotes,
+				ReleaseTitle: "Valid title",
+				ReleaseNotes: "Valid notes",
 				GitTagName:   "v1.0.0",
 				GitTagURL: url.URL{
 					Scheme: "https",
@@ -98,7 +96,7 @@ func TestRelease_Update(t *testing.T) {
 		{
 			name: "No ReleaseTitle provided",
 			input: UpdateReleaseInput{
-				ReleaseTitle: &InvalidTitle,
+				ReleaseTitle: pointer.StringPtr(""),
 			},
 			wantErr: true,
 		},
@@ -171,9 +169,6 @@ func TestCreateReleaseInput_ValidateGitTagName(t *testing.T) {
 }
 
 func TestGithubGeneratedReleaseNotesInput_Validate(t *testing.T) {
-	validGitTagName := "v1.0.0"
-	emptyGitTagName := ""
-
 	tests := []struct {
 		name    string
 		input   GithubGeneratedReleaseNotesInput
@@ -182,7 +177,7 @@ func TestGithubGeneratedReleaseNotesInput_Validate(t *testing.T) {
 		{
 			name: "Valid GitTagName",
 			input: GithubGeneratedReleaseNotesInput{
-				GitTagName: &validGitTagName,
+				GitTagName: pointer.StringPtr("v1.0.0"),
 			},
 			wantErr: false,
 		},
@@ -196,7 +191,7 @@ func TestGithubGeneratedReleaseNotesInput_Validate(t *testing.T) {
 		{
 			name: "Empty GitTagName",
 			input: GithubGeneratedReleaseNotesInput{
-				GitTagName: &emptyGitTagName,
+				GitTagName: pointer.StringPtr(""),
 			},
 			wantErr: true,
 		},
