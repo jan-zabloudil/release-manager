@@ -20,19 +20,17 @@ type CreateReleaseInput struct {
 	ReleaseNotes string
 	// Used for linking the release with a specific point in a git repository.
 	GitTagName string
-	GitTagURL  url.URL
 }
 
-func (i *CreateReleaseInput) ValidateGitTagName() error {
+func (i *CreateReleaseInput) Validate() error {
+	if i.ReleaseTitle == "" {
+		return errReleaseTitleRequired
+	}
 	if i.GitTagName == "" {
 		return errReleaseGitTagRequired
 	}
 
 	return nil
-}
-
-func (i *CreateReleaseInput) AddGitTagURL(tagURL url.URL) {
-	i.GitTagURL = tagURL
 }
 
 type UpdateReleaseInput struct {
@@ -61,7 +59,7 @@ type ReleaseAttachment struct {
 	CreatedAt time.Time
 }
 
-func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Release, error) {
+func NewRelease(input CreateReleaseInput, tagURL url.URL, projectID, authorUserID uuid.UUID) (Release, error) {
 	now := time.Now()
 	r := Release{
 		ID:           uuid.New(),
@@ -69,7 +67,7 @@ func NewRelease(input CreateReleaseInput, projectID, authorUserID uuid.UUID) (Re
 		ReleaseTitle: input.ReleaseTitle,
 		ReleaseNotes: input.ReleaseNotes,
 		GitTagName:   input.GitTagName,
-		GitTagURL:    input.GitTagURL,
+		GitTagURL:    tagURL,
 		AuthorUserID: authorUserID,
 		CreatedAt:    now,
 		UpdatedAt:    now,

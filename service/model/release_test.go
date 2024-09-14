@@ -6,16 +6,20 @@ import (
 	"time"
 
 	"release-manager/pkg/pointer"
+	"release-manager/pkg/urlx"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRelease_NewRelease(t *testing.T) {
+	validURL := urlx.MustParse("https://github.com/owner/repo/releases/tag/v1.0.0")
+
 	tests := []struct {
-		name    string
-		input   CreateReleaseInput
-		wantErr bool
+		name      string
+		input     CreateReleaseInput
+		gitTagURL url.URL
+		wantErr   bool
 	}{
 		{
 			name: "Valid Release",
@@ -23,13 +27,9 @@ func TestRelease_NewRelease(t *testing.T) {
 				ReleaseTitle: "Release 1.0",
 				ReleaseNotes: "Initial release",
 				GitTagName:   "v1.0.0",
-				GitTagURL: url.URL{
-					Scheme: "https",
-					Host:   "github.com",
-					Path:   "/owner/repo/releases/tag/v1.0.0",
-				},
 			},
-			wantErr: false,
+			gitTagURL: *validURL,
+			wantErr:   false,
 		},
 		{
 			name: "Invalid Release - Empty ReleaseTitle",
@@ -37,13 +37,9 @@ func TestRelease_NewRelease(t *testing.T) {
 				ReleaseTitle: "",
 				ReleaseNotes: "Initial release",
 				GitTagName:   "v1.0.0",
-				GitTagURL: url.URL{
-					Scheme: "https",
-					Host:   "github.com",
-					Path:   "/owner/repo/releases/tag/v1.0.0",
-				},
 			},
-			wantErr: true,
+			gitTagURL: *validURL,
+			wantErr:   true,
 		},
 		{
 			name: "Invalid Release - missing git tag",
@@ -54,11 +50,21 @@ func TestRelease_NewRelease(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Invalid Release - empty URL",
+			input: CreateReleaseInput{
+				ReleaseTitle: "Release 1.0",
+				ReleaseNotes: "Initial release",
+				GitTagName:   "v1.0.0",
+			},
+			gitTagURL: url.URL{},
+			wantErr:   true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewRelease(tt.input, uuid.New(), uuid.New())
+			_, err := NewRelease(tt.input, tt.gitTagURL, uuid.New(), uuid.New())
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -134,23 +140,33 @@ func TestRelease_Update(t *testing.T) {
 	}
 }
 
-func TestCreateReleaseInput_ValidateGitTagName(t *testing.T) {
+func TestCreateReleaseInput_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   CreateReleaseInput
 		wantErr bool
 	}{
 		{
-			name: "Valid Git Tag Name",
+			name: "Valid input",
 			input: CreateReleaseInput{
-				GitTagName: "v1.0.0",
+				ReleaseTitle: "Release 1.0",
+				GitTagName:   "v1.0.0",
 			},
 			wantErr: false,
 		},
 		{
-			name: "Empty Git Tag Name",
+			name: "Invalid input - empty ReleaseTitle",
 			input: CreateReleaseInput{
-				GitTagName: "",
+				ReleaseTitle: "",
+				GitTagName:   "v1.0.0",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid input - empty git tag name",
+			input: CreateReleaseInput{
+				ReleaseTitle: "New release",
+				GitTagName:   "",
 			},
 			wantErr: true,
 		},
@@ -158,7 +174,7 @@ func TestCreateReleaseInput_ValidateGitTagName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.input.ValidateGitTagName()
+			err := tt.input.Validate()
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
