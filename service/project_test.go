@@ -7,6 +7,7 @@ import (
 
 	githubmock "release-manager/github/mock"
 	cryptox "release-manager/pkg/crypto"
+	"release-manager/pkg/pointer"
 	repo "release-manager/repository/mock"
 	resendmock "release-manager/resend/mock"
 	svcerrors "release-manager/service/errors"
@@ -273,9 +274,6 @@ func TestProjectService_DeleteProject(t *testing.T) {
 }
 
 func TestProjectService_UpdateProject(t *testing.T) {
-	validProjectName := "projectGetter name"
-	slackChannelID := "channelID"
-
 	testCases := []struct {
 		name      string
 		update    model.UpdateProjectInput
@@ -285,8 +283,8 @@ func TestProjectService_UpdateProject(t *testing.T) {
 		{
 			name: "Valid project update",
 			update: model.UpdateProjectInput{
-				Name:           &validProjectName,
-				SlackChannelID: &slackChannelID,
+				Name:           pointer.StringPtr("new name"),
+				SlackChannelID: pointer.StringPtr("new channelID"),
 				ReleaseNotificationConfigUpdate: model.UpdateReleaseNotificationConfigInput{
 					Message:            new(string),
 					ShowProjectName:    new(bool),
@@ -479,9 +477,6 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 }
 
 func TestProjectService_UpdateEnvironment(t *testing.T) {
-	validURL := "http://example.com"
-	validName := "Test Environment"
-
 	testCases := []struct {
 		name      string
 		envUpdate model.UpdateEnvironmentInput
@@ -491,8 +486,8 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 		{
 			name: "Success",
 			envUpdate: model.UpdateEnvironmentInput{
-				Name:          &validName,
-				ServiceRawURL: &validURL,
+				Name:          pointer.StringPtr("New name"),
+				ServiceRawURL: pointer.StringPtr("https://new.example.com"),
 			},
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)

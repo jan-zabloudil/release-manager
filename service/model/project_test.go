@@ -3,6 +3,8 @@ package model
 import (
 	"testing"
 
+	"release-manager/pkg/pointer"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -55,13 +57,6 @@ func TestProject_NewProject(t *testing.T) {
 }
 
 func TestProject_Update(t *testing.T) {
-	oldName := "Old Name"
-	oldSlackChannelID := "oldChannelID"
-	newValidName := "New Name"
-	newInvalidName := ""
-	newSlackChannelID := "newChannelID"
-	newInvalidMessage := ""
-
 	tests := []struct {
 		name    string
 		project Project
@@ -72,15 +67,15 @@ func TestProject_Update(t *testing.T) {
 			name: "Valid Update",
 			project: Project{
 				ID:             uuid.New(),
-				Name:           oldName,
-				SlackChannelID: oldSlackChannelID,
+				Name:           "Test Project",
+				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{
 					Message: "Test Message",
 				},
 			},
 			update: UpdateProjectInput{
-				Name:           &newValidName,
-				SlackChannelID: &newSlackChannelID,
+				Name:           pointer.StringPtr("New name"),
+				SlackChannelID: pointer.StringPtr("newChannelID"),
 			},
 			wantErr: false,
 		},
@@ -88,15 +83,15 @@ func TestProject_Update(t *testing.T) {
 			name: "Missing name",
 			project: Project{
 				ID:             uuid.New(),
-				Name:           oldName,
-				SlackChannelID: oldSlackChannelID,
+				Name:           "Test Project",
+				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{
 					Message: "Test Message",
 				},
 			},
 			update: UpdateProjectInput{
-				Name:           &newInvalidName,
-				SlackChannelID: &newSlackChannelID,
+				Name:           pointer.StringPtr(""),
+				SlackChannelID: pointer.StringPtr("newChannelID"),
 			},
 			wantErr: true,
 		},
@@ -104,17 +99,17 @@ func TestProject_Update(t *testing.T) {
 			name: "Missing release config message",
 			project: Project{
 				ID:             uuid.New(),
-				Name:           oldName,
-				SlackChannelID: oldSlackChannelID,
+				Name:           "Test Project",
+				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{
 					Message: "Test Message",
 				},
 			},
 			update: UpdateProjectInput{
-				Name:           &newValidName,
-				SlackChannelID: &newSlackChannelID,
+				Name:           pointer.StringPtr("New name"),
+				SlackChannelID: pointer.StringPtr("newChannelID"),
 				ReleaseNotificationConfigUpdate: UpdateReleaseNotificationConfigInput{
-					Message: &newInvalidMessage,
+					Message: pointer.StringPtr(""),
 				},
 			},
 			wantErr: true,
