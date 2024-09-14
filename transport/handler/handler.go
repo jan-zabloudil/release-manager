@@ -65,6 +65,8 @@ type releaseService interface {
 
 	CreateDeployment(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID, authUserID uuid.UUID) (svcmodel.Deployment, error)
 	ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
+
+	CreateReleaseAttachment(ctx context.Context, input svcmodel.CreateReleaseAttachmentInput, projectID, releaseID, authUserID uuid.UUID) (svcmodel.ReleaseAttachment, error)
 }
 
 type authClient interface {

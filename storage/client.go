@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -36,4 +37,20 @@ func (c *Client) GenerateFileURL(filePath string) (url.URL, error) {
 	}
 
 	return *signedURL, nil
+}
+
+func (c *Client) FileExists(filePath string) (bool, error) {
+	// Supabase API does not have a direct method to check if a file exists
+	// The lightest way to check if a file exists is to get the file metadata
+	// If file does not exist, it will return ErrNotFound error
+	_, err := c.client.Storage.From(c.bucket).GetFileMetadata(filePath)
+	if err != nil {
+		if errors.Is(err, supabase.ErrNotFound) {
+			return false, nil
+		}
+
+		return false, fmt.Errorf("getting metadata for file %s: %w", filePath, err)
+	}
+
+	return true, nil
 }

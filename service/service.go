@@ -63,6 +63,8 @@ type releaseRepository interface {
 	CreateDeployment(ctx context.Context, d model.Deployment) error
 	ListDeploymentsForProject(ctx context.Context, params model.DeploymentFilterParams, projectID uuid.UUID) ([]model.Deployment, error)
 	ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Deployment, error)
+
+	CreateReleaseAttachment(ctx context.Context, a model.ReleaseAttachment, releaseID uuid.UUID) error
 }
 
 type authGuard interface {
@@ -111,6 +113,11 @@ type slackNotifier interface {
 	SendReleaseNotification(ctx context.Context, token, channel string, notification model.ReleaseNotification) error
 }
 
+type fileManager interface {
+	FileExists(path string) (bool, error)
+	GenerateFileURL(path string) (url.URL, error)
+}
+
 type Service struct {
 	Authorization *AuthorizationService
 	User          *UserService
@@ -127,12 +134,13 @@ func NewService(
 	githubManager githubManager,
 	emailSender emailSender,
 	slackNotifier slackNotifier,
+	fileManager fileManager,
 ) *Service {
 	authSvc := NewAuthorizationService(userRepo, projectRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)
-	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackNotifier, githubManager, releaseRepo)
+	releaseSvc := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackNotifier, githubManager, fileManager, releaseRepo)
 
 	return &Service{
 		Authorization: authSvc,

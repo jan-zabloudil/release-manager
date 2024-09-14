@@ -19,6 +19,7 @@ import (
 
 const (
 	uniqueGitTagPerProjectConstraintName = "unique_git_tag_per_project"
+	uniqueFilePathConstraintName         = "unique_file_path"
 )
 
 type ReleaseRepository struct {
@@ -227,4 +228,22 @@ func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, pr
 	}
 
 	return model.ToSvcDeployment(dpl)
+}
+
+func (r *ReleaseRepository) CreateReleaseAttachment(ctx context.Context, a svcmodel.ReleaseAttachment, releaseID uuid.UUID) error {
+	if _, err := r.dbpool.Exec(ctx, query.CreateReleaseAttachment, pgx.NamedArgs{
+		"releaseID":    releaseID,
+		"attachmentID": a.ID,
+		"name":         a.Name,
+		"filePath":     a.FilePath,
+		"createdAt":    a.CreatedAt,
+	}); err != nil {
+		if util.IsUniqueConstraintViolation(err, uniqueFilePathConstraintName) {
+			return svcerrors.NewReleaseAttachmentFileAlreadyUsedError().Wrap(err)
+		}
+
+		return err
+	}
+
+	return nil
 }

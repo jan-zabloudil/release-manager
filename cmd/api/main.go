@@ -68,6 +68,7 @@ func run() error {
 		githubClient,
 		resendClient,
 		slackClient,
+		storageClient,
 	)
 	h := handler.NewHandler(authClient, svc.User, svc.Project, svc.Settings, svc.Release)
 

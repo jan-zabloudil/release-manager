@@ -34,6 +34,11 @@ type Release struct {
 	UpdatedAt    time.Time           `json:"updated_at"`
 }
 
+type CreateReleaseAttachmentInput struct {
+	Name     string `json:"name"`
+	FilePath string `json:"file_path"`
+}
+
 type ReleaseAttachment struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
@@ -74,6 +79,14 @@ func ToRelease(r svcmodel.Release) Release {
 	}
 }
 
+func ToReleases(releases []svcmodel.Release) []Release {
+	r := make([]Release, 0, len(releases))
+	for _, release := range releases {
+		r = append(r, ToRelease(release))
+	}
+	return r
+}
+
 func ToReleaseAttachments(attachments []svcmodel.ReleaseAttachment) []ReleaseAttachment {
 	a := make([]ReleaseAttachment, 0, len(attachments))
 	for _, attachment := range attachments {
@@ -90,12 +103,11 @@ func ToReleaseAttachment(a svcmodel.ReleaseAttachment) ReleaseAttachment {
 	}
 }
 
-func ToReleases(releases []svcmodel.Release) []Release {
-	r := make([]Release, 0, len(releases))
-	for _, release := range releases {
-		r = append(r, ToRelease(release))
+func ToSvcCreateReleaseAttachmentInput(i CreateReleaseAttachmentInput) svcmodel.CreateReleaseAttachmentInput {
+	return svcmodel.CreateReleaseAttachmentInput{
+		Name:     i.Name,
+		FilePath: i.FilePath,
 	}
-	return r
 }
 
 type GithubGeneratedReleaseNotesInput struct {

@@ -224,3 +224,114 @@ func TestGithubGeneratedReleaseNotesInput_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestNewReleaseAttachment(t *testing.T) {
+	validURL := urlx.MustParse("https://example.com/file")
+
+	tests := []struct {
+		name      string
+		input     CreateReleaseAttachmentInput
+		fileURL   url.URL
+		expectErr bool
+	}{
+		{
+			name: "Valid input",
+			input: CreateReleaseAttachmentInput{
+				Name:     "attachment1",
+				FilePath: "/path/to/file",
+			},
+			fileURL:   *validURL,
+			expectErr: false,
+		},
+		{
+			name: "Missing Name",
+			input: CreateReleaseAttachmentInput{
+				Name:     "",
+				FilePath: "/path/to/file",
+			},
+			fileURL:   *validURL,
+			expectErr: true,
+		},
+		{
+			name: "Missing FilePath",
+			input: CreateReleaseAttachmentInput{
+				Name:     "attachment1",
+				FilePath: "",
+			},
+			fileURL:   *validURL,
+			expectErr: true,
+		},
+		{
+			name: "Empty URL",
+			input: CreateReleaseAttachmentInput{
+				Name:     "attachment1",
+				FilePath: "/path/to/file",
+			},
+			fileURL:   url.URL{},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewReleaseAttachment(tt.input, tt.fileURL)
+			if tt.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCreateReleaseAttachmentInput_Validate(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     CreateReleaseAttachmentInput
+		expectErr bool
+	}{
+		{
+			name: "Valid input",
+			input: CreateReleaseAttachmentInput{
+				Name:     "attachment1",
+				FilePath: "/path/to/file",
+			},
+			expectErr: false,
+		},
+		{
+			name: "Missing Name",
+			input: CreateReleaseAttachmentInput{
+				Name:     "",
+				FilePath: "/path/to/file",
+			},
+			expectErr: true,
+		},
+		{
+			name: "Missing FilePath",
+			input: CreateReleaseAttachmentInput{
+				Name:     "attachment1",
+				FilePath: "",
+			},
+			expectErr: true,
+		},
+		{
+			name: "Missing Name and FilePath",
+			input: CreateReleaseAttachmentInput{
+				Name:     "",
+				FilePath: "",
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.input.Validate()
+			if tt.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

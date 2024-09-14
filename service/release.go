@@ -17,6 +17,7 @@ type ReleaseService struct {
 	environmentGetter environmentGetter
 	slackNotifier     slackNotifier
 	githubManager     githubManager
+	fileManager       fileManager
 	repo              releaseRepository
 }
 
@@ -26,7 +27,8 @@ func NewReleaseService(
 	settingsGetter settingsGetter,
 	environmentGetter environmentGetter,
 	notifier slackNotifier,
-	manager githubManager,
+	githubManager githubManager,
+	fileManager fileManager,
 	repo releaseRepository,
 ) *ReleaseService {
 	return &ReleaseService{
@@ -35,7 +37,8 @@ func NewReleaseService(
 		settingsGetter:    settingsGetter,
 		environmentGetter: environmentGetter,
 		slackNotifier:     notifier,
-		githubManager:     manager,
+		githubManager:     githubManager,
+		fileManager:       fileManager,
 		repo:              repo,
 	}
 }
@@ -400,6 +403,54 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	}
 
 	return dpls, nil
+}
+
+func (s *ReleaseService) CreateReleaseAttachment(
+	ctx context.Context,
+	input model.CreateReleaseAttachmentInput,
+	projectID,
+	releaseID,
+	authUserID uuid.UUID,
+) (model.ReleaseAttachment, error) {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return model.ReleaseAttachment{}, fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	releaseExists, err := s.releaseExists(ctx, projectID, releaseID)
+	if err != nil {
+		return model.ReleaseAttachment{}, fmt.Errorf("checking if release exists: %w", err)
+	}
+	if !releaseExists {
+		return model.ReleaseAttachment{}, svcerrors.NewReleaseNotFoundError()
+	}
+
+	if err := input.Validate(); err != nil {
+		return model.ReleaseAttachment{}, svcerrors.NewReleaseAttachmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+	}
+
+	fileExists, err := s.fileManager.FileExists(input.FilePath)
+	if err != nil {
+		return model.ReleaseAttachment{}, fmt.Errorf("checking if file exists: %w", err)
+	}
+	if !fileExists {
+		return model.ReleaseAttachment{}, svcerrors.NewReleaseAttachmentUnprocessableError().WithMessage("file does not exist")
+	}
+
+	fileURL, err := s.fileManager.GenerateFileURL(input.FilePath)
+	if err != nil {
+		return model.ReleaseAttachment{}, fmt.Errorf("generating file URL: %w", err)
+	}
+
+	attachment, err := model.NewReleaseAttachment(input, fileURL)
+	if err != nil {
+		return model.ReleaseAttachment{}, svcerrors.NewReleaseAttachmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+	}
+
+	if err := s.repo.CreateReleaseAttachment(ctx, attachment, releaseID); err != nil {
+		return model.ReleaseAttachment{}, fmt.Errorf("creating release attachment: %w", err)
+	}
+
+	return attachment, nil
 }
 
 // getLastDeploymentForRelease returns pointer to the last deployment for the release,

@@ -49,7 +49,8 @@ func IsUnprocessableModelError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseAttachmentUnprocessable)
 }
 
 func IsUnauthorizedError(err error) bool {
@@ -71,7 +72,8 @@ func IsConflictError(err error) bool {
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseGitTagAlreadyUsed) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectGithubRepoAlreadyUsed)
+		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectGithubRepoAlreadyUsed) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseAttachmentFileAlreadyUsed)
 }
 
 func IsBadRequestError(err error) bool {
