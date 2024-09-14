@@ -54,6 +54,8 @@ func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Rele
 		if util.IsUniqueConstraintViolation(err, uniqueGitTagPerProjectConstraintName) {
 			return svcerrors.NewReleaseGitTagAlreadyUsedError().Wrap(err)
 		}
+
+		return err
 	}
 
 	return nil
