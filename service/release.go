@@ -64,8 +64,7 @@ func (s *ReleaseService) CreateRelease(
 		return model.Release{}, svcerrors.NewGithubRepoNotSetForProjectError()
 	}
 
-	// Before checking if the tag exists, validate if git tag name was provided in order to avoid unnecessary API calls.
-	if err := input.ValidateGitTagName(); err != nil {
+	if err := input.Validate(); err != nil {
 		return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
@@ -81,9 +80,8 @@ func (s *ReleaseService) CreateRelease(
 	if err != nil {
 		return model.Release{}, fmt.Errorf("generating git tag URL: %w", err)
 	}
-	input.AddGitTagURL(gitTagURL)
 
-	rls, err := model.NewRelease(input, projectID, authUserID)
+	rls, err := model.NewRelease(input, gitTagURL, projectID, authUserID)
 	if err != nil {
 		return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
