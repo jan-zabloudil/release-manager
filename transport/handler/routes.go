@@ -23,7 +23,7 @@ func (h *Handler) setupRoutes() {
 	h.Mux.Route("/admin/users", func(r chi.Router) {
 		r.Get("/", middleware.RequireAuthUser(h.listUsers))
 		r.Route("/{id}", func(r chi.Router) {
-			r.Use(middleware.HandleResourceID("id", util.ContextSetUserID))
+			r.Use(middleware.SetResourceUUIDToContext("id", util.ContextSetUserID))
 			r.Get("/", middleware.RequireAuthUser(h.getUser))
 			r.Delete("/", middleware.RequireAuthUser(h.deleteUser))
 		})
@@ -33,7 +33,7 @@ func (h *Handler) setupRoutes() {
 		r.Post("/", middleware.RequireAuthUser(h.createProject))
 		r.Get("/", middleware.RequireAuthUser(h.listProjects))
 		r.Route("/{id}", func(r chi.Router) {
-			r.Use(middleware.HandleResourceID("id", util.ContextSetProjectID))
+			r.Use(middleware.SetResourceUUIDToContext("id", util.ContextSetProjectID))
 			r.Get("/", middleware.RequireAuthUser(h.getProject))
 			r.Patch("/", middleware.RequireAuthUser(h.updateProject))
 			r.Delete("/", middleware.RequireAuthUser(h.deleteProject))
@@ -41,7 +41,7 @@ func (h *Handler) setupRoutes() {
 				r.Post("/", middleware.RequireAuthUser(h.createEnvironment))
 				r.Get("/", middleware.RequireAuthUser(h.listEnvironments))
 				r.Route("/{environment_id}", func(r chi.Router) {
-					r.Use(middleware.HandleResourceID("environment_id", util.ContextSetEnvironmentID))
+					r.Use(middleware.SetResourceUUIDToContext("environment_id", util.ContextSetEnvironmentID))
 					r.Get("/", middleware.RequireAuthUser(h.getEnvironment))
 					r.Patch("/", middleware.RequireAuthUser(h.updateEnvironment))
 					r.Delete("/", middleware.RequireAuthUser(h.deleteEnvironment))
@@ -51,14 +51,14 @@ func (h *Handler) setupRoutes() {
 				r.Post("/", middleware.RequireAuthUser(h.createInvitation))
 				r.Get("/", middleware.RequireAuthUser(h.listInvitations))
 				r.Route("/{invitation_id}", func(r chi.Router) {
-					r.Use(middleware.HandleResourceID("invitation_id", util.ContextSetProjectInvitationID))
+					r.Use(middleware.SetResourceUUIDToContext("invitation_id", util.ContextSetProjectInvitationID))
 					r.Delete("/", middleware.RequireAuthUser(h.cancelInvitation))
 				})
 			})
 			r.Route("/members", func(r chi.Router) {
 				r.Get("/", middleware.RequireAuthUser(h.listMembers))
 				r.Route("/{user_id}", func(r chi.Router) {
-					r.Use(middleware.HandleResourceID("user_id", util.ContextSetUserID))
+					r.Use(middleware.SetResourceUUIDToContext("user_id", util.ContextSetUserID))
 					r.Delete("/", middleware.RequireAuthUser(h.deleteMember))
 					r.Patch("/", middleware.RequireAuthUser(h.updateMemberRole))
 				})
@@ -73,7 +73,7 @@ func (h *Handler) setupRoutes() {
 				r.Get("/", middleware.RequireAuthUser(h.listReleases))
 				r.Post("/", middleware.RequireAuthUser(h.createRelease))
 				r.Route("/{release_id}", func(r chi.Router) {
-					r.Use(middleware.HandleResourceID("release_id", util.ContextSetReleaseID))
+					r.Use(middleware.SetResourceUUIDToContext("release_id", util.ContextSetReleaseID))
 					r.Get("/", middleware.RequireAuthUser(h.getRelease))
 					r.Patch("/", middleware.RequireAuthUser(h.updateRelease))
 					r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))

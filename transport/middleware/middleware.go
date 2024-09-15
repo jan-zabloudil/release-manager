@@ -67,7 +67,8 @@ func RequireAuthUser(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-func HandleResourceID(idKey string, f util.ContextSetUUIDFunc) func(http.Handler) http.Handler {
+// SetResourceUUIDToContext is a middleware that extracts resource ID (UUID) from the URL and sets it to the request context.
+func SetResourceUUIDToContext(idKey string, f util.ContextSetUUIDFunc) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			id, err := util.GetUUIDFromURL(r, idKey)
