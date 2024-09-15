@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
 	"github.com/nedpals/supabase-go"
+	"go.strv.io/background"
+	"go.strv.io/background/task"
 )
 
 const (
@@ -13,8 +16,9 @@ const (
 )
 
 type Client struct {
-	client *supabase.Client
-	bucket string
+	client      *supabase.Client
+	taskManager *background.Manager
+	bucket      string
 }
 
 func NewClient(client *supabase.Client, bucket string) *Client {
@@ -36,4 +40,22 @@ func (c *Client) GenerateFileURL(filePath string) (url.URL, error) {
 	}
 
 	return *signedURL, nil
+}
+
+func (c *Client) DeleteFileAsync(ctx context.Context, filePath string) {
+	t := task.Task{
+		Type: task.TypeOneOff,
+		Meta: task.Metadata{
+			"task": "deleting file",
+		},
+		Fn: func(ctx context.Context) error {
+			if err := c.client.Storage.From(c.bucket).Remove(filePath); err != nil {
+				return fmt.Errorf("deleting file %s: %w", filePath, err)
+			}
+
+			return nil
+		},
+	}
+
+	c.taskManager.RunTask(ctx, t)
 }

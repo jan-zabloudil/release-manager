@@ -12,6 +12,7 @@ import (
 	svc "release-manager/service/mock"
 	"release-manager/service/model"
 	slack "release-manager/slack/mock"
+	storage "release-manager/storage/mock"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -157,7 +158,8 @@ func TestReleaseService_CreateRelease(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
@@ -210,7 +212,8 @@ func TestReleaseService_GetRelease(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, releaseRepo)
 
@@ -345,7 +348,8 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
@@ -415,7 +419,8 @@ func TestReleaseService_ListReleasesForProject(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
@@ -484,7 +489,8 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, releaseRepo)
 
@@ -588,7 +594,8 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, projectSvc, settingsSvc, slackClient, releaseRepo)
 
@@ -683,7 +690,8 @@ func TestReleaseService_UpsertGithubRelease(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
@@ -796,7 +804,8 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
@@ -899,7 +908,8 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
@@ -1014,7 +1024,8 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 			releaseRepo := new(repo.ReleaseRepository)
 			slackClient := new(slack.Client)
 			githubClient := new(github.Client)
-			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
@@ -1027,6 +1038,60 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 
 			authSvc.AssertExpectations(t)
 			projectSvc.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestReleaseService_DeleteReleaseAttachment(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizationService, *storage.Client, *repo.ReleaseRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Success",
+			mockSetup: func(auth *svc.AuthorizationService, storageClient *storage.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ReadReleaseAttachment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.ReleaseAttachment{}, nil)
+				releaseRepo.On("DeleteReleaseAttachment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				storageClient.On("DeleteFileAsync", mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Attachment not found",
+			mockSetup: func(auth *svc.AuthorizationService, storageClient *storage.Client, releaseRepo *repo.ReleaseRepository) {
+				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("ReadReleaseAttachment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.ReleaseAttachment{}, svcerrors.NewReleaseAttachmentNotFoundError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			authSvc := new(svc.AuthorizationService)
+			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
+			releaseRepo := new(repo.ReleaseRepository)
+			slackClient := new(slack.Client)
+			githubClient := new(github.Client)
+			storageClient := new(storage.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, storageClient, releaseRepo)
+
+			tc.mockSetup(authSvc, storageClient, releaseRepo)
+
+			err := service.DeleteReleaseAttachment(context.TODO(), uuid.New(), uuid.New(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			authSvc.AssertExpectations(t)
+			storageClient.AssertExpectations(t)
 			releaseRepo.AssertExpectations(t)
 		})
 	}

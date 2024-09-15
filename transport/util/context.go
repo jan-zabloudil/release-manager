@@ -20,6 +20,7 @@ const (
 	projectInvitationIDContextKey    contextKey = "project_invitation_id"
 	projectInvitationTokenContextKey contextKey = "project_invitation_token"
 	releaseIDContextKey              contextKey = "release_id"
+	ReleaseAttachmentIDContextKey    contextKey = "release_attachment_id"
 )
 
 type ContextSetUUIDFunc func(r *http.Request, id uuid.UUID) *http.Request
@@ -70,6 +71,14 @@ func ContextReleaseID(r *http.Request) uuid.UUID {
 
 func ContextSetReleaseID(r *http.Request, id uuid.UUID) *http.Request {
 	return contextSetUUID(r, id, releaseIDContextKey)
+}
+
+func ContextReleaseAttachmentID(r *http.Request) uuid.UUID {
+	return contextUUID(r, ReleaseAttachmentIDContextKey)
+}
+
+func ContextSetReleaseAttachmentID(r *http.Request, id uuid.UUID) *http.Request {
+	return contextSetUUID(r, id, ReleaseAttachmentIDContextKey)
 }
 
 func ContextSetProjectInvitationToken(r *http.Request, tkn cryptox.Token) *http.Request {

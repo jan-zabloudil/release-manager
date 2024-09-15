@@ -43,6 +43,7 @@ var (
 	ErrCodeProjectGithubRepoAlreadyUsed     = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
 	ErrCodeGithubGeneratedNotesInvalidInput = "ERR_GITHUB_GENERATED_NOTES_INVALID_INPUT"
 	ErrCodeAdminUserCannotBeDeleted         = "ERR_ADMIN_USER_CANNOT_BE_DELETED"
+	ErrCodeReleaseAttachmentNotFound        = "ERR_RELEASE_ATTACHMENT_NOT_FOUND"
 )
 
 type Error struct {
@@ -324,6 +325,13 @@ func NewAdminUserCannotBeDeletedError() *Error {
 	return &Error{
 		Code:    ErrCodeAdminUserCannotBeDeleted,
 		Message: "Admin user cannot be deleted",
+	}
+}
+
+func NewReleaseAttachmentNotFoundError() *Error {
+	return &Error{
+		Code:    ErrCodeReleaseAttachmentNotFound,
+		Message: "Release attachment not found",
 	}
 }
 

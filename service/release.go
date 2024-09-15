@@ -17,6 +17,7 @@ type ReleaseService struct {
 	environmentGetter environmentGetter
 	slackNotifier     slackNotifier
 	githubManager     githubManager
+	fileManager       fileManager
 	repo              releaseRepository
 }
 
@@ -26,7 +27,8 @@ func NewReleaseService(
 	settingsGetter settingsGetter,
 	environmentGetter environmentGetter,
 	notifier slackNotifier,
-	manager githubManager,
+	githubManager githubManager,
+	fileManager fileManager,
 	repo releaseRepository,
 ) *ReleaseService {
 	return &ReleaseService{
@@ -35,7 +37,8 @@ func NewReleaseService(
 		settingsGetter:    settingsGetter,
 		environmentGetter: environmentGetter,
 		slackNotifier:     notifier,
-		githubManager:     manager,
+		githubManager:     githubManager,
+		fileManager:       fileManager,
 		repo:              repo,
 	}
 }
@@ -400,6 +403,26 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	}
 
 	return dpls, nil
+}
+
+func (s *ReleaseService) DeleteReleaseAttachment(ctx context.Context, projectID, releaseID, attachmentID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
+		return fmt.Errorf("authorizing project member: %w", err)
+	}
+
+	// Get the attachment first to obtain the file path needed for file deletion
+	attachment, err := s.repo.ReadReleaseAttachment(ctx, projectID, releaseID, attachmentID)
+	if err != nil {
+		return fmt.Errorf("getting attachment: %w", err)
+	}
+
+	if err := s.repo.DeleteReleaseAttachment(ctx, projectID, releaseID, attachmentID); err != nil {
+		return fmt.Errorf("deleting attachment: %w", err)
+	}
+
+	s.fileManager.DeleteFileAsync(ctx, attachment.FilePath)
+
+	return nil
 }
 
 // getLastDeploymentForRelease returns pointer to the last deployment for the release,

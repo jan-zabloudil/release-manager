@@ -775,6 +775,26 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/releases/{release-id}/attachments/{attachment-id}:
+    delete:
+        summary: 'Delete release attachment'
+        security:
+            - bearerAuth: []
+        tags:
+            - Releases
+        parameters:
+            - $ref: '#/components/parameters/ProjectIdParam'
+            - $ref: '#/components/parameters/ReleaseIdParam'
+            - $ref: '#/components/parameters/ReleaseAttachmentIdParam'
+        responses:
+            '204':
+                description: 'Attachment deleted'
+            '401':
+                $ref: '#/components/responses/UnauthorizedErrorResponse'
+            '403':
+                $ref: '#/components/responses/ForbiddenErrorResponse'
+            '404':
+                $ref: '#/components/responses/NotFoundErrorResponse'
   /projects/{project-id}/releases/{release-id}/slack-notifications:
     post:
       summary: 'Send release notification to Slack'
@@ -973,6 +993,14 @@ components:
       name: release-id
       in: path
       description: Release ID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ReleaseAttachmentIdParam:
+      name: release-attachment-id
+      in: path
+      description: Release attachment ID
       required: true
       schema:
         type: string

@@ -79,6 +79,12 @@ func (h *Handler) setupRoutes() {
 					r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))
 					r.Post("/slack-notifications", middleware.RequireAuthUser(h.sendReleaseNotification))
 					r.Put("/github-release", middleware.RequireAuthUser(h.upsertGithubRelease))
+					r.Route("/attachments", func(r chi.Router) {
+						r.Route("/{release_attachment_id}", func(r chi.Router) {
+							r.Use(middleware.SetResourceUUIDToContext("release_attachment_id", util.ContextSetReleaseAttachmentID))
+							r.Delete("/", middleware.RequireAuthUser(h.deleteReleaseAttachment))
+						})
+					})
 				})
 			})
 			r.Route("/deployments", func(r chi.Router) {

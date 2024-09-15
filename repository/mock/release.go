@@ -57,3 +57,13 @@ func (m *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwn
 	args := m.Called(ctx, githubOwnerSlug, githubRepoSlug, gitTag)
 	return args.Error(0)
 }
+
+func (m *ReleaseRepository) ReadReleaseAttachment(ctx context.Context, projectID, releaseID, attachmentID uuid.UUID) (svcmodel.ReleaseAttachment, error) {
+	args := m.Called(ctx, projectID, releaseID, attachmentID)
+	return args.Get(0).(svcmodel.ReleaseAttachment), args.Error(1)
+}
+
+func (m *ReleaseRepository) DeleteReleaseAttachment(ctx context.Context, projectID, releaseID, attachmentID uuid.UUID) error {
+	args := m.Called(ctx, projectID, releaseID, attachmentID)
+	return args.Error(0)
+}

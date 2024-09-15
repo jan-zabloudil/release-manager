@@ -149,3 +149,18 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 
 	util.WriteJSONResponse(w, http.StatusOK, model.ToGithubGeneratedReleaseNotes(notes))
 }
+
+func (h *Handler) deleteReleaseAttachment(w http.ResponseWriter, r *http.Request) {
+	if err := h.ReleaseSvc.DeleteReleaseAttachment(
+		r.Context(),
+		util.ContextProjectID(r),
+		util.ContextReleaseID(r),
+		util.ContextReleaseAttachmentID(r),
+		util.ContextAuthUserID(r),
+	); err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

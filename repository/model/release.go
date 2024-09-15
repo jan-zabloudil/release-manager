@@ -47,14 +47,9 @@ func ToSvcRelease(
 		return svcmodel.Release{}, fmt.Errorf("generating a git tag URL: %w", err)
 	}
 
-	attachments := make([]svcmodel.ReleaseAttachment, 0, len(rls.Attachments))
-	for _, a := range rls.Attachments {
-		u, err := fileURLGenerator(a.FilePath)
-		if err != nil {
-			return svcmodel.Release{}, fmt.Errorf("generating a release attachment URL: %w", err)
-		}
-
-		attachments = append(attachments, ToSvcReleaseAttachment(a, u))
+	attachments, err := ToSvcReleaseAttachments(rls.Attachments, fileURLGenerator)
+	if err != nil {
+		return svcmodel.Release{}, fmt.Errorf("converting release attachments to service model: %w", err)
 	}
 
 	return svcmodel.Release{
@@ -69,16 +64,6 @@ func ToSvcRelease(
 		CreatedAt:    rls.CreatedAt,
 		UpdatedAt:    rls.UpdatedAt,
 	}, nil
-}
-
-func ToSvcReleaseAttachment(a ReleaseAttachment, u url.URL) svcmodel.ReleaseAttachment {
-	return svcmodel.ReleaseAttachment{
-		ID:        a.ID,
-		Name:      a.Name,
-		FilePath:  a.FilePath,
-		URL:       u,
-		CreatedAt: a.CreatedAt,
-	}
 }
 
 func ToSvcReleases(
@@ -97,4 +82,36 @@ func ToSvcReleases(
 	}
 
 	return r, nil
+}
+
+func ToSvcReleaseAttachment(a ReleaseAttachment, fileURLGenerator fileURLGeneratorFunc) (svcmodel.ReleaseAttachment, error) {
+	u, err := fileURLGenerator(a.FilePath)
+	if err != nil {
+		return svcmodel.ReleaseAttachment{}, fmt.Errorf("generating a release attachment URL: %w", err)
+	}
+
+	return svcmodel.ReleaseAttachment{
+		ID:        a.ID,
+		Name:      a.Name,
+		FilePath:  a.FilePath,
+		URL:       u,
+		CreatedAt: a.CreatedAt,
+	}, nil
+}
+
+func ToSvcReleaseAttachments(
+	attachments []ReleaseAttachment,
+	fileURLGenerator fileURLGeneratorFunc,
+) ([]svcmodel.ReleaseAttachment, error) {
+	a := make([]svcmodel.ReleaseAttachment, 0, len(attachments))
+	for _, attachment := range attachments {
+		svcAttachment, err := ToSvcReleaseAttachment(attachment, fileURLGenerator)
+		if err != nil {
+			return nil, err
+		}
+
+		a = append(a, svcAttachment)
+	}
+
+	return a, nil
 }

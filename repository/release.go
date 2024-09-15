@@ -228,3 +228,44 @@ func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, pr
 
 	return model.ToSvcDeployment(dpl)
 }
+
+func (r *ReleaseRepository) ReadReleaseAttachment(ctx context.Context, projectID, releaseID, attachmentID uuid.UUID) (svcmodel.ReleaseAttachment, error) {
+	var attachment model.ReleaseAttachment
+
+	// Project ID and release ID are not needed in the query because attachmentID is primary key
+	// But they are added for security reasons
+	// To make sure that the attachment belongs to the release and project that are passed from the service
+	if err := pgxscan.Get(ctx, r.dbpool, &attachment, query.ReadReleaseAttachment, pgx.NamedArgs{
+		"projectID":    projectID,
+		"releaseID":    releaseID,
+		"attachmentID": attachmentID,
+	}); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return svcmodel.ReleaseAttachment{}, svcerrors.NewReleaseAttachmentNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.ReleaseAttachment{}, err
+	}
+
+	return model.ToSvcReleaseAttachment(attachment, r.fileURLGenerator.GenerateFileURL)
+}
+
+func (r *ReleaseRepository) DeleteReleaseAttachment(ctx context.Context, projectID, releaseID, attachmentID uuid.UUID) error {
+	// Project ID and release ID are not needed in the query because attachmentID is primary key
+	// But they are added for security reasons
+	// To make sure that the attachment belongs to the release and project that are passed from the service
+	result, err := r.dbpool.Exec(ctx, query.DeleteReleaseAttachment, pgx.NamedArgs{
+		"projectID":    projectID,
+		"releaseID":    releaseID,
+		"attachmentID": attachmentID,
+	})
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return svcerrors.NewReleaseAttachmentNotFoundError()
+	}
+
+	return nil
+}
