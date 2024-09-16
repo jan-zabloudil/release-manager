@@ -406,12 +406,13 @@ func (s *ReleaseService) ListDeploymentsForProject(
 // or nil if no deployment exists for the release.
 func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (*model.Deployment, error) {
 	dpl, err := s.repo.ReadLastDeploymentForRelease(ctx, projectID, releaseID)
-	if err != nil && !svcerrors.IsNotFoundError(err) {
-		return nil, fmt.Errorf("reading last deployment for release: %w", err)
-	}
-
-	if svcerrors.IsNotFoundError(err) {
-		return nil, nil
+	if err != nil {
+		switch {
+		case svcerrors.IsNotFoundError(err):
+			return nil, nil
+		default:
+			return nil, fmt.Errorf("reading last deployment for release: %w", err)
+		}
 	}
 
 	return &dpl, nil
@@ -419,12 +420,13 @@ func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, projec
 
 func (s *ReleaseService) releaseExists(ctx context.Context, projectID, releaseID uuid.UUID) (bool, error) {
 	_, err := s.repo.ReadRelease(ctx, projectID, releaseID)
-	if err != nil && !svcerrors.IsNotFoundError(err) {
-		return false, fmt.Errorf("checking if release exists: %w", err)
-	}
-
-	if svcerrors.IsNotFoundError(err) {
-		return false, nil
+	if err != nil {
+		switch {
+		case svcerrors.IsNotFoundError(err):
+			return false, nil
+		default:
+			return false, fmt.Errorf("checking if release exists: %w", err)
+		}
 	}
 
 	return true, nil
