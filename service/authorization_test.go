@@ -120,11 +120,6 @@ func TestAuthService_AuthorizeUserRoleUser(t *testing.T) {
 }
 
 func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
-	adminUser := model.User{Role: model.UserRoleAdmin}
-	user := model.User{Role: model.UserRoleUser}
-	editorProjectMember := model.ProjectMember{ProjectRole: model.ProjectRoleEditor}
-	viewerProjectMember := model.ProjectMember{ProjectRole: model.ProjectRoleViewer}
-
 	testCases := []struct {
 		name      string
 		mockSetup func(*repo.UserRepository, *repo.ProjectRepository)
@@ -133,38 +128,60 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 		{
 			name: "Project member editor",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(editorProjectMember, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleEditor,
+				}, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "Project member viewer",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(viewerProjectMember, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+				}, nil)
 			},
 			wantErr: true,
 		},
 		{
 			name: "User not project member",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleUser,
+				}, nil)
 			},
 			wantErr: true,
 		},
 		{
-			name: "User admin",
+			name: "User not project member (but admin)",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleAdmin,
+				}, nil)
 			},
 			wantErr: false,
 		},
 		{
-			name: "User not found",
+			name: "Project viewer (but admin)",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+					User: model.User{
+						Role: model.UserRoleAdmin,
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project not exists",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -193,11 +210,6 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 }
 
 func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
-	adminUser := model.User{Role: model.UserRoleAdmin}
-	user := model.User{Role: model.UserRoleUser}
-	editorProjectMember := model.ProjectMember{ProjectRole: model.ProjectRoleEditor}
-	viewerProjectMember := model.ProjectMember{ProjectRole: model.ProjectRoleViewer}
-
 	testCases := []struct {
 		name      string
 		mockSetup func(*repo.UserRepository, *repo.ProjectRepository)
@@ -206,38 +218,60 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 		{
 			name: "Project member editor",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(editorProjectMember, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleEditor,
+				}, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "Project member viewer",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
-				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(viewerProjectMember, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+				}, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "User not project member",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleUser,
+				}, nil)
 			},
 			wantErr: true,
 		},
 		{
-			name: "User admin",
+			name: "User not project member (but admin)",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleAdmin,
+				}, nil)
 			},
 			wantErr: false,
 		},
 		{
-			name: "User not found",
+			name: "Project viewer (but admin)",
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+					User: model.User{
+						Role: model.UserRoleAdmin,
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project not exists",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},

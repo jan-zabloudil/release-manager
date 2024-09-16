@@ -119,7 +119,7 @@ func TestProjectService_ListProjects(t *testing.T) {
 		{
 			name: "Non admin user",
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
-				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(svcerrors.NewForbiddenInsufficientUserRoleError())
+				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(svcerrors.NewInsufficientUserRoleError())
 				projectRepo.On("ListProjectsForUser", mock.Anything, mock.Anything).Return([]model.Project{}, nil)
 			},
 			wantErr: false,

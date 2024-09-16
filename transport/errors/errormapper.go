@@ -59,10 +59,10 @@ func IsUnauthorizedError(err error) bool {
 }
 
 func IsForbiddenError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientUserRole) ||
+	return isSvcErrorWithCode(err, svcerrors.ErrCodeInsufficientUserRole) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientForbidden) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenInsufficientProjectRole) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeForbiddenUserNotProjectMember) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeInsufficientProjectRole) ||
+		isSvcErrorWithCode(err, svcerrors.ErrCodeUserNotProjectMember) ||
 		isSvcErrorWithCode(err, svcerrors.ErrCodeAdminUserCannotBeDeleted)
 }
 

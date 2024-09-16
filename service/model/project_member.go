@@ -108,6 +108,12 @@ func (m *ProjectMember) UpdateProjectRole(role ProjectRole) error {
 	return m.Validate()
 }
 
-func (m *ProjectMember) HasAtLeastProjectRole(role ProjectRole) bool {
+// SatisfiesRequiredRole checks if the project member has a role that meets or exceeds the required role
+func (m *ProjectMember) SatisfiesRequiredRole(role ProjectRole) bool {
+	// Admin user role exceeds all project roles
+	if m.User.IsAdmin() {
+		return true
+	}
+
 	return m.ProjectRole.IsRoleAtLeast(role)
 }
