@@ -27,15 +27,7 @@ type Release struct {
 	UpdatedAt       time.Time           `db:"updated_at"`
 }
 
-type ReleaseAttachment struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	FilePath  string    `json:"file_path"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 type gitTagURLGeneratorFunc func(ownerSlug, repoSlug, tag string) (url.URL, error)
-type fileURLGeneratorFunc func(filePath string) (url.URL, error)
 
 func ToSvcRelease(
 	rls Release,
@@ -47,14 +39,9 @@ func ToSvcRelease(
 		return svcmodel.Release{}, fmt.Errorf("generating a git tag URL: %w", err)
 	}
 
-	attachments := make([]svcmodel.ReleaseAttachment, 0, len(rls.Attachments))
-	for _, a := range rls.Attachments {
-		u, err := fileURLGenerator(a.FilePath)
-		if err != nil {
-			return svcmodel.Release{}, fmt.Errorf("generating a release attachment URL: %w", err)
-		}
-
-		attachments = append(attachments, ToSvcReleaseAttachment(a, u))
+	attachments, err := ToSvcReleaseAttachments(rls.Attachments, fileURLGenerator)
+	if err != nil {
+		return svcmodel.Release{}, fmt.Errorf("converting release attachments to service model: %w", err)
 	}
 
 	return svcmodel.Release{
@@ -69,16 +56,6 @@ func ToSvcRelease(
 		CreatedAt:    rls.CreatedAt,
 		UpdatedAt:    rls.UpdatedAt,
 	}, nil
-}
-
-func ToSvcReleaseAttachment(a ReleaseAttachment, u url.URL) svcmodel.ReleaseAttachment {
-	return svcmodel.ReleaseAttachment{
-		ID:        a.ID,
-		Name:      a.Name,
-		FilePath:  a.FilePath,
-		URL:       u,
-		CreatedAt: a.CreatedAt,
-	}
 }
 
 func ToSvcReleases(
@@ -97,4 +74,45 @@ func ToSvcReleases(
 	}
 
 	return r, nil
+}
+
+type ReleaseAttachment struct {
+	ID        uuid.UUID `json:"attachment_id"`
+	Name      string    `json:"name"`
+	FilePath  string    `json:"file_path"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type fileURLGeneratorFunc func(filePath string) (url.URL, error)
+
+func ToSvcReleaseAttachment(a ReleaseAttachment, fileURLGenerator fileURLGeneratorFunc) (svcmodel.ReleaseAttachment, error) {
+	u, err := fileURLGenerator(a.FilePath)
+	if err != nil {
+		return svcmodel.ReleaseAttachment{}, fmt.Errorf("generating a file URL: %w", err)
+	}
+
+	return svcmodel.ReleaseAttachment{
+		ID:        a.ID,
+		Name:      a.Name,
+		FilePath:  a.FilePath,
+		URL:       u,
+		CreatedAt: a.CreatedAt,
+	}, nil
+}
+
+func ToSvcReleaseAttachments(
+	attachments []ReleaseAttachment,
+	fileURLGenerator fileURLGeneratorFunc,
+) ([]svcmodel.ReleaseAttachment, error) {
+	a := make([]svcmodel.ReleaseAttachment, 0, len(attachments))
+	for _, attachment := range attachments {
+		svcAttachment, err := ToSvcReleaseAttachment(attachment, fileURLGenerator)
+		if err != nil {
+			return nil, fmt.Errorf("converting release attachment to service model: %w", err)
+		}
+
+		a = append(a, svcAttachment)
+	}
+
+	return a, nil
 }

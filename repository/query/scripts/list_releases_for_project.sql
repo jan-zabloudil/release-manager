@@ -4,7 +4,7 @@ SELECT
     p.github_repo_slug,
     COALESCE(JSON_AGG(
         JSON_BUILD_OBJECT(
-                'id', ra.attachment_id,
+                'attachment_id', ra.attachment_id,
                 'name', ra.name,
                 'file_path', ra.file_path,
                 'created_at', ra.created_at
