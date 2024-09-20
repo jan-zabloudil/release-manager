@@ -16,13 +16,13 @@ const (
 func FinishTransaction(ctx context.Context, tx pgx.Tx, err error) error {
 	if err != nil {
 		if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
-			return fmt.Errorf("failed to rollback tx: %w", rollbackErr)
+			return fmt.Errorf("doing transction rollback: %w", rollbackErr)
 		}
 
 		return err
 	}
 	if err = tx.Commit(ctx); err != nil {
-		return fmt.Errorf("failed to commit tx: %w", err)
+		return fmt.Errorf("committing transaction: %w", err)
 	}
 
 	return nil

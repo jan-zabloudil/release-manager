@@ -22,7 +22,7 @@ type ParsedTemplate struct {
 func ParseProjectInvitationTemplate(data svcmodel.ProjectInvitationEmailData, clientSvcCfg config.ClientServiceConfig) (ParsedTemplate, error) {
 	tmpl, err := template.New("project_invitation").Parse(projectInvitationTmpl)
 	if err != nil {
-		return ParsedTemplate{}, fmt.Errorf("failed to parse template: %w", err)
+		return ParsedTemplate{}, fmt.Errorf("parsing template: %w", err)
 	}
 
 	templateData := map[string]string{
@@ -36,19 +36,19 @@ func ParseProjectInvitationTemplate(data svcmodel.ProjectInvitationEmailData, cl
 	subject := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(subject, "subject", templateData)
 	if err != nil {
-		return ParsedTemplate{}, fmt.Errorf("failed to execute template: %w", err)
+		return ParsedTemplate{}, fmt.Errorf("executing subject template: %w", err)
 	}
 
 	textBody := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(textBody, "textBody", templateData)
 	if err != nil {
-		return ParsedTemplate{}, fmt.Errorf("failed to execute template: %w", err)
+		return ParsedTemplate{}, fmt.Errorf("executing text body template: %w", err)
 	}
 
 	htmlBody := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(htmlBody, "htmlBody", templateData)
 	if err != nil {
-		return ParsedTemplate{}, fmt.Errorf("failed to execute template: %w", err)
+		return ParsedTemplate{}, fmt.Errorf("executing html body template: %w", err)
 	}
 
 	return ParsedTemplate{
