@@ -66,6 +66,7 @@ type releaseRepository interface {
 }
 
 type authGuard interface {
+	GetAuthorizedUser(ctx context.Context, userID uuid.UUID) (model.User, error)
 	AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error
 	AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error
 	AuthorizeProjectRoleEditor(ctx context.Context, projectID, userID uuid.UUID) error
