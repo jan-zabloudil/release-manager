@@ -195,6 +195,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, input model.Crea
 		return model.Environment{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
+	// Admin user was authorized (not project member), so we need to check if project exists
 	exists, err := s.projectExists(ctx, input.ProjectID)
 	if err != nil {
 		return model.Environment{}, fmt.Errorf("checking if project exists: %w", err)
@@ -371,6 +372,7 @@ func (s *ProjectService) ListInvitations(ctx context.Context, projectID, authUse
 		return nil, fmt.Errorf("listing invitations: %w", err)
 	}
 
+	// Admin user was authorized (not project member), so we need to check if project exists
 	if len(invitations) == 0 {
 		exists, err := s.projectExists(ctx, projectID)
 		if err != nil {
@@ -469,6 +471,7 @@ func (s *ProjectService) ListMembersForProject(ctx context.Context, projectID, a
 		return nil, fmt.Errorf("listing members for project: %w", err)
 	}
 
+	// Admin user was authorized (not project member), so we need to check if project exists
 	if len(m) == 0 {
 		exists, err := s.projectExists(ctx, projectID)
 		if err != nil {
