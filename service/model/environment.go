@@ -23,8 +23,6 @@ type Environment struct {
 	ServiceURL url.URL
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
-
-	// TODO add release id once releases are implemented
 }
 
 type CreateEnvironmentInput struct {
