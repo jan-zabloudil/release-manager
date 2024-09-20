@@ -152,14 +152,6 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	exists, err := s.projectExists(ctx, projectID)
-	if err != nil {
-		return fmt.Errorf("checking if project exists: %w", err)
-	}
-	if !exists {
-		return svcerrors.NewProjectNotFoundError()
-	}
-
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
 		return fmt.Errorf("getting Github token: %w", err)
@@ -203,9 +195,12 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, input model.Crea
 		return model.Environment{}, fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	_, err := s.getProject(ctx, input.ProjectID)
+	exists, err := s.projectExists(ctx, input.ProjectID)
 	if err != nil {
-		return model.Environment{}, fmt.Errorf("reading project: %w", err)
+		return model.Environment{}, fmt.Errorf("checking if project exists: %w", err)
+	}
+	if !exists {
+		return model.Environment{}, svcerrors.NewProjectNotFoundError()
 	}
 
 	env, err := model.NewEnvironment(input)
@@ -266,16 +261,6 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUs
 	envs, err := s.repo.ListEnvironmentsForProject(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("listing environments: %w", err)
-	}
-
-	if len(envs) == 0 {
-		exists, err := s.projectExists(ctx, projectID)
-		if err != nil {
-			return nil, fmt.Errorf("checking if project exists: %w", err)
-		}
-		if !exists {
-			return nil, svcerrors.NewProjectNotFoundError()
-		}
 	}
 
 	return envs, nil
