@@ -22,6 +22,11 @@ func NewAuthorizationService(userRepo userRepository, projectRepo projectReposit
 	}
 }
 
+// GetAuthorizedUser returns the user. If the user is not found, it returns ErrCodeUnauthorizedUnknownUser error.
+func (s *AuthorizationService) GetAuthorizedUser(ctx context.Context, userID uuid.UUID) (model.User, error) {
+	return s.getUser(ctx, userID)
+}
+
 func (s *AuthorizationService) AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error {
 	return s.authorizeUserRole(ctx, userID, model.UserRoleUser)
 }

@@ -92,27 +92,27 @@ func (s *ProjectService) ProjectExists(ctx context.Context, projectID, authUserI
 }
 
 func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
-	err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID)
-	switch {
-	case err == nil:
-		// Admin user can see all projects
+	user, err := s.authGuard.GetAuthorizedUser(ctx, authUserID)
+	if err != nil {
+		return nil, fmt.Errorf("getting authorized user: %w", err)
+	}
+
+	// Admin user can see all projects
+	if user.IsAdmin() {
 		p, err := s.repo.ListProjects(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("listing projects for admin user: %w", err)
 		}
 
 		return p, nil
-	case err != nil && svcerrors.IsInsufficientUserRoleError(err):
-		// Non-admin user can see only projects they are members of
-		p, err := s.repo.ListProjectsForUser(ctx, authUserID)
-		if err != nil {
-			return nil, fmt.Errorf("listing projects for non-admin user: %w", err)
-		}
-
-		return p, nil
-	default:
-		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}
+
+	p, err := s.repo.ListProjectsForUser(ctx, authUserID)
+	if err != nil {
+		return nil, fmt.Errorf("listing projects for non-admin user: %w", err)
+	}
+
+	return p, nil
 }
 
 func (s *ProjectService) DeleteProject(ctx context.Context, projectID, authUserID uuid.UUID) error {
