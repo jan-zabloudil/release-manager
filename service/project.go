@@ -285,12 +285,13 @@ func (s *ProjectService) EnvironmentExists(ctx context.Context, projectID, envID
 	}
 
 	_, err := s.repo.ReadEnvironment(ctx, projectID, envID)
-	if err != nil && !svcerrors.IsNotFoundError(err) {
-		return false, fmt.Errorf("reading environment: %w", err)
-	}
-
-	if svcerrors.IsNotFoundError(err) {
-		return false, nil
+	if err != nil {
+		switch {
+		case svcerrors.IsNotFoundError(err):
+			return false, nil
+		default:
+			return false, fmt.Errorf("reading environment: %w", err)
+		}
 	}
 
 	return true, nil
@@ -559,11 +560,12 @@ func (s *ProjectService) getDefaultReleaseNotificationConfig(ctx context.Context
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
 	_, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
-		if svcerrors.IsNotFoundError(err) {
+		switch {
+		case svcerrors.IsNotFoundError(err):
 			return false, nil
+		default:
+			return false, fmt.Errorf("reading project: %w", err)
 		}
-
-		return false, fmt.Errorf("reading project: %w", err)
 	}
 
 	return true, nil
@@ -572,11 +574,12 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {
 	_, err := s.repo.ReadMemberByEmail(ctx, projectID, email)
 	if err != nil {
-		if svcerrors.IsNotFoundError(err) {
+		switch {
+		case svcerrors.IsNotFoundError(err):
 			return false, nil
+		default:
+			return false, fmt.Errorf("reading member: %w", err)
 		}
-
-		return false, fmt.Errorf("reading member: %w", err)
 	}
 
 	return true, nil
