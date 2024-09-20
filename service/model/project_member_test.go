@@ -105,36 +105,59 @@ func TestProjectMember_UpdateProjectRole(t *testing.T) {
 func TestProjectMember_HasAtLeastProjectRole(t *testing.T) {
 	tests := []struct {
 		name            string
-		role            ProjectRole
+		member          ProjectMember
 		wantAtLeastRole ProjectRole
 		want            bool
 	}{
 		{
-			name:            "Editor, want at least Viewer",
-			role:            ProjectRoleEditor,
+			name: "Editor, want at least Viewer",
+			member: ProjectMember{
+				ProjectRole: ProjectRoleEditor,
+				User: User{
+					Role: UserRoleUser,
+				},
+			},
 			wantAtLeastRole: ProjectRoleViewer,
 			want:            true,
 		},
 		{
-			name:            "Viewer, want at least Viewer",
-			role:            ProjectRoleViewer,
+			name: "Viewer, want at least Viewer",
+			member: ProjectMember{
+				ProjectRole: ProjectRoleViewer,
+				User: User{
+					Role: UserRoleUser,
+				},
+			},
 			wantAtLeastRole: ProjectRoleViewer,
 			want:            true,
 		},
 		{
-			name:            "Viewer, want at least Editor",
-			role:            ProjectRoleViewer,
+			name: "Viewer, want at least Editor",
+			member: ProjectMember{
+				ProjectRole: ProjectRoleViewer,
+				User: User{
+					Role: UserRoleUser,
+				},
+			},
 			wantAtLeastRole: ProjectRoleEditor,
 			want:            false,
+		},
+		{
+			name: "Viewer (but also admin user), want at least Editor",
+			member: ProjectMember{
+				ProjectRole: ProjectRoleViewer,
+				User: User{
+					Role: UserRoleAdmin,
+				},
+			},
+			wantAtLeastRole: ProjectRoleEditor,
+			want:            true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			member := ProjectMember{
-				ProjectRole: tt.role,
-			}
-			got := member.HasAtLeastProjectRole(tt.wantAtLeastRole)
+			got := tt.member.SatisfiesRequiredRole(tt.wantAtLeastRole)
 			assert.Equal(t, tt.want, got)
 		})
 	}

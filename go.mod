@@ -18,7 +18,7 @@ require (
 	github.com/slack-go/slack v0.12.5
 	github.com/stretchr/testify v1.9.0
 	go.strv.io/background v0.1.0
-	go.strv.io/net v0.7.0
+	go.strv.io/net v0.7.1
 	go.strv.io/time v0.2.0
 )
 

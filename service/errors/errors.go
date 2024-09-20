@@ -7,9 +7,9 @@ import (
 
 var (
 	ErrCodeUnauthorizedUnknownUser          = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
-	ErrCodeForbiddenInsufficientUserRole    = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_USER_ROLE"
-	ErrCodeForbiddenInsufficientProjectRole = "ERR_FORBIDDEN_ACCESS_INSUFFICIENT_PROJECT_ROLE"
-	ErrCodeForbiddenUserNotProjectMember    = "ERR_FORBIDDEN_USER_NOT_PROJECT_MEMBER"
+	ErrCodeInsufficientUserRole             = "ERR_INSUFFICIENT_USER_ROLE"
+	ErrCodeInsufficientProjectRole          = "ERR_INSUFFICIENT_PROJECT_ROLE"
+	ErrCodeUserNotProjectMember             = "ERR_USER_NOT_PROJECT_MEMBER"
 	ErrCodeUserNotFound                     = "ERR_USER_NOT_FOUND"
 	ErrCodeProjectNotFound                  = "ERR_PROJECT_NOT_FOUND"
 	ErrCodeEnvironmentNotFound              = "ERR_ENVIRONMENT_NOT_FOUND"
@@ -124,23 +124,23 @@ func NewUnauthorizedUnknownUserError() *Error {
 	}
 }
 
-func NewForbiddenInsufficientUserRoleError() *Error {
+func NewInsufficientUserRoleError() *Error {
 	return &Error{
-		Code:    ErrCodeForbiddenInsufficientUserRole,
+		Code:    ErrCodeInsufficientUserRole,
 		Message: "Forbidden access, insufficient user role.",
 	}
 }
 
-func NewForbiddenInsufficientProjectRoleError() *Error {
+func NewInsufficientProjectRoleError() *Error {
 	return &Error{
-		Code:    ErrCodeForbiddenInsufficientProjectRole,
+		Code:    ErrCodeInsufficientProjectRole,
 		Message: "Forbidden access, insufficient project role.",
 	}
 }
 
-func NewForbiddenUserNotProjectMemberError() *Error {
+func NewUserNotProjectMemberError() *Error {
 	return &Error{
-		Code:    ErrCodeForbiddenUserNotProjectMember,
+		Code:    ErrCodeUserNotProjectMember,
 		Message: "User is not a project member.",
 	}
 }
@@ -345,7 +345,7 @@ func IsNotFoundError(err error) bool {
 }
 
 func IsInsufficientUserRoleError(err error) bool {
-	return isErrorWithCode(err, ErrCodeForbiddenInsufficientUserRole)
+	return isErrorWithCode(err, ErrCodeInsufficientUserRole)
 }
 
 func IsGithubReleaseNotFoundError(err error) bool {
