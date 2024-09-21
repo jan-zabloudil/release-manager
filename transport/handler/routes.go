@@ -79,6 +79,9 @@ func (h *Handler) setupRoutes() {
 					r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))
 					r.Post("/slack-notifications", middleware.RequireAuthUser(h.sendReleaseNotification))
 					r.Put("/github-release", middleware.RequireAuthUser(h.upsertGithubRelease))
+					r.Route("/attachments", func(r chi.Router) {
+						r.Post("/", middleware.RequireAuthUser(h.createReleaseAttachment))
+					})
 				})
 			})
 			r.Route("/deployments", func(r chi.Router) {

@@ -9,10 +9,15 @@ import (
 )
 
 var (
-	errReleaseTitleRequired               = errors.New("release title is required")
+	errReleaseTitleRequired = errors.New("release title is required")
+
 	errReleaseGitTagRequired              = errors.New("git tag name is required")
 	errReleaseGitTagURLRequired           = errors.New("git tag URL is required")
 	errGithubGeneratedNotesGitTagRequired = errors.New("git tag name is required")
+
+	errReleaseAttachmentNameRequired     = errors.New("attachment name is required")
+	errReleaseAttachmentFilePathRequired = errors.New("attachment file path is required")
+	errReleaseAttachmentURLRequired      = errors.New("attachment URL cannot be empty")
 )
 
 type CreateReleaseInput struct {
@@ -49,14 +54,6 @@ type Release struct {
 	GitTagName   string
 	GitTagURL    url.URL
 	Attachments  []ReleaseAttachment
-}
-
-type ReleaseAttachment struct {
-	ID        uuid.UUID
-	Name      string
-	FilePath  string
-	URL       url.URL
-	CreatedAt time.Time
 }
 
 func NewRelease(input CreateReleaseInput, tagURL url.URL, projectID, authorUserID uuid.UUID) (Release, error) {
@@ -107,6 +104,60 @@ func (r *Release) Validate() error {
 	}
 
 	return nil
+}
+
+type CreateReleaseAttachmentInput struct {
+	Name     string
+	FilePath string
+}
+
+func (i CreateReleaseAttachmentInput) Validate() error {
+	if i.Name == "" {
+		return errors.New("attachment name is required")
+	}
+	if i.FilePath == "" {
+		return errors.New("attachment file path is required")
+	}
+
+	return nil
+}
+
+type ReleaseAttachment struct {
+	ID        uuid.UUID
+	Name      string
+	FilePath  string
+	URL       url.URL
+	CreatedAt time.Time
+}
+
+func (r *ReleaseAttachment) Validate() error {
+	if r.Name == "" {
+		return errReleaseAttachmentNameRequired
+	}
+	if r.FilePath == "" {
+		return errReleaseAttachmentFilePathRequired
+	}
+	if r.URL == (url.URL{}) {
+		return errReleaseAttachmentURLRequired
+	}
+
+	return nil
+}
+
+func NewReleaseAttachment(input CreateReleaseAttachmentInput, fileURL url.URL) (ReleaseAttachment, error) {
+	a := ReleaseAttachment{
+		ID:        uuid.New(),
+		Name:      input.Name,
+		FilePath:  input.FilePath,
+		URL:       fileURL,
+		CreatedAt: time.Now(),
+	}
+
+	if err := a.Validate(); err != nil {
+		return ReleaseAttachment{}, err
+	}
+
+	return a, nil
 }
 
 type ReleaseNotification struct {

@@ -44,4 +44,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/nedpals/supabase-go => github.com/jan-zabloudil/supabase-go v0.6.0
+replace github.com/nedpals/supabase-go => github.com/jan-zabloudil/supabase-go v0.7.0

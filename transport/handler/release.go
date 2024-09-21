@@ -149,3 +149,25 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 
 	util.WriteJSONResponse(w, http.StatusOK, model.ToGithubGeneratedReleaseNotes(notes))
 }
+
+func (h *Handler) createReleaseAttachment(w http.ResponseWriter, r *http.Request) {
+	var input model.CreateReleaseAttachmentInput
+	if err := util.UnmarshalRequest(r, &input); err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	attachment, err := h.ReleaseSvc.CreateReleaseAttachment(
+		r.Context(),
+		model.ToSvcCreateReleaseAttachmentInput(input),
+		util.ContextProjectID(r),
+		util.ContextReleaseID(r),
+		util.ContextAuthUserID(r),
+	)
+	if err != nil {
+		util.WriteResponseError(w, resperrors.ToError(err))
+		return
+	}
+
+	util.WriteJSONResponse(w, http.StatusCreated, model.ToReleaseAttachment(attachment))
+}

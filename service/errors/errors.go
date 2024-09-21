@@ -43,6 +43,8 @@ var (
 	ErrCodeProjectGithubRepoAlreadyUsed     = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
 	ErrCodeGithubGeneratedNotesInvalidInput = "ERR_GITHUB_GENERATED_NOTES_INVALID_INPUT"
 	ErrCodeAdminUserCannotBeDeleted         = "ERR_ADMIN_USER_CANNOT_BE_DELETED"
+	ErrCodeReleaseAttachmentUnprocessable   = "ERR_RELEASE_ATTACHMENT_UNPROCESSABLE"
+	ErrCodeReleaseAttachmentFileAlreadyUsed = "ERR_RELEASE_ATTACHMENT_FILE_ALREADY_USED"
 )
 
 type Error struct {
@@ -324,6 +326,20 @@ func NewAdminUserCannotBeDeletedError() *Error {
 	return &Error{
 		Code:    ErrCodeAdminUserCannotBeDeleted,
 		Message: "Admin user cannot be deleted",
+	}
+}
+
+func NewReleaseAttachmentUnprocessableError() *Error {
+	return &Error{
+		Code:    ErrCodeReleaseAttachmentUnprocessable,
+		Message: "Release attachment unprocessable",
+	}
+}
+
+func NewReleaseAttachmentFileAlreadyUsedError() *Error {
+	return &Error{
+		Code:    ErrCodeReleaseAttachmentFileAlreadyUsed,
+		Message: "File is already used for another release attachment",
 	}
 }
 

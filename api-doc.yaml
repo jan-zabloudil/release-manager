@@ -775,6 +775,39 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
+  /projects/{project-id}/releases/{release-id}/attachments:
+    post:
+      summary: 'Create release attachment'
+      security:
+        - bearerAuth: []
+      tags:
+        - Releases
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdParam'
+        - $ref: '#/components/parameters/ReleaseIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReleaseAttachmentRequest'
+      responses:
+        '201':
+          description: 'Attachment created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseAttachment'
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+        '422':
+          $ref: '#/components/responses/UnprocesssableEntityResponse'
   /projects/{project-id}/releases/{release-id}/slack-notifications:
     post:
       summary: 'Send release notification to Slack'
@@ -1473,6 +1506,15 @@ components:
             - id
             - name
             - url
+    CreateReleaseAttachmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "api-documentation.yaml"
+        file_path:
+          type: string
+          example: "/bucket/aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d_api-documentation.yaml"
   securitySchemes:
     bearerAuth:
       type: http
