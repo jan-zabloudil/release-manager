@@ -15,11 +15,11 @@ import (
 	httpx "go.strv.io/net/http"
 )
 
-type authClient interface {
+type AuthClient interface {
 	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
 }
 
-func Auth(authClient authClient) func(next http.Handler) http.Handler {
+func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authorizationHeader := r.Header.Get(httpx.Header.Authorization)
