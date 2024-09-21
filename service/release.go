@@ -114,9 +114,13 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 	}
 
 	if input.DeleteGithubRelease {
-		err := s.deleteGithubRelease(ctx, projectID, releaseID, authUserID)
-		if err != nil && !svcerrors.IsGithubReleaseNotFoundError(err) {
-			return fmt.Errorf("deleting github release: %w", err)
+		if err := s.deleteGithubRelease(ctx, projectID, releaseID, authUserID); err != nil {
+			switch {
+			case svcerrors.IsGithubReleaseNotFoundError(err):
+				// If the release does not exist on GitHub, it is not an error.
+			default:
+				return fmt.Errorf("deleting github release: %w", err)
+			}
 		}
 	}
 
