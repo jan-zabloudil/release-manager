@@ -5,6 +5,7 @@ import (
 
 	cryptox "release-manager/pkg/crypto"
 	svcmodel "release-manager/service/model"
+	"release-manager/transport/middleware"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -67,13 +68,9 @@ type releaseService interface {
 	ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID, authUserID uuid.UUID) ([]svcmodel.Deployment, error)
 }
 
-type authClient interface {
-	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
-}
-
 type Handler struct {
 	Mux         *chi.Mux
-	AuthClient  authClient
+	AuthClient  middleware.AuthClient
 	UserSvc     userService
 	ProjectSvc  projectService
 	SettingsSvc settingsService
@@ -81,7 +78,7 @@ type Handler struct {
 }
 
 func NewHandler(
-	authClient authClient,
+	authClient middleware.AuthClient,
 	userSvc userService,
 	projectSvc projectService,
 	settingsSvc settingsService,
