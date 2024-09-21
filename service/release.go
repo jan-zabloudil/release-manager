@@ -114,9 +114,13 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 	}
 
 	if input.DeleteGithubRelease {
-		err := s.deleteGithubRelease(ctx, projectID, releaseID, authUserID)
-		if err != nil && !svcerrors.IsGithubReleaseNotFoundError(err) {
-			return fmt.Errorf("deleting github release: %w", err)
+		if err := s.deleteGithubRelease(ctx, projectID, releaseID, authUserID); err != nil {
+			switch {
+			case svcerrors.IsGithubReleaseNotFoundError(err):
+				// If the release does not exist on GitHub, it is not an error.
+			default:
+				return fmt.Errorf("deleting github release: %w", err)
+			}
 		}
 	}
 
@@ -169,15 +173,6 @@ func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID, 
 	rls, err := s.repo.ListReleasesForProject(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("listing releases: %w", err)
-	}
-	if len(rls) == 0 {
-		exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
-		if err != nil {
-			return nil, fmt.Errorf("checking project existence: %w", err)
-		}
-		if !exists {
-			return nil, svcerrors.NewProjectNotFoundError()
-		}
 	}
 
 	return rls, nil
@@ -327,14 +322,6 @@ func (s *ReleaseService) CreateDeployment(
 		return model.Deployment{}, svcerrors.NewDeploymentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
-	if err != nil {
-		return model.Deployment{}, fmt.Errorf("checking if project exists: %w", err)
-	}
-	if !exists {
-		return model.Deployment{}, svcerrors.NewProjectNotFoundError()
-	}
-
 	rls, err := s.repo.ReadRelease(ctx, projectID, input.ReleaseID)
 	if err != nil {
 		return model.Deployment{}, fmt.Errorf("getting release: %w", err)
@@ -387,16 +374,6 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	dpls, err := s.repo.ListDeploymentsForProject(ctx, params, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("listing deployments: %w", err)
-	}
-
-	if len(dpls) == 0 {
-		exists, err := s.projectGetter.ProjectExists(ctx, projectID, authUserID)
-		if err != nil {
-			return nil, fmt.Errorf("checking if project exists: %w", err)
-		}
-		if !exists {
-			return nil, svcerrors.NewProjectNotFoundError()
-		}
 	}
 
 	return dpls, nil
