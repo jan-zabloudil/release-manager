@@ -83,14 +83,6 @@ func (s *ProjectService) GetProject(ctx context.Context, projectID, authUserID u
 	return s.getProject(ctx, projectID)
 }
 
-func (s *ProjectService) ProjectExists(ctx context.Context, projectID, authUserID uuid.UUID) (bool, error) {
-	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
-		return false, fmt.Errorf("authorizing project member: %w", err)
-	}
-
-	return s.projectExists(ctx, projectID)
-}
-
 func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
 	user, err := s.authGuard.GetAuthorizedUser(ctx, authUserID)
 	if err != nil {

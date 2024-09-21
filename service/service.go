@@ -86,7 +86,6 @@ type userGetter interface {
 
 type projectGetter interface {
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
-	ProjectExists(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (bool, error)
 }
 
 type environmentGetter interface {
