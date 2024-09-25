@@ -54,7 +54,8 @@ type settingsRepository interface {
 
 type releaseRepository interface {
 	CreateRelease(ctx context.Context, r model.Release) error
-	ReadRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
+	ReadRelease(ctx context.Context, releaseID uuid.UUID) (model.Release, error)
+	ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
 	DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
 	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
@@ -128,7 +129,7 @@ func NewService(
 	emailSender emailSender,
 	slackNotifier slackNotifier,
 ) *Service {
-	authSvc := NewAuthorizationService(userRepo, projectRepo)
+	authSvc := NewAuthorizationService(userRepo, projectRepo, releaseRepo)
 	userSvc := NewUserService(authSvc, userRepo)
 	settingsSvc := NewSettingsService(authSvc, settingsRepo)
 	projectSvc := NewProjectService(authSvc, settingsSvc, userSvc, emailSender, githubManager, projectRepo)

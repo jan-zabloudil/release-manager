@@ -18,7 +18,12 @@ func (m *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Rele
 	return args.Error(0)
 }
 
-func (m *ReleaseRepository) ReadRelease(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
+func (m *ReleaseRepository) ReadRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Release, error) {
+	args := m.Called(ctx, releaseID)
+	return args.Get(0).(svcmodel.Release), args.Error(1)
+}
+
+func (m *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
 	args := m.Called(ctx, projectID, releaseID)
 	return args.Get(0).(svcmodel.Release), args.Error(1)
 }
