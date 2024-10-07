@@ -25,8 +25,9 @@ SELECT
     COALESCE(a.attachments, '[]'::json) AS attachments
 FROM releases r
 JOIN projects p
-  ON r.project_id = p.id
+    ON r.project_id = p.id
 LEFT JOIN attachments a
-  ON a.release_id = r.id
+    ON a.release_id = r.id
 WHERE
-    r.id = @releaseID
+    r.id = @releaseID AND
+    r.project_id = @projectID

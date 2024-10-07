@@ -66,10 +66,7 @@ func (r *ReleaseRepository) ReadRelease(ctx context.Context, releaseID uuid.UUID
 }
 
 func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
-	// Project ID is not needed in the query because releaseID is primary key
-	// But it is added for security reasons
-	// To make sure that the release belongs to the project that is passed from the service
-	return r.readRelease(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{
+	return r.readRelease(ctx, r.dbpool, query.ReadReleaseForProject, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
 	})
@@ -92,7 +89,6 @@ func (r *ReleaseRepository) readRelease(ctx context.Context, q querier, readQuer
 
 func (r *ReleaseRepository) UpdateRelease(
 	ctx context.Context,
-	projectID,
 	releaseID uuid.UUID,
 	fn svcmodel.UpdateReleaseFunc,
 ) (rls svcmodel.Release, err error) {
@@ -104,11 +100,7 @@ func (r *ReleaseRepository) UpdateRelease(
 		err = util.FinishTransaction(ctx, tx, err)
 	}()
 
-	// Project ID is not needed in the query because releaseID is primary key
-	// But it is added for security reasons
-	// To make sure that the release belongs to the project that is passed from the service
 	rls, err = r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
-		"projectID": projectID,
 		"releaseID": releaseID,
 	})
 	if err != nil {
@@ -142,12 +134,8 @@ func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwn
 	})
 }
 
-func (r *ReleaseRepository) DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error {
-	// Project ID is not needed in the query because releaseID is primary key
-	// But it is added for security reasons
-	// To make sure that the release belongs to the project that is passed from the service
+func (r *ReleaseRepository) DeleteRelease(ctx context.Context, releaseID uuid.UUID) error {
 	return r.deleteRelease(ctx, query.DeleteRelease, pgx.NamedArgs{
-		"projectID": projectID,
 		"releaseID": releaseID,
 	})
 }
@@ -212,15 +200,11 @@ func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, param
 	return model.ToSvcDeployments(dpls)
 }
 
-func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Deployment, error) {
+func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Deployment, error) {
 	var dpl model.Deployment
 
-	// Project ID is not needed in the query because releaseID is primary key
-	// But it is added for security reasons
-	// To make sure that the release (and therefore deployment) belongs to the project that is passed from the service
 	err := pgxscan.Get(ctx, r.dbpool, &dpl, query.ReadLastDeploymentForRelease, pgx.NamedArgs{
 		"releaseID": releaseID,
-		"projectID": projectID,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

@@ -303,7 +303,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 	}
 }
 
-func TestAuth_AuthorizeReleaseWrite(t *testing.T) {
+func TestAuth_AuthorizeReleaseEditor(t *testing.T) {
 	testCases := []struct {
 		name      string
 		mockSetup func(*repo.UserRepository, *repo.ProjectRepository, *repo.ReleaseRepository)
@@ -384,7 +384,7 @@ func TestAuth_AuthorizeReleaseWrite(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseWrite(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeReleaseEditor(context.Background(), uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -399,7 +399,7 @@ func TestAuth_AuthorizeReleaseWrite(t *testing.T) {
 	}
 }
 
-func TestAuth_AuthorizeReleaseRead(t *testing.T) {
+func TestAuth_AuthorizeReleaseViewer(t *testing.T) {
 	testCases := []struct {
 		name      string
 		mockSetup func(*repo.UserRepository, *repo.ProjectRepository, *repo.ReleaseRepository)
@@ -480,7 +480,7 @@ func TestAuth_AuthorizeReleaseRead(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseRead(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeReleaseViewer(context.Background(), uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)

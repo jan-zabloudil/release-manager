@@ -187,16 +187,15 @@ func TestReleaseService_GetRelease(t *testing.T) {
 		{
 			name: "Existing release",
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				auth.On("AuthorizeReleaseViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				repo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "Non-existing release",
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+				auth.On("AuthorizeReleaseViewer", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -214,7 +213,7 @@ func TestReleaseService_GetRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, releaseRepo)
 
-			_, err := service.GetRelease(context.TODO(), uuid.New(), uuid.New(), uuid.New())
+			_, err := service.GetRelease(context.TODO(), uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -241,8 +240,8 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 				DeleteGithubRelease: false,
 			},
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				releaseRepo.On("DeleteRelease", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("DeleteRelease", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -252,17 +251,17 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 				DeleteGithubRelease: true,
 			},
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					GithubRepo: &model.GithubRepo{
 						OwnerSlug: "owner",
 						RepoSlug:  "repo",
 					},
 				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				github.On("DeleteReleaseByTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				releaseRepo.On("DeleteRelease", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("DeleteRelease", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -272,33 +271,8 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 				DeleteGithubRelease: true,
 			},
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("", svcerrors.NewGithubIntegrationNotEnabledError())
-			},
-			wantErr: true,
-		},
-		{
-			name: "Project not found",
-			deleteReleaseInput: model.DeleteReleaseInput{
-				DeleteGithubRelease: true,
-			},
-			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
-			},
-			wantErr: true,
-		},
-		{
-			name: "Release not found",
-			deleteReleaseInput: model.DeleteReleaseInput{
-				DeleteGithubRelease: true,
-			},
-			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -308,10 +282,10 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 				DeleteGithubRelease: true,
 			},
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 			},
 			wantErr: true,
 		},
@@ -321,17 +295,17 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 				DeleteGithubRelease: true,
 			},
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					GithubRepo: &model.GithubRepo{
 						OwnerSlug: "owner",
 						RepoSlug:  "repo",
 					},
 				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				github.On("DeleteReleaseByTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewGithubReleaseNotFoundError())
-				releaseRepo.On("DeleteRelease", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				releaseRepo.On("DeleteRelease", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -349,7 +323,7 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			err := service.DeleteRelease(context.TODO(), tc.deleteReleaseInput, uuid.New(), uuid.New(), uuid.New())
+			err := service.DeleteRelease(context.TODO(), tc.deleteReleaseInput, uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -437,8 +411,8 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 				ReleaseNotes: pointer.StringPtr("Test release notes"),
 			},
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 			},
 			wantErr: false,
 		},
@@ -449,8 +423,8 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 				ReleaseNotes: pointer.StringPtr("Test release notes"),
 			},
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseUnprocessableError())
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseUnprocessableError())
 			},
 			wantErr: true,
 		},
@@ -458,8 +432,8 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 			name:   "Non existing release",
 			update: model.UpdateReleaseInput{},
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -477,7 +451,7 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, releaseRepo)
 
-			_, err := service.UpdateRelease(context.Background(), tc.update, uuid.New(), uuid.New(), uuid.New())
+			_, err := service.UpdateRelease(context.Background(), tc.update, uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -500,12 +474,12 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 		{
 			name: "Send release notification with deployment",
 			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					SlackChannelID: "channel",
 				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				releaseRepo.On("ReadLastDeploymentForRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Deployment{}, nil)
 				slackClient.On("SendReleaseNotification", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
@@ -514,42 +488,21 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 		{
 			name: "Send release notification without deployment",
 			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					SlackChannelID: "channel",
 				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				releaseRepo.On("ReadLastDeploymentForRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Deployment{}, svcerrors.NewDeploymentNotFoundError())
 				slackClient.On("SendReleaseNotification", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
 		{
-			name: "Project not found",
-			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
-			},
-			wantErr: true,
-		},
-		{
-			name: "Release not found",
-			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
-					SlackChannelID: "channel",
-				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
-			},
-			wantErr: true,
-		},
-		{
 			name: "Slack integration not enabled",
 			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("", svcerrors.NewSlackIntegrationNotEnabledError())
 			},
 			wantErr: true,
@@ -557,12 +510,12 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 		{
 			name: "Project has no slack channel",
 			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, settingsSvc *svc.SettingsService, slackClient *slack.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetSlackToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					SlackChannelID: "",
 				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				releaseRepo.On("ReadLastDeploymentForRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Deployment{}, nil)
 			},
 			wantErr: true,
@@ -581,7 +534,7 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, settingsSvc, slackClient, releaseRepo)
 
-			err := service.SendReleaseNotification(context.TODO(), uuid.New(), uuid.New(), uuid.New())
+			err := service.SendReleaseNotification(context.TODO(), uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -607,15 +560,15 @@ func TestReleaseService_UpsertGithubRelease(t *testing.T) {
 		{
 			name: "Success",
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
 					GithubRepo: &model.GithubRepo{
 						OwnerSlug: "owner",
 						RepoSlug:  "repo",
 					},
 				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				github.On("UpsertRelease", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -623,42 +576,18 @@ func TestReleaseService_UpsertGithubRelease(t *testing.T) {
 		{
 			name: "Github integration not enabled",
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("", svcerrors.NewGithubIntegrationNotEnabledError())
-			},
-			wantErr: true,
-		},
-		{
-			name: "Project not found",
-			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
-			},
-			wantErr: true,
-		},
-		{
-			name: "Release not found",
-			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
-					GithubRepo: &model.GithubRepo{
-						OwnerSlug: "owner",
-						RepoSlug:  "repo",
-					},
-				}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
 		{
 			name: "Github repo not set for project",
 			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
 			},
 			wantErr: true,
 		},
@@ -676,7 +605,7 @@ func TestReleaseService_UpsertGithubRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			err := service.UpsertGithubRelease(context.TODO(), uuid.New(), uuid.New(), uuid.New())
+			err := service.UpsertGithubRelease(context.TODO(), uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -923,7 +852,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
-				projectSvc.On("EnvironmentExists", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+				projectSvc.On("GetEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{
 					{
 						ID: uuid.New(),
@@ -956,7 +885,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				releaseRepo.On("ReadReleaseForProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
-				projectSvc.On("EnvironmentExists", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
+				projectSvc.On("GetEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, svcerrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
 		},

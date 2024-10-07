@@ -272,24 +272,6 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID
 	return nil
 }
 
-func (s *ProjectService) EnvironmentExists(ctx context.Context, projectID, envID, authUserID uuid.UUID) (bool, error) {
-	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
-		return false, fmt.Errorf("authorizing project member: %w", err)
-	}
-
-	_, err := s.repo.ReadEnvironment(ctx, projectID, envID)
-	if err != nil {
-		switch {
-		case svcerrors.IsNotFoundError(err):
-			return false, nil
-		default:
-			return false, fmt.Errorf("reading environment: %w", err)
-		}
-	}
-
-	return true, nil
-}
-
 func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.GitTag, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)

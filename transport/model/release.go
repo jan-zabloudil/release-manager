@@ -25,6 +25,7 @@ type DeleteReleaseInput struct {
 
 type Release struct {
 	ID           uuid.UUID           `json:"id"`
+	ProjectID    uuid.UUID           `json:"project_id"`
 	ReleaseTitle string              `json:"release_title"`
 	ReleaseNotes string              `json:"release_notes"`
 	GitTagName   string              `json:"git_tag_name"`
@@ -64,6 +65,7 @@ func ToSvcDeleteReleaseInput(r DeleteReleaseInput) svcmodel.DeleteReleaseInput {
 func ToRelease(r svcmodel.Release) Release {
 	return Release{
 		ID:           r.ID,
+		ProjectID:    r.ProjectID,
 		ReleaseTitle: r.ReleaseTitle,
 		ReleaseNotes: r.ReleaseNotes,
 		GitTagName:   r.GitTagName,

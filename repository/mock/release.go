@@ -28,8 +28,8 @@ func (m *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID
 	return args.Get(0).(svcmodel.Release), args.Error(1)
 }
 
-func (m *ReleaseRepository) DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error {
-	args := m.Called(ctx, projectID, releaseID)
+func (m *ReleaseRepository) DeleteRelease(ctx context.Context, releaseID uuid.UUID) error {
+	args := m.Called(ctx, releaseID)
 	return args.Error(0)
 }
 
@@ -38,8 +38,8 @@ func (m *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectI
 	return args.Get(0).([]svcmodel.Release), args.Error(1)
 }
 
-func (m *ReleaseRepository) UpdateRelease(ctx context.Context, projectID, releaseID uuid.UUID, fn svcmodel.UpdateReleaseFunc) (svcmodel.Release, error) {
-	args := m.Called(ctx, projectID, releaseID, fn)
+func (m *ReleaseRepository) UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn svcmodel.UpdateReleaseFunc) (svcmodel.Release, error) {
+	args := m.Called(ctx, releaseID, fn)
 	return args.Get(0).(svcmodel.Release), args.Error(1)
 }
 
@@ -53,7 +53,7 @@ func (m *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, param
 	return args.Get(0).([]svcmodel.Deployment), args.Error(1)
 }
 
-func (m *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Deployment, error) {
+func (m *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Deployment, error) {
 	args := m.Called(ctx, releaseID)
 	return args.Get(0).(svcmodel.Deployment), args.Error(1)
 }
