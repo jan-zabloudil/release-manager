@@ -13,12 +13,14 @@ import (
 type AuthorizationService struct {
 	userRepo    userRepository
 	projectRepo projectRepository
+	releaseRepo releaseRepository
 }
 
-func NewAuthorizationService(userRepo userRepository, projectRepo projectRepository) *AuthorizationService {
+func NewAuthorizationService(userRepo userRepository, projectRepo projectRepository, releaseRepo releaseRepository) *AuthorizationService {
 	return &AuthorizationService{
 		userRepo:    userRepo,
 		projectRepo: projectRepo,
+		releaseRepo: releaseRepo,
 	}
 }
 
@@ -41,6 +43,33 @@ func (s *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, p
 
 func (s *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, projectID, userID uuid.UUID) error {
 	return s.authorizeProjectRole(ctx, projectID, userID, model.ProjectRoleViewer)
+}
+
+func (s *AuthorizationService) AuthorizeReleaseWrite(ctx context.Context, releaseID, userID uuid.UUID) error {
+	// If the user has editor role within release's project, it is enough to authorize write action.
+	return s.authorizeProjectRoleByRelease(ctx, releaseID, userID, model.ProjectRoleEditor)
+}
+
+func (s *AuthorizationService) AuthorizeReleaseRead(ctx context.Context, releaseID, userID uuid.UUID) error {
+	// If the user has viewer role within release's project, it is enough to authorize read action.
+	return s.authorizeProjectRoleByRelease(ctx, releaseID, userID, model.ProjectRoleViewer)
+}
+
+// authorizeProjectRoleByRelease checks if the user has the required or higher role in the project of the release.
+// the function is used to authorize actions in release service where the project ID is not directly provided.
+func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context, releaseID uuid.UUID, userID uuid.UUID, role model.ProjectRole) error {
+	// Approach of reading the release and then calling authorizeProjectRole was chosen rather than
+	// having repo function ReadProjectMemberByReleaseID, because:
+	//
+	// 1. Project repo should not access release.
+	// 2. Reading release in separate query is very cheap operation.
+	// 3. authorizeProjectRole function can be reused.
+	rls, err := s.releaseRepo.ReadRelease(ctx, releaseID)
+	if err != nil {
+		return fmt.Errorf("reading release: %w", err)
+	}
+
+	return s.authorizeProjectRole(ctx, rls.ProjectID, userID, role)
 }
 
 // authorizeProjectRole checks if the user has the required or higher role in the project.

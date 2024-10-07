@@ -98,7 +98,7 @@ func (s *ReleaseService) GetRelease(ctx context.Context, projectID, releaseID, a
 		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
 	if err != nil {
 		return model.Release{}, fmt.Errorf("reading release: %w", err)
 	}
@@ -193,7 +193,7 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 		return fmt.Errorf("getting project: %w", err)
 	}
 
-	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
 	}
@@ -229,7 +229,7 @@ func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, projectID, rel
 		return fmt.Errorf("getting project: %w", err)
 	}
 
-	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
 	}
@@ -256,7 +256,7 @@ func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, rel
 		return fmt.Errorf("getting project: %w", err)
 	}
 
-	rls, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
 	}
@@ -322,7 +322,7 @@ func (s *ReleaseService) CreateDeployment(
 		return model.Deployment{}, svcerrors.NewDeploymentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	rls, err := s.repo.ReadRelease(ctx, projectID, input.ReleaseID)
+	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, input.ReleaseID)
 	if err != nil {
 		return model.Deployment{}, fmt.Errorf("getting release: %w", err)
 	}
@@ -396,7 +396,7 @@ func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, projec
 }
 
 func (s *ReleaseService) releaseExists(ctx context.Context, projectID, releaseID uuid.UUID) (bool, error) {
-	_, err := s.repo.ReadRelease(ctx, projectID, releaseID)
+	_, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
 	if err != nil {
 		switch {
 		case svcerrors.IsNotFoundError(err):

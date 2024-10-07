@@ -61,7 +61,11 @@ func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Rele
 	return nil
 }
 
-func (r *ReleaseRepository) ReadRelease(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
+func (r *ReleaseRepository) ReadRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Release, error) {
+	return r.readRelease(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{"releaseID": releaseID})
+}
+
+func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
 	// Project ID is not needed in the query because releaseID is primary key
 	// But it is added for security reasons
 	// To make sure that the release belongs to the project that is passed from the service

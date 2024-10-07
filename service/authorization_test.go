@@ -49,7 +49,8 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			userRepo := new(repo.UserRepository)
 			projectRepo := new(repo.ProjectRepository)
-			service := NewAuthorizationService(userRepo, projectRepo)
+			releaseRepo := new(repo.ReleaseRepository)
+			service := NewAuthorizationService(userRepo, projectRepo, releaseRepo)
 
 			tc.mockSetup(userRepo)
 
@@ -102,7 +103,8 @@ func TestAuthService_AuthorizeUserRoleUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			userRepo := new(repo.UserRepository)
 			projectRepo := new(repo.ProjectRepository)
-			service := NewAuthorizationService(userRepo, projectRepo)
+			releaseRepo := new(repo.ReleaseRepository)
+			service := NewAuthorizationService(userRepo, projectRepo, releaseRepo)
 
 			tc.mockSetup(userRepo)
 
@@ -191,7 +193,8 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			userRepo := new(repo.UserRepository)
 			projectRepo := new(repo.ProjectRepository)
-			service := NewAuthorizationService(userRepo, projectRepo)
+			releaseRepo := new(repo.ReleaseRepository)
+			service := NewAuthorizationService(userRepo, projectRepo, releaseRepo)
 
 			tc.mockSetup(userRepo, projectRepo)
 
@@ -281,7 +284,8 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			userRepo := new(repo.UserRepository)
 			projectRepo := new(repo.ProjectRepository)
-			service := NewAuthorizationService(userRepo, projectRepo)
+			releaseRepo := new(repo.ReleaseRepository)
+			service := NewAuthorizationService(userRepo, projectRepo, releaseRepo)
 
 			tc.mockSetup(userRepo, projectRepo)
 
@@ -295,6 +299,198 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 
 			projectRepo.AssertExpectations(t)
 			userRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestAuth_AuthorizeReleaseWrite(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*repo.UserRepository, *repo.ProjectRepository, *repo.ReleaseRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Project member editor",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleEditor,
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project member viewer",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+				}, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name: "User not project member",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleUser,
+				}, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name: "User not project member (but admin)",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleAdmin,
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project viewer (but admin)",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+					User: model.User{
+						Role: model.UserRoleAdmin,
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Release not exists",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			userRepo := new(repo.UserRepository)
+			projectRepo := new(repo.ProjectRepository)
+			releaseRepo := new(repo.ReleaseRepository)
+			service := NewAuthorizationService(userRepo, projectRepo, releaseRepo)
+
+			tc.mockSetup(userRepo, projectRepo, releaseRepo)
+
+			err := service.AuthorizeReleaseWrite(context.Background(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			projectRepo.AssertExpectations(t)
+			userRepo.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestAuth_AuthorizeReleaseRead(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*repo.UserRepository, *repo.ProjectRepository, *repo.ReleaseRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Project member editor",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleEditor,
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project member viewer",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "User not project member",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleUser,
+				}, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name: "User not project member (but admin)",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+					Role: model.UserRoleAdmin,
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Project viewer (but admin)",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{
+					ProjectRole: model.ProjectRoleViewer,
+					User: model.User{
+						Role: model.UserRoleAdmin,
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Release not exists",
+			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository, releaseRepo *repo.ReleaseRepository) {
+				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			userRepo := new(repo.UserRepository)
+			projectRepo := new(repo.ProjectRepository)
+			releaseRepo := new(repo.ReleaseRepository)
+			service := NewAuthorizationService(userRepo, projectRepo, releaseRepo)
+
+			tc.mockSetup(userRepo, projectRepo, releaseRepo)
+
+			err := service.AuthorizeReleaseRead(context.Background(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			projectRepo.AssertExpectations(t)
+			userRepo.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
 		})
 	}
 }
