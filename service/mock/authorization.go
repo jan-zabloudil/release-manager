@@ -37,3 +37,13 @@ func (m *AuthorizationService) GetAuthorizedUser(ctx context.Context, userID uui
 	args := m.Called(ctx, userID)
 	return args.Get(0).(model.User), args.Error(1)
 }
+
+func (m *AuthorizationService) AuthorizeReleaseViewer(ctx context.Context, releaseID, userID uuid.UUID) error {
+	args := m.Called(ctx, releaseID, userID)
+	return args.Error(0)
+}
+
+func (m *AuthorizationService) AuthorizeReleaseEditor(ctx context.Context, releaseID, userID uuid.UUID) error {
+	args := m.Called(ctx, releaseID, userID)
+	return args.Error(0)
+}

@@ -93,12 +93,12 @@ func (s *ReleaseService) CreateRelease(
 	return rls, nil
 }
 
-func (s *ReleaseService) GetRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) (model.Release, error) {
-	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
-		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
+func (s *ReleaseService) GetRelease(ctx context.Context, releaseID, authUserID uuid.UUID) (model.Release, error) {
+	if err := s.authGuard.AuthorizeReleaseViewer(ctx, releaseID, authUserID); err != nil {
+		return model.Release{}, fmt.Errorf("authorizing release viewer: %w", err)
 	}
 
-	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadRelease(ctx, releaseID)
 	if err != nil {
 		return model.Release{}, fmt.Errorf("reading release: %w", err)
 	}
@@ -108,13 +108,13 @@ func (s *ReleaseService) GetRelease(ctx context.Context, projectID, releaseID, a
 
 // DeleteRelease deletes a release. If deleteGithubRelease is true, it will also delete associacted GitHub release (if exists).
 // Deleting GitHub release is idempotent, so if the release does not exist on GitHub, it will not return an error.
-func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteReleaseInput, projectID, releaseID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return fmt.Errorf("authorizing project member: %w", err)
+func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteReleaseInput, releaseID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
+		return fmt.Errorf("authorizing release editor: %w", err)
 	}
 
 	if input.DeleteGithubRelease {
-		if err := s.deleteGithubRelease(ctx, projectID, releaseID, authUserID); err != nil {
+		if err := s.deleteGithubRelease(ctx, releaseID, authUserID); err != nil {
 			switch {
 			case svcerrors.IsGithubReleaseNotFoundError(err):
 				// If the release does not exist on GitHub, it is not an error.
@@ -124,7 +124,7 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 		}
 	}
 
-	if err := s.repo.DeleteRelease(ctx, projectID, releaseID); err != nil {
+	if err := s.repo.DeleteRelease(ctx, releaseID); err != nil {
 		return fmt.Errorf("deleting release: %w", err)
 	}
 
@@ -143,15 +143,14 @@ func (s *ReleaseService) DeleteReleaseByGitTag(ctx context.Context, githubOwnerS
 func (s *ReleaseService) UpdateRelease(
 	ctx context.Context,
 	input model.UpdateReleaseInput,
-	projectID,
 	releaseID,
 	authUserID uuid.UUID,
 ) (model.Release, error) {
-	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
+	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
+		return model.Release{}, fmt.Errorf("authorizing release editor: %w", err)
 	}
 
-	rls, err := s.repo.UpdateRelease(ctx, projectID, releaseID, func(rls model.Release) (model.Release, error) {
+	rls, err := s.repo.UpdateRelease(ctx, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
 			return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
@@ -178,9 +177,9 @@ func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID, 
 	return rls, nil
 }
 
-func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return fmt.Errorf("authorizing project member: %w", err)
+func (s *ReleaseService) SendReleaseNotification(ctx context.Context, releaseID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
+		return fmt.Errorf("authorizing release viewer: %w", err)
 	}
 
 	tkn, err := s.settingsGetter.GetSlackToken(ctx)
@@ -188,17 +187,17 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 		return fmt.Errorf("getting slack token: %w", err)
 	}
 
-	p, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
-	if err != nil {
-		return fmt.Errorf("getting project: %w", err)
-	}
-
-	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadRelease(ctx, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
 	}
 
-	dpl, err := s.getLastDeploymentForRelease(ctx, projectID, releaseID)
+	p, err := s.projectGetter.GetProject(ctx, rls.ProjectID, authUserID)
+	if err != nil {
+		return fmt.Errorf("getting project: %w", err)
+	}
+
+	dpl, err := s.getLastDeploymentForRelease(ctx, releaseID)
 	if err != nil {
 		return fmt.Errorf("getting last deployment for release: %w", err)
 	}
@@ -214,9 +213,9 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, projectID,
 	return nil
 }
 
-func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error {
-	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return fmt.Errorf("authorizing project member: %w", err)
+func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID, authUserID uuid.UUID) error {
+	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
+		return fmt.Errorf("authorizing release editor: %w", err)
 	}
 
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
@@ -224,14 +223,14 @@ func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, projectID, rel
 		return fmt.Errorf("getting github token: %w", err)
 	}
 
-	p, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
-	if err != nil {
-		return fmt.Errorf("getting project: %w", err)
-	}
-
-	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
+	rls, err := s.repo.ReadRelease(ctx, releaseID)
 	if err != nil {
 		return fmt.Errorf("reading release: %w", err)
+	}
+
+	p, err := s.projectGetter.GetProject(ctx, rls.ProjectID, authUserID)
+	if err != nil {
+		return fmt.Errorf("getting project: %w", err)
 	}
 
 	if !p.IsGithubRepoSet() {
@@ -240,33 +239,6 @@ func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, projectID, rel
 
 	if err := s.githubManager.UpsertRelease(ctx, tkn, *p.GithubRepo, rls); err != nil {
 		return fmt.Errorf("upserting github release: %w", err)
-	}
-
-	return nil
-}
-
-func (s *ReleaseService) deleteGithubRelease(ctx context.Context, projectID, releaseID, authUserID uuid.UUID) error {
-	tkn, err := s.settingsGetter.GetGithubToken(ctx)
-	if err != nil {
-		return fmt.Errorf("getting github token: %w", err)
-	}
-
-	p, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
-	if err != nil {
-		return fmt.Errorf("getting project: %w", err)
-	}
-
-	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
-	if err != nil {
-		return fmt.Errorf("reading release: %w", err)
-	}
-
-	if !p.IsGithubRepoSet() {
-		return svcerrors.NewGithubRepoNotSetForProjectError()
-	}
-
-	if err := s.githubManager.DeleteReleaseByTag(ctx, tkn, *p.GithubRepo, rls.GitTagName); err != nil {
-		return fmt.Errorf("deleting github release: %w", err)
 	}
 
 	return nil
@@ -322,6 +294,7 @@ func (s *ReleaseService) CreateDeployment(
 		return model.Deployment{}, svcerrors.NewDeploymentUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
+	// Important to read release for project to check if the release exists within the given project.
 	rls, err := s.repo.ReadReleaseForProject(ctx, projectID, input.ReleaseID)
 	if err != nil {
 		return model.Deployment{}, fmt.Errorf("getting release: %w", err)
@@ -351,23 +324,17 @@ func (s *ReleaseService) ListDeploymentsForProject(
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
 
+	// If releaseID is provided, need to check if the release exists within given project.
 	if params.ReleaseID != nil {
-		exists, err := s.releaseExists(ctx, projectID, *params.ReleaseID)
-		if err != nil {
-			return nil, fmt.Errorf("checking if release exists: %w", err)
-		}
-		if !exists {
-			return nil, svcerrors.NewReleaseNotFoundError()
+		if _, err := s.repo.ReadReleaseForProject(ctx, projectID, *params.ReleaseID); err != nil {
+			return nil, fmt.Errorf("checking if release exists for project: %w", err)
 		}
 	}
 
+	// If environmentID is provided, need to check if the environment exists within given project.
 	if params.EnvironmentID != nil {
-		exists, err := s.environmentGetter.EnvironmentExists(ctx, projectID, *params.EnvironmentID, authUserID)
-		if err != nil {
-			return nil, fmt.Errorf("checking if environment exists: %w", err)
-		}
-		if !exists {
-			return nil, svcerrors.NewEnvironmentNotFoundError()
+		if _, err := s.environmentGetter.GetEnvironment(ctx, projectID, *params.EnvironmentID, authUserID); err != nil {
+			return nil, fmt.Errorf("checking if environment exists for project: %w", err)
 		}
 	}
 
@@ -379,10 +346,37 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	return dpls, nil
 }
 
+func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID, authUserID uuid.UUID) error {
+	tkn, err := s.settingsGetter.GetGithubToken(ctx)
+	if err != nil {
+		return fmt.Errorf("getting github token: %w", err)
+	}
+
+	rls, err := s.repo.ReadRelease(ctx, releaseID)
+	if err != nil {
+		return fmt.Errorf("reading release: %w", err)
+	}
+
+	p, err := s.projectGetter.GetProject(ctx, rls.ProjectID, authUserID)
+	if err != nil {
+		return fmt.Errorf("getting project: %w", err)
+	}
+
+	if !p.IsGithubRepoSet() {
+		return svcerrors.NewGithubRepoNotSetForProjectError()
+	}
+
+	if err := s.githubManager.DeleteReleaseByTag(ctx, tkn, *p.GithubRepo, rls.GitTagName); err != nil {
+		return fmt.Errorf("deleting github release: %w", err)
+	}
+
+	return nil
+}
+
 // getLastDeploymentForRelease returns pointer to the last deployment for the release,
 // or nil if no deployment exists for the release.
-func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (*model.Deployment, error) {
-	dpl, err := s.repo.ReadLastDeploymentForRelease(ctx, projectID, releaseID)
+func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (*model.Deployment, error) {
+	dpl, err := s.repo.ReadLastDeploymentForRelease(ctx, releaseID)
 	if err != nil {
 		switch {
 		case svcerrors.IsNotFoundError(err):
@@ -393,18 +387,4 @@ func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, projec
 	}
 
 	return &dpl, nil
-}
-
-func (s *ReleaseService) releaseExists(ctx context.Context, projectID, releaseID uuid.UUID) (bool, error) {
-	_, err := s.repo.ReadReleaseForProject(ctx, projectID, releaseID)
-	if err != nil {
-		switch {
-		case svcerrors.IsNotFoundError(err):
-			return false, nil
-		default:
-			return false, fmt.Errorf("checking if release exists: %w", err)
-		}
-	}
-
-	return true, nil
 }

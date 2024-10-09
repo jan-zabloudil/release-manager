@@ -56,14 +56,14 @@ type releaseRepository interface {
 	CreateRelease(ctx context.Context, r model.Release) error
 	ReadRelease(ctx context.Context, releaseID uuid.UUID) (model.Release, error)
 	ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
-	DeleteRelease(ctx context.Context, projectID, releaseID uuid.UUID) error
+	DeleteRelease(ctx context.Context, releaseID uuid.UUID) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
 	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
-	UpdateRelease(ctx context.Context, projectID, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
+	UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
 	ListDeploymentsForProject(ctx context.Context, params model.DeploymentFilterParams, projectID uuid.UUID) ([]model.Deployment, error)
-	ReadLastDeploymentForRelease(ctx context.Context, projectID, releaseID uuid.UUID) (model.Deployment, error)
+	ReadLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (model.Deployment, error)
 }
 
 type authGuard interface {
@@ -72,6 +72,8 @@ type authGuard interface {
 	AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error
 	AuthorizeProjectRoleEditor(ctx context.Context, projectID, userID uuid.UUID) error
 	AuthorizeProjectRoleViewer(ctx context.Context, projectID, userID uuid.UUID) error
+	AuthorizeReleaseEditor(ctx context.Context, releaseID, userID uuid.UUID) error
+	AuthorizeReleaseViewer(ctx context.Context, releaseID, userID uuid.UUID) error
 }
 
 type settingsGetter interface {
@@ -91,7 +93,6 @@ type projectGetter interface {
 
 type environmentGetter interface {
 	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error)
-	EnvironmentExists(ctx context.Context, projectID, envID, authUserID uuid.UUID) (bool, error)
 }
 
 type githubManager interface {

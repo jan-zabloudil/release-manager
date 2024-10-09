@@ -32,7 +32,6 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 	rls, err := h.ReleaseSvc.GetRelease(
 		r.Context(),
-		util.ContextProjectID(r),
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),
 	)
@@ -54,7 +53,6 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 	if err := h.ReleaseSvc.DeleteRelease(
 		r.Context(),
 		model.ToSvcDeleteReleaseInput(input),
-		util.ContextProjectID(r),
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),
 	); err != nil {
@@ -89,7 +87,6 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 	rls, err := h.ReleaseSvc.UpdateRelease(
 		r.Context(),
 		model.ToSvcUpdateReleaseInput(input),
-		util.ContextProjectID(r),
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),
 	)
@@ -104,7 +101,6 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request) {
 	if err := h.ReleaseSvc.SendReleaseNotification(
 		r.Context(),
-		util.ContextProjectID(r),
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),
 	); err != nil {
@@ -118,7 +114,6 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 	if err := h.ReleaseSvc.UpsertGithubRelease(
 		r.Context(),
-		util.ContextProjectID(r),
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),
 	); err != nil {

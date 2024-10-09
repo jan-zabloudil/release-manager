@@ -702,7 +702,7 @@ paths:
               $ref: '#/components/responses/UnauthorizedErrorResponse'
         '404':
               $ref: '#/components/responses/NotFoundErrorResponse'
-  /projects/{project-id}/releases/{release-id}:
+  /releases/{release-id}:
     get:
       summary: 'Get release by ID'
       security:
@@ -710,7 +710,6 @@ paths:
       tags:
         - Releases
       parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/ReleaseIdParam'
       responses:
         '200':
@@ -775,7 +774,7 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
-  /projects/{project-id}/releases/{release-id}/slack-notifications:
+  /releases/{release-id}/slack-notifications:
     post:
       summary: 'Send release notification to Slack'
       security:
@@ -783,7 +782,6 @@ paths:
       tags:
         - Releases
       parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/ReleaseIdParam'
       responses:
         '204':
@@ -794,7 +792,7 @@ paths:
             $ref: '#/components/responses/ForbiddenErrorResponse'
         '404':
             $ref: '#/components/responses/NotFoundErrorResponse'
-  /projects/{project-id}/releases/{release-id}/github-release:
+  /releases/{release-id}/github-release:
     put:
       summary: 'Upsert GitHub release'
       security:
@@ -802,7 +800,6 @@ paths:
       tags:
         - Releases
       parameters:
-        - $ref: '#/components/parameters/ProjectIdParam'
         - $ref: '#/components/parameters/ReleaseIdParam'
       responses:
         '204':
@@ -1322,6 +1319,9 @@ components:
       type: object
       properties:
         id:
+          type: string
+          format: uuid
+        project_id:
           type: string
           format: uuid
         release_title:

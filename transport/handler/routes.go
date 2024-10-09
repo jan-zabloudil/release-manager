@@ -72,14 +72,6 @@ func (h *Handler) setupRoutes() {
 			r.Route("/releases", func(r chi.Router) {
 				r.Get("/", middleware.RequireAuthUser(h.listReleases))
 				r.Post("/", middleware.RequireAuthUser(h.createRelease))
-				r.Route("/{release_id}", func(r chi.Router) {
-					r.Use(middleware.SetResourceUUIDToContext("release_id", util.ContextSetReleaseID))
-					r.Get("/", middleware.RequireAuthUser(h.getRelease))
-					r.Patch("/", middleware.RequireAuthUser(h.updateRelease))
-					r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))
-					r.Post("/slack-notifications", middleware.RequireAuthUser(h.sendReleaseNotification))
-					r.Put("/github-release", middleware.RequireAuthUser(h.upsertGithubRelease))
-				})
 			})
 			r.Route("/deployments", func(r chi.Router) {
 				r.Post("/", middleware.RequireAuthUser(h.createDeployment))
@@ -92,6 +84,15 @@ func (h *Handler) setupRoutes() {
 		r.Use(middleware.HandleInvitationToken)
 		r.Get("/accept", h.acceptInvitation)
 		r.Get("/reject", h.rejectInvitation)
+	})
+
+	h.Mux.Route("/releases/{release_id}", func(r chi.Router) {
+		r.Use(middleware.SetResourceUUIDToContext("release_id", util.ContextSetReleaseID))
+		r.Get("/", middleware.RequireAuthUser(h.getRelease))
+		r.Patch("/", middleware.RequireAuthUser(h.updateRelease))
+		r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))
+		r.Post("/slack-notifications", middleware.RequireAuthUser(h.sendReleaseNotification))
+		r.Put("/github-release", middleware.RequireAuthUser(h.upsertGithubRelease))
 	})
 
 	h.Mux.Route("/settings", func(r chi.Router) {

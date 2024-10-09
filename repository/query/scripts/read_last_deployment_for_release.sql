@@ -20,7 +20,6 @@ JOIN releases r
 JOIN environments e
     ON d.environment_id = e.id
 WHERE
-    r.id = @releaseID AND
-    r.project_id = @projectID
+    r.id = @releaseID
 ORDER BY d.deployed_at DESC
 LIMIT 1
