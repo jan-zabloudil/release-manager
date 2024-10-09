@@ -32,6 +32,11 @@ func (h *Handler) setupRoutes() {
 	h.Mux.Route("/projects", func(r chi.Router) {
 		r.Post("/", middleware.RequireAuthUser(h.createProject))
 		r.Get("/", middleware.RequireAuthUser(h.listProjects))
+		r.Route("/invitations", func(r chi.Router) {
+			r.Use(middleware.HandleInvitationToken)
+			r.Get("/accept", h.acceptInvitation)
+			r.Get("/reject", h.rejectInvitation)
+		})
 		r.Route("/{id}", func(r chi.Router) {
 			r.Use(middleware.SetResourceUUIDToContext("id", util.ContextSetProjectID))
 			r.Get("/", middleware.RequireAuthUser(h.getProject))
@@ -78,12 +83,6 @@ func (h *Handler) setupRoutes() {
 				r.Get("/", middleware.RequireAuthUser(h.listDeploymentsForProject))
 			})
 		})
-	})
-
-	h.Mux.Route("/projects/invitations", func(r chi.Router) {
-		r.Use(middleware.HandleInvitationToken)
-		r.Get("/accept", h.acceptInvitation)
-		r.Get("/reject", h.rejectInvitation)
 	})
 
 	h.Mux.Route("/releases/{release_id}", func(r chi.Router) {
