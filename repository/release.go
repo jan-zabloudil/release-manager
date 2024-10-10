@@ -92,35 +92,33 @@ func (r *ReleaseRepository) UpdateRelease(
 	releaseID uuid.UUID,
 	fn svcmodel.UpdateReleaseFunc,
 ) (rls svcmodel.Release, err error) {
-	tx, err := r.dbpool.Begin(ctx)
-	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("beginning transaction: %w", err)
-	}
-	defer func() {
-		err = util.FinishTransaction(ctx, tx, err)
-	}()
+	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		rls, err = r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
+			"releaseID": releaseID,
+		})
+		if err != nil {
+			return fmt.Errorf("reading release: %w", err)
+		}
 
-	rls, err = r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
-		"releaseID": releaseID,
+		rls, err = fn(rls)
+		if err != nil {
+			return err
+		}
+
+		if _, err = tx.Exec(ctx, query.UpdateRelease, pgx.NamedArgs{
+			"releaseID":    rls.ID,
+			"releaseTitle": rls.ReleaseTitle,
+			"releaseNotes": rls.ReleaseNotes,
+			"updatedAt":    rls.UpdatedAt,
+		}); err != nil {
+			return fmt.Errorf("updating release: %w", err)
+		}
+
+		return nil
 	})
-	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("reading release: %w", err)
-	}
 
-	// Update the release
-	rls, err = fn(rls)
 	if err != nil {
 		return svcmodel.Release{}, err
-	}
-
-	_, err = tx.Exec(ctx, query.UpdateRelease, pgx.NamedArgs{
-		"releaseID":    rls.ID,
-		"releaseTitle": rls.ReleaseTitle,
-		"releaseNotes": rls.ReleaseNotes,
-		"updatedAt":    rls.UpdatedAt,
-	})
-	if err != nil {
-		return svcmodel.Release{}, fmt.Errorf("updating release: %w", err)
 	}
 
 	return rls, nil
