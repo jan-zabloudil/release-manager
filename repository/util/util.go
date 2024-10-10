@@ -7,25 +7,25 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
 	postgresUniqueConstraintErrorCode = "23505"
 )
 
-func FinishTransaction(ctx context.Context, tx pgx.Tx, err error) error {
+func RunTransaction(ctx context.Context, dbpool *pgxpool.Pool, fn func(tx pgx.Tx) error) error {
+	tx, err := dbpool.Begin(ctx)
 	if err != nil {
-		if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
-			return fmt.Errorf("doing transction rollback: %w", rollbackErr)
-		}
-
-		return err
+		return fmt.Errorf("beginning transaction: %w", err)
 	}
-	if err = tx.Commit(ctx); err != nil {
-		return fmt.Errorf("committing transaction: %w", err)
-	}
+	defer func() {
+		err = finishTransaction(ctx, tx, err)
+	}()
 
-	return nil
+	err = fn(tx)
+
+	return err
 }
 
 // IsUniqueConstraintViolation checks if the error is a unique constraint violation error and that violation happened on the specified constraint
@@ -38,4 +38,19 @@ func IsUniqueConstraintViolation(err error, constraintName string) bool {
 	}
 
 	return false
+}
+
+func finishTransaction(ctx context.Context, tx pgx.Tx, err error) error {
+	if err != nil {
+		if rollBackErr := tx.Rollback(ctx); rollBackErr != nil {
+			return fmt.Errorf("doing transaction rollback: %w, original error that caused rollback: %w", rollBackErr, err)
+		}
+
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("committing transaction: %w", err)
+	}
+
+	return nil
 }
