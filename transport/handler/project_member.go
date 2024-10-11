@@ -41,17 +41,16 @@ func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m, err := h.ProjectSvc.UpdateMemberRole(
+	if err := h.ProjectSvc.UpdateMemberRole(
 		r.Context(),
 		svcmodel.ProjectRole(input.ProjectRole),
 		util.ContextProjectID(r),
 		util.ContextUserID(r),
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
-	util.WriteJSONResponse(w, http.StatusOK, model.ToProjectMember(m))
+	w.WriteHeader(http.StatusNoContent)
 }

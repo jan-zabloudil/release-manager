@@ -467,9 +467,9 @@ func (r *ProjectRepository) UpdateMemberRole(
 	projectID,
 	userID uuid.UUID,
 	fn svcmodel.UpdateProjectMemberFunc,
-) (m svcmodel.ProjectMember, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		m, err = r.readMember(ctx, tx, query.AppendForUpdate(query.ReadMember), pgx.NamedArgs{
+) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		m, err := r.readMember(ctx, tx, query.AppendForUpdate(query.ReadMember), pgx.NamedArgs{
 			"projectID": projectID,
 			"userID":    userID,
 		})
@@ -482,7 +482,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 			return err
 		}
 
-		if _, err = tx.Exec(ctx, query.UpdateMember, pgx.NamedArgs{
+		if _, err := tx.Exec(ctx, query.UpdateMember, pgx.NamedArgs{
 			"projectID":   m.ProjectID,
 			"userID":      m.User.ID,
 			"projectRole": m.ProjectRole,
@@ -493,12 +493,6 @@ func (r *ProjectRepository) UpdateMemberRole(
 
 		return err
 	})
-
-	if err != nil {
-		return svcmodel.ProjectMember{}, err
-	}
-
-	return m, nil
 }
 
 func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {

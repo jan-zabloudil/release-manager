@@ -487,23 +487,22 @@ func (s *ProjectService) UpdateMemberRole(
 	projectID,
 	userID,
 	authUserID uuid.UUID,
-) (model.ProjectMember, error) {
+) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.ProjectMember{}, fmt.Errorf("authorizing user role: %w", err)
+		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	m, err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
+	if err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
 		if err := m.UpdateProjectRole(newRole); err != nil {
 			return model.ProjectMember{}, svcerrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return m, nil
-	})
-	if err != nil {
-		return model.ProjectMember{}, fmt.Errorf("updating member role: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating member role: %w", err)
 	}
 
-	return m, nil
+	return nil
 }
 
 func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (model.Project, error) {

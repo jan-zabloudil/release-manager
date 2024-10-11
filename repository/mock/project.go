@@ -129,7 +129,7 @@ func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn svcmodel.UpdateProjectMemberFunc) (svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn svcmodel.UpdateProjectMemberFunc) error {
 	args := m.Called(ctx, projectID, userID, fn)
-	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
+	return args.Error(0)
 }
