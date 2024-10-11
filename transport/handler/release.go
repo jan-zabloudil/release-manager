@@ -84,18 +84,17 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rls, err := h.ReleaseSvc.UpdateRelease(
+	if err := h.ReleaseSvc.UpdateRelease(
 		r.Context(),
 		model.ToSvcUpdateReleaseInput(input),
 		util.ContextReleaseID(r),
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
-	util.WriteJSONResponse(w, http.StatusOK, model.ToRelease(rls))
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request) {

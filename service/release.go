@@ -145,23 +145,22 @@ func (s *ReleaseService) UpdateRelease(
 	input model.UpdateReleaseInput,
 	releaseID,
 	authUserID uuid.UUID,
-) (model.Release, error) {
+) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
-		return model.Release{}, fmt.Errorf("authorizing release editor: %w", err)
+		return fmt.Errorf("authorizing release editor: %w", err)
 	}
 
-	rls, err := s.repo.UpdateRelease(ctx, releaseID, func(rls model.Release) (model.Release, error) {
+	if err := s.repo.UpdateRelease(ctx, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
 			return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return rls, nil
-	})
-	if err != nil {
-		return model.Release{}, fmt.Errorf("updating release: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating release: %w", err)
 	}
 
-	return rls, nil
+	return nil
 }
 
 func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Release, error) {

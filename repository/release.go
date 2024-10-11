@@ -91,9 +91,9 @@ func (r *ReleaseRepository) UpdateRelease(
 	ctx context.Context,
 	releaseID uuid.UUID,
 	fn svcmodel.UpdateReleaseFunc,
-) (rls svcmodel.Release, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		rls, err = r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
+) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		rls, err := r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
 			"releaseID": releaseID,
 		})
 		if err != nil {
@@ -116,12 +116,6 @@ func (r *ReleaseRepository) UpdateRelease(
 
 		return nil
 	})
-
-	if err != nil {
-		return svcmodel.Release{}, err
-	}
-
-	return rls, nil
 }
 
 func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {

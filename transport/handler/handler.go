@@ -58,7 +58,7 @@ type releaseService interface {
 	GetRelease(ctx context.Context, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
 	DeleteRelease(ctx context.Context, input svcmodel.DeleteReleaseInput, releaseID, authUserID uuid.UUID) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
-	UpdateRelease(ctx context.Context, input svcmodel.UpdateReleaseInput, releaseID, authUserID uuid.UUID) (svcmodel.Release, error)
+	UpdateRelease(ctx context.Context, input svcmodel.UpdateReleaseInput, releaseID, authUserID uuid.UUID) error
 	ListReleasesForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Release, error)
 	SendReleaseNotification(ctx context.Context, releaseID, authUserID uuid.UUID) error
 	UpsertGithubRelease(ctx context.Context, releaseID, authUserID uuid.UUID) error

@@ -38,9 +38,9 @@ func (m *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectI
 	return args.Get(0).([]svcmodel.Release), args.Error(1)
 }
 
-func (m *ReleaseRepository) UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn svcmodel.UpdateReleaseFunc) (svcmodel.Release, error) {
+func (m *ReleaseRepository) UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn svcmodel.UpdateReleaseFunc) error {
 	args := m.Called(ctx, releaseID, fn)
-	return args.Get(0).(svcmodel.Release), args.Error(1)
+	return args.Error(0)
 }
 
 func (m *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {

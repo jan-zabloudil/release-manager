@@ -725,12 +725,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ReleasePatchRequest'
       responses:
-        '200':
+        '204':
           description: 'Release updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReleaseResponse'
         '401':
               $ref: '#/components/responses/UnauthorizedErrorResponse'
         '403':
