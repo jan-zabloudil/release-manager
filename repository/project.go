@@ -216,9 +216,9 @@ func (r *ProjectRepository) UpdateEnvironment(
 	projectID,
 	envID uuid.UUID,
 	fn svcmodel.UpdateEnvironmentFunc,
-) (env svcmodel.Environment, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		env, err = r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), projectID, envID)
+) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		env, err := r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), projectID, envID)
 		if err != nil {
 			return fmt.Errorf("reading environment: %w", err)
 		}
@@ -243,12 +243,6 @@ func (r *ProjectRepository) UpdateEnvironment(
 
 		return nil
 	})
-
-	if err != nil {
-		return svcmodel.Environment{}, err
-	}
-
-	return env, nil
 }
 
 func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {

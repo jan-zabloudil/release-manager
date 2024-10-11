@@ -35,19 +35,18 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	env, err := h.ProjectSvc.UpdateEnvironment(
+	if err := h.ProjectSvc.UpdateEnvironment(
 		r.Context(),
 		model.ToSvcUpdateEnvironmentInput(req),
 		util.ContextProjectID(r),
 		util.ContextEnvironmentID(r),
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
-	util.WriteJSONResponse(w, http.StatusOK, model.ToEnvironment(env))
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {

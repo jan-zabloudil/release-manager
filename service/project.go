@@ -225,23 +225,22 @@ func (s *ProjectService) UpdateEnvironment(
 	projectID,
 	envID,
 	authUserID uuid.UUID,
-) (model.Environment, error) {
+) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return model.Environment{}, fmt.Errorf("authorizing project member: %w", err)
+		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	env, err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
+	if err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(input); err != nil {
 			return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return e, nil
-	})
-	if err != nil {
-		return model.Environment{}, fmt.Errorf("updating the environment: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating the environment: %w", err)
 	}
 
-	return env, nil
+	return nil
 }
 
 func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Environment, error) {

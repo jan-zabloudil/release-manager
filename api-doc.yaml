@@ -340,12 +340,8 @@ paths:
             schema:
               $ref: '#/components/schemas/EnvironmentRequest'
       responses:
-        '200':
+        '204':
           description: 'Environment updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnvironmentResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedErrorResponse'
         '403':

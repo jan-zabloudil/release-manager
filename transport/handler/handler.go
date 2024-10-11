@@ -22,7 +22,7 @@ type projectService interface {
 	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
 	ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Environment, error)
 	DeleteEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) error
-	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
+	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) error
 
 	SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID uuid.UUID, authUserID uuid.UUID) error
 	GetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) (svcmodel.GithubRepo, error)

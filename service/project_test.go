@@ -495,7 +495,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
+				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -504,7 +504,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 			envUpdate: model.UpdateEnvironmentInput{},
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, svcerrors.NewEnvironmentNotFoundError())
+				projectRepo.On("UpdateEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewEnvironmentNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -522,7 +522,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.UpdateEnvironment(context.Background(), tc.envUpdate, uuid.New(), uuid.New(), uuid.UUID{})
+			err := service.UpdateEnvironment(context.Background(), tc.envUpdate, uuid.New(), uuid.New(), uuid.UUID{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
