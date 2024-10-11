@@ -59,7 +59,7 @@ type releaseRepository interface {
 	DeleteRelease(ctx context.Context, releaseID uuid.UUID) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
 	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
-	UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn model.UpdateReleaseFunc) (model.Release, error)
+	UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn model.UpdateReleaseFunc) error
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
 	ListDeploymentsForProject(ctx context.Context, params model.DeploymentFilterParams, projectID uuid.UUID) ([]model.Deployment, error)

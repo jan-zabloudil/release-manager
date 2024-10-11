@@ -412,7 +412,7 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
 				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, nil)
+				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -424,7 +424,7 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
 				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseUnprocessableError())
+				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewReleaseUnprocessableError())
 			},
 			wantErr: true,
 		},
@@ -433,7 +433,7 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 			update: model.UpdateReleaseInput{},
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
 				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(model.Release{}, svcerrors.NewReleaseNotFoundError())
+				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewReleaseNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -451,7 +451,7 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, releaseRepo)
 
-			_, err := service.UpdateRelease(context.Background(), tc.update, uuid.New(), uuid.New())
+			err := service.UpdateRelease(context.Background(), tc.update, uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
