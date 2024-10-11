@@ -15,17 +15,16 @@ func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := h.SettingsSvc.Update(
+	if err := h.SettingsSvc.Update(
 		r.Context(),
 		model.ToSvcUpdateSettingsInput(req),
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
-	util.WriteJSONResponse(w, http.StatusOK, model.ToSettings(s))
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) getSettings(w http.ResponseWriter, r *http.Request) {

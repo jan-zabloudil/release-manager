@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"release-manager/repository/model"
 	"release-manager/repository/query"
@@ -41,11 +42,11 @@ func (r *SettingsRepository) read(ctx context.Context, q pgxscan.Querier) (svcmo
 func (r *SettingsRepository) Update(
 	ctx context.Context,
 	fn svcmodel.UpdateSettingsFunc,
-) (s svcmodel.Settings, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		s, err = r.read(ctx, tx)
+) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		s, err := r.read(ctx, tx)
 		if err != nil {
-			return err
+			return fmt.Errorf("reading settings: %w", err)
 		}
 
 		s, err = fn(s)
@@ -53,24 +54,18 @@ func (r *SettingsRepository) Update(
 			return err
 		}
 
-		if err := r.update(ctx, tx, s); err != nil {
-			return err
+		if err := r.upsert(ctx, tx, s); err != nil {
+			return fmt.Errorf("upserting settings: %w", err)
 		}
 
 		return nil
 	})
-
-	if err != nil {
-		return svcmodel.Settings{}, err
-	}
-
-	return s, nil
 }
 
-// update settings are saved as key-value pairs in the database
+// upsert settings are saved as key-value pairs in the database
 // if key-value pair already exists, it is updated
 // if key-value pair does not exist, it is inserted
-func (r *SettingsRepository) update(ctx context.Context, tx pgx.Tx, s svcmodel.Settings) error {
+func (r *SettingsRepository) upsert(ctx context.Context, tx pgx.Tx, s svcmodel.Settings) error {
 	sv, err := model.ToSettingsValues(s)
 	if err != nil {
 		return err

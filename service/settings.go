@@ -35,23 +35,22 @@ func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.
 	return settings, nil
 }
 
-func (s *SettingsService) Update(ctx context.Context, input model.UpdateSettingsInput, authUserID uuid.UUID) (model.Settings, error) {
+func (s *SettingsService) Update(ctx context.Context, input model.UpdateSettingsInput, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.Settings{}, fmt.Errorf("authorizing user role: %w", err)
+		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	settings, err := s.repository.Update(ctx, func(s model.Settings) (model.Settings, error) {
+	if err := s.repository.Update(ctx, func(s model.Settings) (model.Settings, error) {
 		if err := s.Update(input); err != nil {
 			return model.Settings{}, svcerrors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return s, nil
-	})
-	if err != nil {
-		return model.Settings{}, fmt.Errorf("updating settings: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating settings: %w", err)
 	}
 
-	return settings, nil
+	return nil
 }
 
 func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {

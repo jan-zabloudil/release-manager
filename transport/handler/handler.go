@@ -48,7 +48,7 @@ type userService interface {
 }
 
 type settingsService interface {
-	Update(ctx context.Context, u svcmodel.UpdateSettingsInput, authUserID uuid.UUID) (svcmodel.Settings, error)
+	Update(ctx context.Context, u svcmodel.UpdateSettingsInput, authUserID uuid.UUID) error
 	Get(ctx context.Context, authUserID uuid.UUID) (svcmodel.Settings, error)
 	GetGithubWebhookSecret(ctx context.Context) (string, error)
 }
