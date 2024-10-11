@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"release-manager/repository/model"
 	"release-manager/repository/query"
@@ -43,25 +42,25 @@ func (r *SettingsRepository) Update(
 	ctx context.Context,
 	fn svcmodel.UpdateSettingsFunc,
 ) (s svcmodel.Settings, err error) {
-	tx, err := r.dbpool.Begin(ctx)
-	if err != nil {
-		return svcmodel.Settings{}, fmt.Errorf("beginning transaction: %w", err)
-	}
-	defer func() {
-		err = util.FinishTransaction(ctx, tx, err)
-	}()
+	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		s, err = r.read(ctx, tx)
+		if err != nil {
+			return err
+		}
 
-	s, err = r.read(ctx, tx)
-	if err != nil {
-		return svcmodel.Settings{}, err
-	}
+		s, err = fn(s)
+		if err != nil {
+			return err
+		}
 
-	s, err = fn(s)
-	if err != nil {
-		return svcmodel.Settings{}, err
-	}
+		if err := r.update(ctx, tx, s); err != nil {
+			return err
+		}
 
-	if err := r.update(ctx, tx, s); err != nil {
+		return nil
+	})
+
+	if err != nil {
 		return svcmodel.Settings{}, err
 	}
 
