@@ -226,12 +226,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ProjectRequest'
       responses:
-        '200':
+        '204':
           description: 'Project updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectResponse'
         '401':
               $ref: '#/components/responses/UnauthorizedErrorResponse'
         '403':
@@ -344,12 +340,8 @@ paths:
             schema:
               $ref: '#/components/schemas/EnvironmentRequest'
       responses:
-        '200':
+        '204':
           description: 'Environment updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnvironmentResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedErrorResponse'
         '403':
@@ -519,12 +511,8 @@ paths:
                 project_role:
                   $ref: '#/components/schemas/ProjectMemberRole'
       responses:
-        '200':
+        '204':
           description: 'Member role updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectMemberResponse'
         '400':
             $ref: '#/components/responses/BadRequestErrorResponse'
         '401':

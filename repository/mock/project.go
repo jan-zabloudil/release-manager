@@ -39,9 +39,9 @@ func (m *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) (svcmodel.Project, error) {
+func (m *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) error {
 	args := m.Called(ctx, projectID, fn)
-	return args.Get(0).(svcmodel.Project), args.Error(1)
+	return args.Error(0)
 }
 
 func (m *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.Environment) error {
@@ -64,9 +64,9 @@ func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, en
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn svcmodel.UpdateEnvironmentFunc) (svcmodel.Environment, error) {
+func (m *ProjectRepository) UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn svcmodel.UpdateEnvironmentFunc) error {
 	args := m.Called(ctx, projectID, envID, fn)
-	return args.Get(0).(svcmodel.Environment), args.Error(1)
+	return args.Error(0)
 }
 
 func (m *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {
@@ -129,7 +129,7 @@ func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn svcmodel.UpdateProjectMemberFunc) (svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn svcmodel.UpdateProjectMemberFunc) error {
 	args := m.Called(ctx, projectID, userID, fn)
-	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
+	return args.Error(0)
 }

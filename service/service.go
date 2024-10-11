@@ -16,11 +16,11 @@ type projectRepository interface {
 	ListProjects(ctx context.Context) ([]model.Project, error)
 	ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
 	DeleteProject(ctx context.Context, id uuid.UUID) error
-	UpdateProject(ctx context.Context, projectID uuid.UUID, fn model.UpdateProjectFunc) (model.Project, error)
+	UpdateProject(ctx context.Context, projectID uuid.UUID, fn model.UpdateProjectFunc) error
 
 	CreateEnvironment(ctx context.Context, env model.Environment) error
 	ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (model.Environment, error)
-	UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn model.UpdateEnvironmentFunc) (model.Environment, error)
+	UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn model.UpdateEnvironmentFunc) error
 	DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error
 	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
 
@@ -37,7 +37,7 @@ type projectRepository interface {
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
 	ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (model.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
-	UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn model.UpdateProjectMemberFunc) (model.ProjectMember, error)
+	UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn model.UpdateProjectMemberFunc) error
 }
 
 type userRepository interface {

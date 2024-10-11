@@ -120,23 +120,22 @@ func (s *ProjectService) DeleteProject(ctx context.Context, projectID, authUserI
 	return nil
 }
 
-func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdateProjectInput, projectID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return model.Project{}, fmt.Errorf("authorizing project member: %w", err)
+		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	p, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
+	if err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		if err := p.Update(input); err != nil {
 			return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return p, nil
-	})
-	if err != nil {
-		return model.Project{}, fmt.Errorf("updating the project: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating the project: %w", err)
 	}
 
-	return p, nil
+	return nil
 }
 
 func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID, authUserID uuid.UUID) error {
@@ -154,11 +153,10 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 		return fmt.Errorf("reading github repo: %w", err)
 	}
 
-	_, err = s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
+	if err = s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		p.SetGithubRepo(&repo)
 		return p, nil
-	})
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("updating project with Github repo: %w", err)
 	}
 
@@ -227,23 +225,22 @@ func (s *ProjectService) UpdateEnvironment(
 	projectID,
 	envID,
 	authUserID uuid.UUID,
-) (model.Environment, error) {
+) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return model.Environment{}, fmt.Errorf("authorizing project member: %w", err)
+		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	env, err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
+	if err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(input); err != nil {
 			return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return e, nil
-	})
-	if err != nil {
-		return model.Environment{}, fmt.Errorf("updating the environment: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating the environment: %w", err)
 	}
 
-	return env, nil
+	return nil
 }
 
 func (s *ProjectService) ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Environment, error) {
@@ -490,23 +487,22 @@ func (s *ProjectService) UpdateMemberRole(
 	projectID,
 	userID,
 	authUserID uuid.UUID,
-) (model.ProjectMember, error) {
+) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
-		return model.ProjectMember{}, fmt.Errorf("authorizing user role: %w", err)
+		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	m, err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
+	if err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
 		if err := m.UpdateProjectRole(newRole); err != nil {
 			return model.ProjectMember{}, svcerrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return m, nil
-	})
-	if err != nil {
-		return model.ProjectMember{}, fmt.Errorf("updating member role: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating member role: %w", err)
 	}
 
-	return m, nil
+	return nil
 }
 
 func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (model.Project, error) {

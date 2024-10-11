@@ -15,14 +15,14 @@ type projectService interface {
 	CreateProject(ctx context.Context, c svcmodel.CreateProjectInput, authUserID uuid.UUID) (svcmodel.Project, error)
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (svcmodel.Project, error)
 	ListProjects(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.Project, error)
-	UpdateProject(ctx context.Context, u svcmodel.UpdateProjectInput, projectID, authUserID uuid.UUID) (svcmodel.Project, error)
+	UpdateProject(ctx context.Context, u svcmodel.UpdateProjectInput, projectID, authUserID uuid.UUID) error
 	DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error
 
 	CreateEnvironment(ctx context.Context, c svcmodel.CreateEnvironmentInput, authUserID uuid.UUID) (svcmodel.Environment, error)
 	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
 	ListEnvironments(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.Environment, error)
 	DeleteEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) error
-	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) (svcmodel.Environment, error)
+	UpdateEnvironment(ctx context.Context, u svcmodel.UpdateEnvironmentInput, projectID, envID, authUserID uuid.UUID) error
 
 	SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID uuid.UUID, authUserID uuid.UUID) error
 	GetGithubRepoForProject(ctx context.Context, projectID, authUserID uuid.UUID) (svcmodel.GithubRepo, error)
@@ -37,7 +37,7 @@ type projectService interface {
 	ListMembersForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]svcmodel.ProjectMember, error)
 	ListMembersForUser(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID, authUserID uuid.UUID) error
-	UpdateMemberRole(ctx context.Context, newRole svcmodel.ProjectRole, projectID, userID, authUserID uuid.UUID) (svcmodel.ProjectMember, error)
+	UpdateMemberRole(ctx context.Context, newRole svcmodel.ProjectRole, projectID, userID, authUserID uuid.UUID) error
 }
 
 type userService interface {

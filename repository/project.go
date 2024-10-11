@@ -115,9 +115,9 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	return nil
 }
 
-func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) (p svcmodel.Project, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		p, err = r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
+func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		p, err := r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
 		if err != nil {
 			return fmt.Errorf("reading project: %w", err)
 		}
@@ -127,7 +127,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 			return err
 		}
 
-		if _, err = tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p)); err != nil {
+		if _, err := tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p)); err != nil {
 			if util.IsUniqueConstraintViolation(err, uniqueGithubRepoConstraintName) {
 				return svcerrors.NewProjectGithubRepoAlreadyUsedError().Wrap(err)
 			}
@@ -135,14 +135,8 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 			return fmt.Errorf("updating project: %w", err)
 		}
 
-		return err
+		return nil
 	})
-
-	if err != nil {
-		return svcmodel.Project{}, err
-	}
-
-	return p, nil
 }
 
 func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.Environment) error {
@@ -222,9 +216,9 @@ func (r *ProjectRepository) UpdateEnvironment(
 	projectID,
 	envID uuid.UUID,
 	fn svcmodel.UpdateEnvironmentFunc,
-) (env svcmodel.Environment, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		env, err = r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), projectID, envID)
+) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		env, err := r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), projectID, envID)
 		if err != nil {
 			return fmt.Errorf("reading environment: %w", err)
 		}
@@ -249,12 +243,6 @@ func (r *ProjectRepository) UpdateEnvironment(
 
 		return nil
 	})
-
-	if err != nil {
-		return svcmodel.Environment{}, err
-	}
-
-	return env, nil
 }
 
 func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.ProjectInvitation) error {
@@ -479,9 +467,9 @@ func (r *ProjectRepository) UpdateMemberRole(
 	projectID,
 	userID uuid.UUID,
 	fn svcmodel.UpdateProjectMemberFunc,
-) (m svcmodel.ProjectMember, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		m, err = r.readMember(ctx, tx, query.AppendForUpdate(query.ReadMember), pgx.NamedArgs{
+) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		m, err := r.readMember(ctx, tx, query.AppendForUpdate(query.ReadMember), pgx.NamedArgs{
 			"projectID": projectID,
 			"userID":    userID,
 		})
@@ -494,7 +482,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 			return err
 		}
 
-		if _, err = tx.Exec(ctx, query.UpdateMember, pgx.NamedArgs{
+		if _, err := tx.Exec(ctx, query.UpdateMember, pgx.NamedArgs{
 			"projectID":   m.ProjectID,
 			"userID":      m.User.ID,
 			"projectRole": m.ProjectRole,
@@ -505,12 +493,6 @@ func (r *ProjectRepository) UpdateMemberRole(
 
 		return err
 	})
-
-	if err != nil {
-		return svcmodel.ProjectMember{}, err
-	}
-
-	return m, nil
 }
 
 func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
