@@ -16,7 +16,7 @@ type projectRepository interface {
 	ListProjects(ctx context.Context) ([]model.Project, error)
 	ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
 	DeleteProject(ctx context.Context, id uuid.UUID) error
-	UpdateProject(ctx context.Context, projectID uuid.UUID, fn model.UpdateProjectFunc) (model.Project, error)
+	UpdateProject(ctx context.Context, projectID uuid.UUID, fn model.UpdateProjectFunc) error
 
 	CreateEnvironment(ctx context.Context, env model.Environment) error
 	ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (model.Environment, error)

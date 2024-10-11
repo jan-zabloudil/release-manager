@@ -226,12 +226,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ProjectRequest'
       responses:
-        '200':
+        '204':
           description: 'Project updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectResponse'
         '401':
               $ref: '#/components/responses/UnauthorizedErrorResponse'
         '403':

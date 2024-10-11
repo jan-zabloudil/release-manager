@@ -15,7 +15,7 @@ type projectService interface {
 	CreateProject(ctx context.Context, c svcmodel.CreateProjectInput, authUserID uuid.UUID) (svcmodel.Project, error)
 	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (svcmodel.Project, error)
 	ListProjects(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.Project, error)
-	UpdateProject(ctx context.Context, u svcmodel.UpdateProjectInput, projectID, authUserID uuid.UUID) (svcmodel.Project, error)
+	UpdateProject(ctx context.Context, u svcmodel.UpdateProjectInput, projectID, authUserID uuid.UUID) error
 	DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) error
 
 	CreateEnvironment(ctx context.Context, c svcmodel.CreateEnvironmentInput, authUserID uuid.UUID) (svcmodel.Environment, error)

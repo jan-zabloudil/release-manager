@@ -120,23 +120,22 @@ func (s *ProjectService) DeleteProject(ctx context.Context, projectID, authUserI
 	return nil
 }
 
-func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdateProjectInput, projectID, authUserID uuid.UUID) (model.Project, error) {
+func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdateProjectInput, projectID, authUserID uuid.UUID) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return model.Project{}, fmt.Errorf("authorizing project member: %w", err)
+		return fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	p, err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
+	if err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		if err := p.Update(input); err != nil {
 			return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return p, nil
-	})
-	if err != nil {
-		return model.Project{}, fmt.Errorf("updating the project: %w", err)
+	}); err != nil {
+		return fmt.Errorf("updating the project: %w", err)
 	}
 
-	return p, nil
+	return nil
 }
 
 func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID, authUserID uuid.UUID) error {
@@ -154,11 +153,10 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 		return fmt.Errorf("reading github repo: %w", err)
 	}
 
-	_, err = s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
+	if err = s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		p.SetGithubRepo(&repo)
 		return p, nil
-	})
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("updating project with Github repo: %w", err)
 	}
 

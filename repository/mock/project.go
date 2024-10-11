@@ -39,9 +39,9 @@ func (m *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) (svcmodel.Project, error) {
+func (m *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) error {
 	args := m.Called(ctx, projectID, fn)
-	return args.Get(0).(svcmodel.Project), args.Error(1)
+	return args.Error(0)
 }
 
 func (m *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.Environment) error {

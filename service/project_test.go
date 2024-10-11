@@ -300,7 +300,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},
@@ -308,7 +308,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 			name: "Invalid project update",
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectUnprocessableError())
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewProjectUnprocessableError())
 			},
 			wantErr: true,
 		},
@@ -317,7 +317,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 			update: model.UpdateProjectInput{},
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewProjectNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -335,7 +335,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.UpdateProject(context.Background(), tc.update, uuid.New(), uuid.New())
+			err := service.UpdateProject(context.Background(), tc.update, uuid.New(), uuid.New())
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1236,7 +1236,7 @@ func TestProjectService_SetGithubRepoForProject(t *testing.T) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
 				githubClient.On("ReadRepo", mock.Anything, mock.Anything, mock.Anything).Return(model.GithubRepo{}, nil)
-				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},

@@ -56,18 +56,17 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := h.ProjectSvc.UpdateProject(
+	if err := h.ProjectSvc.UpdateProject(
 		r.Context(),
 		model.ToSvcUpdateProjectInput(req),
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
 
-	util.WriteJSONResponse(w, http.StatusOK, model.ToProject(p))
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {

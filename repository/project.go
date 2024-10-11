@@ -115,9 +115,9 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	return nil
 }
 
-func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) (p svcmodel.Project, err error) {
-	err = util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		p, err = r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
+func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) error {
+	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		p, err := r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
 		if err != nil {
 			return fmt.Errorf("reading project: %w", err)
 		}
@@ -127,7 +127,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 			return err
 		}
 
-		if _, err = tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p)); err != nil {
+		if _, err := tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p)); err != nil {
 			if util.IsUniqueConstraintViolation(err, uniqueGithubRepoConstraintName) {
 				return svcerrors.NewProjectGithubRepoAlreadyUsedError().Wrap(err)
 			}
@@ -135,14 +135,8 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 			return fmt.Errorf("updating project: %w", err)
 		}
 
-		return err
+		return nil
 	})
-
-	if err != nil {
-		return svcmodel.Project{}, err
-	}
-
-	return p, nil
 }
 
 func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.Environment) error {
