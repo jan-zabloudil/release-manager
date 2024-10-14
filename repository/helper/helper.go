@@ -1,10 +1,11 @@
-package util
+package helper
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,6 +14,15 @@ import (
 const (
 	postgresUniqueConstraintErrorCode = "23505"
 )
+
+type Querier interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	Query(ctx context.Context, query string, args ...any) (pgx.Rows, error)
+}
+
+type ExecExecutor interface {
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+}
 
 func RunTransaction(ctx context.Context, dbpool *pgxpool.Pool, fn func(tx pgx.Tx) error) error {
 	tx, err := dbpool.Begin(ctx)
@@ -38,6 +48,26 @@ func IsUniqueConstraintViolation(err error, constraintName string) bool {
 	}
 
 	return false
+}
+
+func IsNotFound(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
+}
+
+func ReadValue[T any](ctx context.Context, q Querier, query string, args pgx.NamedArgs) (T, error) {
+	var result T
+	if err := pgxscan.Get(ctx, q, &result, query, args); err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
+func ListValues[T any](ctx context.Context, q Querier, query string, args pgx.NamedArgs) ([]T, error) {
+	var result []T
+	if err := pgxscan.Select(ctx, q, &result, query, args); err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 func finishTransaction(ctx context.Context, tx pgx.Tx, err error) error {

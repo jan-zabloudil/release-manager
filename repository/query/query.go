@@ -46,8 +46,8 @@ var (
 	//go:embed scripts/list_projects_for_user.sql
 	ListProjectsForUser string
 
-	//go:embed scripts/read_invitation_by_id_and_status_for_update.sql
-	ReadInvitationByIDAndStatusForUpdate string
+	//go:embed scripts/read_invitation_by_id_and_status.sql
+	ReadInvitationByIDAndStatus string
 	//go:embed scripts/read_invitation_by_hash_and_status.sql
 	ReadInvitationByHashAndStatus string
 	//go:embed scripts/list_invitations_for_project.sql

@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"release-manager/repository/helper"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
-	"release-manager/repository/util"
 	svcmodel "release-manager/service/model"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,22 +27,11 @@ func (r *SettingsRepository) Read(ctx context.Context) (svcmodel.Settings, error
 	return r.read(ctx, r.dbpool)
 }
 
-func (r *SettingsRepository) read(ctx context.Context, q pgxscan.Querier) (svcmodel.Settings, error) {
-	var sv []model.SettingsValue
-
-	err := pgxscan.Select(ctx, q, &sv, query.ReadSettings)
-	if err != nil {
-		return svcmodel.Settings{}, err
-	}
-
-	return model.ToSvcSettings(sv)
-}
-
 func (r *SettingsRepository) Update(
 	ctx context.Context,
 	fn svcmodel.UpdateSettingsFunc,
 ) error {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		s, err := r.read(ctx, tx)
 		if err != nil {
 			return fmt.Errorf("reading settings: %w", err)
@@ -60,6 +48,15 @@ func (r *SettingsRepository) Update(
 
 		return nil
 	})
+}
+
+func (r *SettingsRepository) read(ctx context.Context, q helper.Querier) (svcmodel.Settings, error) {
+	s, err := helper.ListValues[model.SettingsValue](ctx, q, query.ReadSettings, nil)
+	if err != nil {
+		return svcmodel.Settings{}, err
+	}
+
+	return model.ToSvcSettings(s)
 }
 
 // upsert settings are saved as key-value pairs in the database
