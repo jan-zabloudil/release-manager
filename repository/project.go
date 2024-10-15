@@ -2,17 +2,15 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"release-manager/pkg/crypto"
+	"release-manager/repository/helper"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
-	"release-manager/repository/util"
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -36,8 +34,8 @@ func NewProjectRepository(pool *pgxpool.Pool, urlGenerator githubURLGenerator) *
 	}
 }
 
-func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmodel.Project, owner svcmodel.ProjectMember) (err error) {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmodel.Project, owner svcmodel.ProjectMember) error {
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		if _, err := tx.Exec(ctx, query.CreateProject, pgx.NamedArgs{
 			"id":             p.ID,
 			"name":           p.Name,
@@ -65,22 +63,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 }
 
 func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcmodel.Project, error) {
-	return r.readProject(ctx, r.dbpool, query.ReadProject, id)
-}
-
-func (r *ProjectRepository) readProject(ctx context.Context, q querier, query string, id uuid.UUID) (svcmodel.Project, error) {
-	var p model.Project
-
-	err := pgxscan.Get(ctx, q, &p, query, pgx.NamedArgs{"id": id})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.Project{}, svcerrors.NewProjectNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.Project{}, err
-	}
-
-	return model.ToSvcProject(p, r.githubURLGenerator.GenerateRepoURL)
+	return r.readProject(ctx, r.dbpool, query.ReadProject, pgx.NamedArgs{"id": id})
 }
 
 func (r *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Project, error) {
@@ -89,17 +72,6 @@ func (r *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Projec
 
 func (r *ProjectRepository) ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.Project, error) {
 	return r.listProjects(ctx, query.ListProjectsForUser, pgx.NamedArgs{"userID": userID})
-}
-
-func (r *ProjectRepository) listProjects(ctx context.Context, readQuery string, args pgx.NamedArgs) ([]svcmodel.Project, error) {
-	var dbProjects []model.Project
-
-	err := pgxscan.Select(ctx, r.dbpool, &dbProjects, readQuery, args)
-	if err != nil {
-		return nil, err
-	}
-
-	return model.ToSvcProjects(dbProjects, r.githubURLGenerator.GenerateRepoURL)
 }
 
 func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
@@ -116,8 +88,8 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 }
 
 func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) error {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		p, err := r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), projectID)
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		p, err := r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), pgx.NamedArgs{"id": projectID})
 		if err != nil {
 			return fmt.Errorf("reading project: %w", err)
 		}
@@ -128,7 +100,7 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 		}
 
 		if _, err := tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p)); err != nil {
-			if util.IsUniqueConstraintViolation(err, uniqueGithubRepoConstraintName) {
+			if helper.IsUniqueConstraintViolation(err, uniqueGithubRepoConstraintName) {
 				return svcerrors.NewProjectGithubRepoAlreadyUsedError().Wrap(err)
 			}
 
@@ -140,16 +112,15 @@ func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UU
 }
 
 func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.Environment) error {
-	_, err := r.dbpool.Exec(ctx, query.CreateEnvironment, pgx.NamedArgs{
+	if _, err := r.dbpool.Exec(ctx, query.CreateEnvironment, pgx.NamedArgs{
 		"id":         e.ID,
 		"projectID":  e.ProjectID,
 		"name":       e.Name,
 		"serviceURL": e.ServiceURL.String(),
 		"createdAt":  e.CreatedAt,
 		"updatedAt":  e.UpdatedAt,
-	})
-	if err != nil {
-		if util.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
+	}); err != nil {
+		if helper.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
 			return svcerrors.NewEnvironmentDuplicateNameError().Wrap(err)
 		}
 
@@ -160,34 +131,16 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 }
 
 func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
-	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironment, projectID, envID)
-}
-
-func (r *ProjectRepository) readEnvironment(ctx context.Context, q querier, readQuery string, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
-	var e model.Environment
-
-	// Project ID is not needed in the query because envID is primary key
-	// But it is added for security reasons
-	// To make sure that the environment belongs to the project that is passed from the service
-	err := pgxscan.Get(ctx, q, &e, readQuery, pgx.NamedArgs{
-		"envID":     envID,
+	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironment, pgx.NamedArgs{
 		"projectID": projectID,
+		"envID":     envID,
 	})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.Environment{}, svcerrors.NewEnvironmentNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.Environment{}, err
-	}
-
-	return model.ToSvcEnvironment(e)
 }
 
 func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
-	var e []model.Environment
-
-	err := pgxscan.Select(ctx, r.dbpool, &e, query.ListEnvironmentsForProject, pgx.NamedArgs{"projectID": projectID})
+	e, err := helper.ListValues[model.Environment](ctx, r.dbpool, query.ListEnvironmentsForProject, pgx.NamedArgs{
+		"projectID": projectID},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -217,8 +170,11 @@ func (r *ProjectRepository) UpdateEnvironment(
 	envID uuid.UUID,
 	fn svcmodel.UpdateEnvironmentFunc,
 ) error {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		env, err := r.readEnvironment(ctx, r.dbpool, query.AppendForUpdate(query.ReadEnvironment), projectID, envID)
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		env, err := r.readEnvironment(ctx, tx, query.AppendForUpdate(query.ReadEnvironment), pgx.NamedArgs{
+			"projectID": projectID,
+			"envID":     envID,
+		})
 		if err != nil {
 			return fmt.Errorf("reading environment: %w", err)
 		}
@@ -228,13 +184,13 @@ func (r *ProjectRepository) UpdateEnvironment(
 			return err
 		}
 
-		if _, err = r.dbpool.Exec(ctx, query.UpdateEnvironment, pgx.NamedArgs{
+		if _, err = tx.Exec(ctx, query.UpdateEnvironment, pgx.NamedArgs{
 			"envID":      env.ID,
 			"name":       env.Name,
 			"serviceURL": env.ServiceURL.String(),
 			"updatedAt":  env.UpdatedAt,
 		}); err != nil {
-			if util.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
+			if helper.IsUniqueConstraintViolation(err, uniqueEnvironmentNamePerProjectConstraintName) {
 				return svcerrors.NewEnvironmentDuplicateNameError().Wrap(err)
 			}
 
@@ -256,7 +212,7 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 		"createdAt":    i.CreatedAt,
 		"updatedAt":    i.UpdatedAt,
 	}); err != nil {
-		if util.IsUniqueConstraintViolation(err, uniqueInvitationPerProjectConstraintName) {
+		if helper.IsUniqueConstraintViolation(err, uniqueInvitationPerProjectConstraintName) {
 			return svcerrors.NewProjectInvitationAlreadyExistsError().Wrap(err)
 		}
 
@@ -271,8 +227,11 @@ func (r *ProjectRepository) AcceptPendingInvitation(
 	invitationID uuid.UUID,
 	fn svcmodel.AcceptProjectInvitationFunc,
 ) error {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		invitation, err := r.readPendingInvitationForUpdate(ctx, invitationID)
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		invitation, err := r.readInvitation(ctx, tx, query.AppendForUpdate(query.ReadInvitationByIDAndStatus), pgx.NamedArgs{
+			"id":     invitationID,
+			"status": string(svcmodel.InvitationStatusPending),
+		})
 		if err != nil {
 			return fmt.Errorf("reading project invitation: %w", err)
 		}
@@ -298,32 +257,10 @@ func (r *ProjectRepository) ReadPendingInvitationByHash(ctx context.Context, has
 	})
 }
 
-func (r *ProjectRepository) readPendingInvitationForUpdate(ctx context.Context, invitationID uuid.UUID) (svcmodel.ProjectInvitation, error) {
-	return r.readInvitation(ctx, r.dbpool, query.ReadInvitationByIDAndStatusForUpdate, pgx.NamedArgs{
-		"id":     invitationID,
-		"status": string(svcmodel.InvitationStatusPending),
-	})
-}
-
-func (r *ProjectRepository) readInvitation(ctx context.Context, q pgxscan.Querier, readQuery string, args pgx.NamedArgs) (svcmodel.ProjectInvitation, error) {
-	var i model.ProjectInvitation
-
-	err := pgxscan.Get(ctx, q, &i, readQuery, args)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.ProjectInvitation{}, svcerrors.NewProjectInvitationNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.ProjectInvitation{}, err
-	}
-
-	return model.ToSvcProjectInvitation(i), nil
-}
-
 func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
-	var i []model.ProjectInvitation
-
-	err := pgxscan.Select(ctx, r.dbpool, &i, query.ListInvitationsForProject, pgx.NamedArgs{"projectID": projectID})
+	i, err := helper.ListValues[model.ProjectInvitation](ctx, r.dbpool, query.ListInvitationsForProject, pgx.NamedArgs{
+		"projectID": projectID},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +269,7 @@ func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, proje
 }
 
 func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
-	return r.deleteInvitation(ctx, query.DeleteInvitation, pgx.NamedArgs{
+	return r.deleteInvitation(ctx, r.dbpool, query.DeleteInvitation, pgx.NamedArgs{
 		"projectID":    projectID,
 		"invitationID": invitationID,
 	})
@@ -343,28 +280,15 @@ func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
 	hash crypto.Hash,
 	status svcmodel.ProjectInvitationStatus,
 ) error {
-	return r.deleteInvitation(ctx, query.DeleteInvitationByHashAndStatus, pgx.NamedArgs{
+	return r.deleteInvitation(ctx, r.dbpool, query.DeleteInvitationByHashAndStatus, pgx.NamedArgs{
 		"hash":   hash.ToBase64(),
 		"status": string(status),
 	})
 }
 
-func (r *ProjectRepository) deleteInvitation(ctx context.Context, deleteQuery string, args pgx.NamedArgs) error {
-	result, err := r.dbpool.Exec(ctx, deleteQuery, args)
-	if err != nil {
-		return err
-	}
-
-	if result.RowsAffected() == 0 {
-		return svcerrors.NewProjectInvitationNotFoundError()
-	}
-
-	return nil
-}
-
 // CreateMember creates a project member and deletes the invitation
 func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.ProjectMember) error {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		if _, err := tx.Exec(ctx, query.CreateMember, pgx.NamedArgs{
 			"userID":      m.User.ID,
 			"projectID":   m.ProjectID,
@@ -375,7 +299,7 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 			return fmt.Errorf("creating project member: %w", err)
 		}
 
-		if err := r.deleteInvitation(ctx, query.DeleteInvitationByEmailAndProjectID, pgx.NamedArgs{
+		if err := r.deleteInvitation(ctx, tx, query.DeleteInvitationByEmailAndProjectID, pgx.NamedArgs{
 			"email":     m.User.Email,
 			"projectID": m.ProjectID,
 		}); err != nil {
@@ -394,30 +318,6 @@ func (r *ProjectRepository) ListMembersForUser(ctx context.Context, userID uuid.
 	return r.listMembers(ctx, r.dbpool, query.ListMembersForUser, pgx.NamedArgs{"userID": userID})
 }
 
-func (r *ProjectRepository) listMembers(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) ([]svcmodel.ProjectMember, error) {
-	var m []svcmodel.ProjectMember
-
-	rows, err := q.Query(ctx, readQuery, args)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		member, err := model.ScanToSvcProjectMember(rows)
-		if err != nil {
-			return nil, err
-		}
-		m = append(m, member)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
 func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
 	return r.readMember(ctx, r.dbpool, query.ReadMember, pgx.NamedArgs{
 		"projectID": projectID,
@@ -430,20 +330,6 @@ func (r *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uui
 		"projectID": projectID,
 		"email":     email,
 	})
-}
-
-func (r *ProjectRepository) readMember(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.ProjectMember, error) {
-	row := q.QueryRow(ctx, readQuery, args)
-	m, err := model.ScanToSvcProjectMember(row)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.ProjectMember{}, err
-	}
-
-	return m, nil
 }
 
 func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
@@ -468,7 +354,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 	userID uuid.UUID,
 	fn svcmodel.UpdateProjectMemberFunc,
 ) error {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		m, err := r.readMember(ctx, tx, query.AppendForUpdate(query.ReadMember), pgx.NamedArgs{
 			"projectID": projectID,
 			"userID":    userID,
@@ -493,6 +379,105 @@ func (r *ProjectRepository) UpdateMemberRole(
 
 		return err
 	})
+}
+
+func (r *ProjectRepository) readProject(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) (svcmodel.Project, error) {
+	p, err := helper.ReadValue[model.Project](ctx, q, query, args)
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.Project{}, svcerrors.NewProjectNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.Project{}, err
+	}
+
+	return model.ToSvcProject(p, r.githubURLGenerator.GenerateRepoURL)
+}
+
+func (r *ProjectRepository) listProjects(ctx context.Context, query string, args pgx.NamedArgs) ([]svcmodel.Project, error) {
+	p, err := helper.ListValues[model.Project](ctx, r.dbpool, query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.ToSvcProjects(p, r.githubURLGenerator.GenerateRepoURL)
+}
+
+func (r *ProjectRepository) readEnvironment(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) (svcmodel.Environment, error) {
+	e, err := helper.ReadValue[model.Environment](ctx, q, query, args)
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.Environment{}, svcerrors.NewEnvironmentNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.Environment{}, err
+	}
+
+	return model.ToSvcEnvironment(e)
+}
+
+func (r *ProjectRepository) readInvitation(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) (svcmodel.ProjectInvitation, error) {
+	i, err := helper.ReadValue[model.ProjectInvitation](ctx, q, query, args)
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.ProjectInvitation{}, svcerrors.NewProjectInvitationNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.ProjectInvitation{}, err
+	}
+
+	return model.ToSvcProjectInvitation(i), nil
+}
+
+func (r *ProjectRepository) deleteInvitation(ctx context.Context, e helper.ExecExecutor, query string, args pgx.NamedArgs) error {
+	result, err := e.Exec(ctx, query, args)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return svcerrors.NewProjectInvitationNotFoundError()
+	}
+
+	return nil
+}
+
+func (r *ProjectRepository) listMembers(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) ([]svcmodel.ProjectMember, error) {
+	var m []svcmodel.ProjectMember
+
+	rows, err := q.Query(ctx, query, args)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		member, err := model.ScanToSvcProjectMember(rows)
+		if err != nil {
+			return nil, err
+		}
+		m = append(m, member)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func (r *ProjectRepository) readMember(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) (svcmodel.ProjectMember, error) {
+	row := q.QueryRow(ctx, query, args)
+	m, err := model.ScanToSvcProjectMember(row)
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.ProjectMember{}, err
+	}
+
+	return m, nil
 }
 
 func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {

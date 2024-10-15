@@ -2,16 +2,14 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
+	"release-manager/repository/helper"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
-	"release-manager/repository/util"
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -40,7 +38,7 @@ func NewReleaseRepository(
 }
 
 func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Release) error {
-	_, err := r.dbpool.Exec(ctx, query.CreateRelease, pgx.NamedArgs{
+	if _, err := r.dbpool.Exec(ctx, query.CreateRelease, pgx.NamedArgs{
 		"id":           rls.ID,
 		"projectID":    rls.ProjectID,
 		"releaseTitle": rls.ReleaseTitle,
@@ -49,9 +47,8 @@ func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Rele
 		"createdBy":    rls.AuthorUserID,
 		"createdAt":    rls.CreatedAt,
 		"updatedAt":    rls.UpdatedAt,
-	})
-	if err != nil {
-		if util.IsUniqueConstraintViolation(err, uniqueGitTagPerProjectConstraintName) {
+	}); err != nil {
+		if helper.IsUniqueConstraintViolation(err, uniqueGitTagPerProjectConstraintName) {
 			return svcerrors.NewReleaseGitTagAlreadyUsedError().Wrap(err)
 		}
 
@@ -62,7 +59,9 @@ func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Rele
 }
 
 func (r *ReleaseRepository) ReadRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Release, error) {
-	return r.readRelease(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{"releaseID": releaseID})
+	return r.readRelease(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{
+		"releaseID": releaseID,
+	})
 }
 
 func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
@@ -72,27 +71,12 @@ func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID
 	})
 }
 
-func (r *ReleaseRepository) readRelease(ctx context.Context, q querier, readQuery string, args pgx.NamedArgs) (svcmodel.Release, error) {
-	var rls model.Release
-
-	err := pgxscan.Get(ctx, q, &rls, readQuery, args)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.Release{}, svcerrors.NewReleaseNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.Release{}, err
-	}
-
-	return model.ToSvcRelease(rls, r.githubURLGenerator.GenerateGitTagURL, r.fileURLGenerator.GenerateFileURL)
-}
-
 func (r *ReleaseRepository) UpdateRelease(
 	ctx context.Context,
 	releaseID uuid.UUID,
 	fn svcmodel.UpdateReleaseFunc,
 ) error {
-	return util.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		rls, err := r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
 			"releaseID": releaseID,
 		})
@@ -119,7 +103,7 @@ func (r *ReleaseRepository) UpdateRelease(
 }
 
 func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {
-	return r.deleteRelease(ctx, query.DeleteReleaseByGitTag, pgx.NamedArgs{
+	return r.deleteRelease(ctx, r.dbpool, query.DeleteReleaseByGitTag, pgx.NamedArgs{
 		"ownerSlug":  githubOwnerSlug,
 		"repoSlug":   githubRepoSlug,
 		"gitTagName": gitTag,
@@ -127,13 +111,85 @@ func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwn
 }
 
 func (r *ReleaseRepository) DeleteRelease(ctx context.Context, releaseID uuid.UUID) error {
-	return r.deleteRelease(ctx, query.DeleteRelease, pgx.NamedArgs{
+	return r.deleteRelease(ctx, r.dbpool, query.DeleteRelease, pgx.NamedArgs{
 		"releaseID": releaseID,
 	})
 }
 
-func (r *ReleaseRepository) deleteRelease(ctx context.Context, deleteQuery string, args pgx.NamedArgs) error {
-	result, err := r.dbpool.Exec(ctx, deleteQuery, args)
+func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
+	releases, err := helper.ListValues[model.Release](ctx, r.dbpool, query.ListReleasesForProject, pgx.NamedArgs{
+		"projectID": projectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.ToSvcReleases(releases, r.githubURLGenerator.GenerateGitTagURL, r.fileURLGenerator.GenerateFileURL)
+}
+
+func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {
+	if _, err := r.dbpool.Exec(ctx, query.CreateDeployment, pgx.NamedArgs{
+		"id":            dpl.ID,
+		"releaseID":     dpl.Release.ID,
+		"environmentID": dpl.Environment.ID,
+		"deployedBy":    dpl.DeployedByUserID,
+		"deployedAt":    dpl.DeployedAt,
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+	listQuery := query.ListDeploymentsForProject
+	if params.LatestOnly != nil && *params.LatestOnly {
+		listQuery = query.AppendLimit(listQuery, 1)
+	}
+
+	// Release and Environment IDs are filter params that are optional and can be nil
+	dpls, err := helper.ListValues[model.Deployment](ctx, r.dbpool, listQuery, pgx.NamedArgs{
+		"projectID": projectID,
+		"releaseID": params.ReleaseID,
+		"envID":     params.EnvironmentID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.ToSvcDeployments(dpls)
+}
+
+func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Deployment, error) {
+	dpl, err := helper.ReadValue[model.Deployment](ctx, r.dbpool, query.ReadLastDeploymentForRelease, pgx.NamedArgs{
+		"releaseID": releaseID,
+	})
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.Deployment{}, svcerrors.NewDeploymentNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.Deployment{}, err
+	}
+
+	return model.ToSvcDeployment(dpl)
+}
+
+func (r *ReleaseRepository) readRelease(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) (svcmodel.Release, error) {
+	rls, err := helper.ReadValue[model.Release](ctx, q, query, args)
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.Release{}, svcerrors.NewReleaseNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.Release{}, err
+	}
+
+	return model.ToSvcRelease(rls, r.githubURLGenerator.GenerateGitTagURL, r.fileURLGenerator.GenerateFileURL)
+}
+
+func (r *ReleaseRepository) deleteRelease(ctx context.Context, e helper.ExecExecutor, query string, args pgx.NamedArgs) error {
+	result, err := e.Exec(ctx, query, args)
 	if err != nil {
 		return err
 	}
@@ -143,68 +199,4 @@ func (r *ReleaseRepository) deleteRelease(ctx context.Context, deleteQuery strin
 	}
 
 	return nil
-}
-
-func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
-	var dbReleases []model.Release
-
-	err := pgxscan.Select(ctx, r.dbpool, &dbReleases, query.ListReleasesForProject, pgx.NamedArgs{
-		"projectID": projectID,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return model.ToSvcReleases(dbReleases, r.githubURLGenerator.GenerateGitTagURL, r.fileURLGenerator.GenerateFileURL)
-}
-
-func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.Deployment) error {
-	_, err := r.dbpool.Exec(ctx, query.CreateDeployment, pgx.NamedArgs{
-		"id":            dpl.ID,
-		"releaseID":     dpl.Release.ID,
-		"environmentID": dpl.Environment.ID,
-		"deployedBy":    dpl.DeployedByUserID,
-		"deployedAt":    dpl.DeployedAt,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
-	var dpls []model.Deployment
-
-	listQuery := query.ListDeploymentsForProject
-	if params.LatestOnly != nil && *params.LatestOnly {
-		listQuery = query.AppendLimit(listQuery, 1)
-	}
-
-	if err := pgxscan.Select(ctx, r.dbpool, &dpls, listQuery, pgx.NamedArgs{
-		"projectID": projectID,
-		"releaseID": params.ReleaseID,
-		"envID":     params.EnvironmentID,
-	}); err != nil {
-		return nil, err
-	}
-
-	return model.ToSvcDeployments(dpls)
-}
-
-func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Deployment, error) {
-	var dpl model.Deployment
-
-	err := pgxscan.Get(ctx, r.dbpool, &dpl, query.ReadLastDeploymentForRelease, pgx.NamedArgs{
-		"releaseID": releaseID,
-	})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return svcmodel.Deployment{}, svcerrors.NewDeploymentNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.Deployment{}, err
-	}
-
-	return model.ToSvcDeployment(dpl)
 }
