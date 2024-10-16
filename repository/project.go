@@ -443,32 +443,16 @@ func (r *ProjectRepository) deleteInvitation(ctx context.Context, e helper.ExecE
 }
 
 func (r *ProjectRepository) listMembers(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) ([]svcmodel.ProjectMember, error) {
-	var m []svcmodel.ProjectMember
-
-	rows, err := q.Query(ctx, query, args)
+	m, err := helper.ListValues[model.ProjectMember](ctx, q, query, args)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		member, err := model.ScanToSvcProjectMember(rows)
-		if err != nil {
-			return nil, err
-		}
-		m = append(m, member)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return m, nil
+	return model.ToSvcProjectMembers(m), nil
 }
 
 func (r *ProjectRepository) readMember(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) (svcmodel.ProjectMember, error) {
-	row := q.QueryRow(ctx, query, args)
-	m, err := model.ScanToSvcProjectMember(row)
+	m, err := helper.ReadValue[model.ProjectMember](ctx, q, query, args)
 	if err != nil {
 		if helper.IsNotFound(err) {
 			return svcmodel.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError().Wrap(err)
@@ -477,7 +461,7 @@ func (r *ProjectRepository) readMember(ctx context.Context, q helper.Querier, qu
 		return svcmodel.ProjectMember{}, err
 	}
 
-	return m, nil
+	return model.ToSvcProjectMember(m), nil
 }
 
 func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
