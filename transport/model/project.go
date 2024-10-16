@@ -47,7 +47,7 @@ type UpdateReleaseNotificationConfigInput struct {
 	ShowProjectName    *bool   `json:"show_project_name"`
 	ShowReleaseTitle   *bool   `json:"show_release_title"`
 	ShowReleaseNotes   *bool   `json:"show_release_notes"`
-	ShowLastDeployment *bool   `json:"show_deployment"`
+	ShowLastDeployment *bool   `json:"show_last_deployment"`
 	ShowSourceCode     *bool   `json:"show_source_code"`
 }
 
