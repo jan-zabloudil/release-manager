@@ -35,7 +35,7 @@ func TestSettingsService_Update(t *testing.T) {
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(nil)
+				settingsRepo.On("Upsert", mock.Anything, mock.Anything).Return(nil)
 			},
 			expectErr: false,
 		},
@@ -51,7 +51,7 @@ func TestSettingsService_Update(t *testing.T) {
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {
 				authSvc.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				settingsRepo.On("Update", mock.Anything, mock.Anything).Return(svcerrors.NewSettingsUnprocessableError())
+				settingsRepo.On("Upsert", mock.Anything, mock.Anything).Return(svcerrors.NewSettingsUnprocessableError())
 			},
 			expectErr: true,
 		},

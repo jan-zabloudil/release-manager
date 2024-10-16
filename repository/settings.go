@@ -24,15 +24,15 @@ func NewSettingsRepository(pool *pgxpool.Pool) *SettingsRepository {
 }
 
 func (r *SettingsRepository) Read(ctx context.Context) (svcmodel.Settings, error) {
-	return r.read(ctx, r.dbpool)
+	return r.read(ctx, r.dbpool, query.ReadSettings)
 }
 
-func (r *SettingsRepository) Update(
+func (r *SettingsRepository) Upsert(
 	ctx context.Context,
 	fn svcmodel.UpdateSettingsFunc,
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		s, err := r.read(ctx, tx)
+		s, err := r.read(ctx, tx, query.AppendForUpdate(query.ReadSettings))
 		if err != nil {
 			return fmt.Errorf("reading settings: %w", err)
 		}
@@ -42,47 +42,31 @@ func (r *SettingsRepository) Update(
 			return err
 		}
 
-		if err := r.upsert(ctx, tx, s); err != nil {
-			return fmt.Errorf("upserting settings: %w", err)
+		sv, err := model.ToSettingsValues(s)
+		if err != nil {
+			return fmt.Errorf("converting service settigs model to repository model: %w", err)
+		}
+
+		// In current implementation, there are up to 4 settings values to upsert.
+		// It is ok to update them by one in a loop.
+		for _, v := range sv {
+			if _, err := tx.Exec(ctx, query.UpsertSettings, pgx.NamedArgs{
+				"key":   v.Key,
+				"value": v.Value,
+			}); err != nil {
+				return fmt.Errorf("upserting setting value: %w", err)
+			}
 		}
 
 		return nil
 	})
 }
 
-func (r *SettingsRepository) read(ctx context.Context, q helper.Querier) (svcmodel.Settings, error) {
-	s, err := helper.ListValues[model.SettingsValue](ctx, q, query.ReadSettings, nil)
+func (r *SettingsRepository) read(ctx context.Context, q helper.Querier, query string) (svcmodel.Settings, error) {
+	s, err := helper.ListValues[model.SettingsValue](ctx, q, query, nil)
 	if err != nil {
 		return svcmodel.Settings{}, err
 	}
 
 	return model.ToSvcSettings(s)
-}
-
-// upsert settings are saved as key-value pairs in the database
-// if key-value pair already exists, it is updated
-// if key-value pair does not exist, it is inserted
-func (r *SettingsRepository) upsert(ctx context.Context, tx pgx.Tx, s svcmodel.Settings) error {
-	sv, err := model.ToSettingsValues(s)
-	if err != nil {
-		return err
-	}
-
-	// sending batch is implicitly transactional
-	// https://github.com/jackc/pgx/issues/879
-	batch := &pgx.Batch{}
-	for _, v := range sv {
-		batch.Queue(query.UpsertSettings, pgx.NamedArgs{"key": v.Key, "value": v.Value})
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
-	for range sv {
-		if _, err := br.Exec(); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

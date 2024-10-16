@@ -12,7 +12,7 @@ type SettingsRepository struct {
 	mock.Mock
 }
 
-func (m *SettingsRepository) Update(ctx context.Context, fn svcmodel.UpdateSettingsFunc) error {
+func (m *SettingsRepository) Upsert(ctx context.Context, fn svcmodel.UpdateSettingsFunc) error {
 	args := m.Called(ctx, fn)
 	return args.Error(0)
 }
