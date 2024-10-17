@@ -81,7 +81,7 @@ func (s *AuthorizationService) authorizeProjectRole(ctx context.Context, project
 	member, err := s.projectRepo.ReadMember(ctx, projectID, userID)
 	if err != nil {
 		switch {
-		case svcerrors.IsNotFoundError(err):
+		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound):
 			// User is not a member of the project
 
 			// First check if the project exists
@@ -128,7 +128,7 @@ func (s *AuthorizationService) getUser(ctx context.Context, userID uuid.UUID) (m
 	user, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {
-		case svcerrors.IsNotFoundError(err):
+		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound):
 			return model.User{}, svcerrors.NewUnauthorizedUnknownUserError().Wrap(err)
 		default:
 			return model.User{}, fmt.Errorf("reading user: %w", err)

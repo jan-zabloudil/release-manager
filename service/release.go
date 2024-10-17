@@ -116,7 +116,7 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 	if input.DeleteGithubRelease {
 		if err := s.deleteGithubRelease(ctx, releaseID, authUserID); err != nil {
 			switch {
-			case svcerrors.IsGithubReleaseNotFoundError(err):
+			case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound):
 				// If the release does not exist on GitHub, it is not an error.
 			default:
 				return fmt.Errorf("deleting github release: %w", err)
@@ -378,7 +378,7 @@ func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, releas
 	dpl, err := s.repo.ReadLastDeploymentForRelease(ctx, releaseID)
 	if err != nil {
 		switch {
-		case svcerrors.IsNotFoundError(err):
+		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentNotFound):
 			return nil, nil
 		default:
 			return nil, fmt.Errorf("reading last deployment for release: %w", err)
