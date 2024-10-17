@@ -35,16 +35,19 @@ type projectRepository interface {
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
 	ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
-	ReadPendingInvitationByHash(ctx context.Context, hash cryptox.Hash) (model.ProjectInvitation, error)
 	DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error
 	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
-	AcceptPendingInvitation(
+	UpdateInvitation(
 		ctx context.Context,
-		invitationID uuid.UUID,
-		acceptFn func(i *model.ProjectInvitation),
+		invitationHash cryptox.Hash,
+		updateFn func(i model.ProjectInvitation) (model.ProjectInvitation, error),
 	) error
 
-	CreateMember(ctx context.Context, member model.ProjectMember) error
+	CreateMember(
+		ctx context.Context,
+		invitationHash cryptox.Hash,
+		createMemberFn func(i model.ProjectInvitation) (model.ProjectMember, error),
+	) error
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
 	ListMembersForUser(ctx context.Context, userID uuid.UUID) ([]model.ProjectMember, error)
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)

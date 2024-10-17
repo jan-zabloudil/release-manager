@@ -226,41 +226,6 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) AcceptPendingInvitation(
-	ctx context.Context,
-	invitationID uuid.UUID,
-	acceptFn func(i *svcmodel.ProjectInvitation),
-) error {
-	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
-		invitation, err := r.readInvitation(ctx, tx, query.AppendForUpdate(query.ReadInvitationByIDAndStatus), pgx.NamedArgs{
-			"id":     invitationID,
-			"status": string(svcmodel.InvitationStatusPending),
-		})
-		if err != nil {
-			return fmt.Errorf("reading project invitation: %w", err)
-		}
-
-		acceptFn(&invitation)
-
-		if _, err := tx.Exec(ctx, query.UpdateInvitation, pgx.NamedArgs{
-			"invitationID": invitation.ID,
-			"status":       invitation.Status,
-			"updatedAt":    invitation.UpdatedAt,
-		}); err != nil {
-			return fmt.Errorf("updating project invitation: %w", err)
-		}
-
-		return nil
-	})
-}
-
-func (r *ProjectRepository) ReadPendingInvitationByHash(ctx context.Context, hash crypto.Hash) (svcmodel.ProjectInvitation, error) {
-	return r.readInvitation(ctx, r.dbpool, query.ReadInvitationByHashAndStatus, pgx.NamedArgs{
-		"hash":   hash.ToBase64(),
-		"status": string(svcmodel.InvitationStatusPending),
-	})
-}
-
 func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
 	i, err := helper.ListValues[model.ProjectInvitation](ctx, r.dbpool, query.ListInvitationsForProject, pgx.NamedArgs{
 		"projectID": projectID},
@@ -290,9 +255,55 @@ func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
 	})
 }
 
-// CreateMember creates a project member and deletes the invitation
-func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.ProjectMember) error {
+func (r *ProjectRepository) UpdateInvitation(
+	ctx context.Context,
+	invitationHash crypto.Hash,
+	updateFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectInvitation, error),
+) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		i, err := r.readInvitation(ctx, tx, query.AppendForUpdate(query.ReadInvitationByHash), pgx.NamedArgs{
+			"hash": invitationHash.ToBase64(),
+		})
+		if err != nil {
+			return fmt.Errorf("reading project invitation: %w", err)
+		}
+
+		i, err = updateFn(i)
+		if err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(ctx, query.UpdateInvitation, pgx.NamedArgs{
+			"invitationID": i.ID,
+			"status":       i.Status,
+			"updatedAt":    i.UpdatedAt,
+		}); err != nil {
+			return fmt.Errorf("updating project invitation: %w", err)
+		}
+
+		return nil
+	})
+}
+
+// CreateMember creates a project member and deletes the invitation
+func (r *ProjectRepository) CreateMember(
+	ctx context.Context,
+	tokenHash crypto.Hash,
+	createMemberFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectMember, error),
+) error {
+	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
+		i, err := r.readInvitation(ctx, tx, query.ReadInvitationByHash, pgx.NamedArgs{
+			"hash": tokenHash.ToBase64(),
+		})
+		if err != nil {
+			return fmt.Errorf("reading project invitation: %w", err)
+		}
+
+		m, err := createMemberFn(i)
+		if err != nil {
+			return err
+		}
+
 		if _, err := tx.Exec(ctx, query.CreateMember, pgx.NamedArgs{
 			"userID":      m.User.ID,
 			"projectID":   m.ProjectID,
@@ -303,9 +314,9 @@ func (r *ProjectRepository) CreateMember(ctx context.Context, m svcmodel.Project
 			return fmt.Errorf("creating project member: %w", err)
 		}
 
-		if err := r.deleteInvitation(ctx, tx, query.DeleteInvitationByEmailAndProjectID, pgx.NamedArgs{
-			"email":     m.User.Email,
-			"projectID": m.ProjectID,
+		if err := r.deleteInvitation(ctx, tx, query.DeleteInvitation, pgx.NamedArgs{
+			"projectID":    i.ProjectID,
+			"invitationID": i.ID,
 		}); err != nil {
 			return fmt.Errorf("deleting project invitation: %w", err)
 		}

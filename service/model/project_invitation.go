@@ -25,6 +25,7 @@ var (
 	errProjectInvitationEmailRequired        = errors.New("email is required")
 	errProjectInvitationInvalidEmail         = errors.New("invalid email")
 	errProjectInvitationCannotGrantOwnerRole = errors.New("cannot grant owner role to project member")
+	ErrProjectInvitationAlreadyAccepted      = errors.New("invitation already accepted")
 )
 
 type ProjectInvitation struct {
@@ -69,9 +70,15 @@ func NewProjectInvitation(c CreateProjectInvitationInput, tkn cryptox.Token, inv
 	return i, nil
 }
 
-func (i *ProjectInvitation) Accept() {
+func (i *ProjectInvitation) Accept() error {
+	if i.Status == InvitationStatusAccepted {
+		return ErrProjectInvitationAlreadyAccepted
+	}
+
 	i.Status = InvitationStatusAccepted
 	i.UpdatedAt = time.Now()
+
+	return nil
 }
 
 func (i *ProjectInvitation) Validate() error {
