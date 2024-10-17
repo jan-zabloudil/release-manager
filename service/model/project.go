@@ -84,8 +84,6 @@ func (p *Project) SetGithubRepo(repo *GithubRepo) {
 	p.UpdatedAt = time.Now()
 }
 
-type UpdateProjectFunc func(p Project) (Project, error)
-
 func (p *Project) Update(u UpdateProjectInput) error {
 	if u.Name != nil {
 		p.Name = *u.Name

@@ -29,7 +29,7 @@ func (r *SettingsRepository) Read(ctx context.Context) (svcmodel.Settings, error
 
 func (r *SettingsRepository) Upsert(
 	ctx context.Context,
-	fn svcmodel.UpdateSettingsFunc,
+	upsertFn func(svcmodel.Settings) (svcmodel.Settings, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		s, err := r.read(ctx, tx, query.AppendForUpdate(query.ReadSettings))
@@ -37,7 +37,7 @@ func (r *SettingsRepository) Upsert(
 			return fmt.Errorf("reading settings: %w", err)
 		}
 
-		s, err = fn(s)
+		s, err = upsertFn(s)
 		if err != nil {
 			return err
 		}

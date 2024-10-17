@@ -87,14 +87,18 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	return nil
 }
 
-func (r *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) error {
+func (r *ProjectRepository) UpdateProject(
+	ctx context.Context,
+	projectID uuid.UUID,
+	updateFn func(p svcmodel.Project) (svcmodel.Project, error),
+) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		p, err := r.readProject(ctx, tx, query.AppendForUpdate(query.ReadProject), pgx.NamedArgs{"id": projectID})
 		if err != nil {
 			return fmt.Errorf("reading project: %w", err)
 		}
 
-		p, err = fn(p)
+		p, err = updateFn(p)
 		if err != nil {
 			return err
 		}
@@ -168,7 +172,7 @@ func (r *ProjectRepository) UpdateEnvironment(
 	ctx context.Context,
 	projectID,
 	envID uuid.UUID,
-	fn svcmodel.UpdateEnvironmentFunc,
+	updateFn func(e svcmodel.Environment) (svcmodel.Environment, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		env, err := r.readEnvironment(ctx, tx, query.AppendForUpdate(query.ReadEnvironment), pgx.NamedArgs{
@@ -179,7 +183,7 @@ func (r *ProjectRepository) UpdateEnvironment(
 			return fmt.Errorf("reading environment: %w", err)
 		}
 
-		env, err = fn(env)
+		env, err = updateFn(env)
 		if err != nil {
 			return err
 		}
@@ -225,7 +229,7 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 func (r *ProjectRepository) AcceptPendingInvitation(
 	ctx context.Context,
 	invitationID uuid.UUID,
-	fn svcmodel.AcceptProjectInvitationFunc,
+	acceptFn func(i *svcmodel.ProjectInvitation),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		invitation, err := r.readInvitation(ctx, tx, query.AppendForUpdate(query.ReadInvitationByIDAndStatus), pgx.NamedArgs{
@@ -236,7 +240,7 @@ func (r *ProjectRepository) AcceptPendingInvitation(
 			return fmt.Errorf("reading project invitation: %w", err)
 		}
 
-		fn(&invitation)
+		acceptFn(&invitation)
 
 		if _, err := tx.Exec(ctx, query.UpdateInvitation, pgx.NamedArgs{
 			"invitationID": invitation.ID,
@@ -352,7 +356,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 	ctx context.Context,
 	projectID,
 	userID uuid.UUID,
-	fn svcmodel.UpdateProjectMemberFunc,
+	updateFn func(m svcmodel.ProjectMember) (svcmodel.ProjectMember, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		m, err := r.readMember(ctx, tx, query.AppendForUpdate(query.ReadMember), pgx.NamedArgs{
@@ -363,7 +367,7 @@ func (r *ProjectRepository) UpdateMemberRole(
 			return fmt.Errorf("reading project member: %w", err)
 		}
 
-		m, err = fn(m)
+		m, err = updateFn(m)
 		if err != nil {
 			return err
 		}

@@ -39,8 +39,12 @@ func (m *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateProject(ctx context.Context, projectID uuid.UUID, fn svcmodel.UpdateProjectFunc) error {
-	args := m.Called(ctx, projectID, fn)
+func (m *ProjectRepository) UpdateProject(
+	ctx context.Context,
+	projectID uuid.UUID,
+	updateFn func(p svcmodel.Project) (svcmodel.Project, error),
+) error {
+	args := m.Called(ctx, projectID, updateFn)
 	return args.Error(0)
 }
 
@@ -64,8 +68,13 @@ func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, en
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn svcmodel.UpdateEnvironmentFunc) error {
-	args := m.Called(ctx, projectID, envID, fn)
+func (m *ProjectRepository) UpdateEnvironment(
+	ctx context.Context,
+	projectID,
+	envID uuid.UUID,
+	updateFn func(e svcmodel.Environment) (svcmodel.Environment, error),
+) error {
+	args := m.Called(ctx, projectID, envID, updateFn)
 	return args.Error(0)
 }
 
@@ -74,8 +83,12 @@ func (m *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) AcceptPendingInvitation(ctx context.Context, invitationID uuid.UUID, fn svcmodel.AcceptProjectInvitationFunc) error {
-	args := m.Called(ctx, invitationID, fn)
+func (m *ProjectRepository) AcceptPendingInvitation(
+	ctx context.Context,
+	invitationID uuid.UUID,
+	acceptFn func(i *svcmodel.ProjectInvitation),
+) error {
+	args := m.Called(ctx, invitationID, acceptFn)
 	return args.Error(0)
 }
 
@@ -129,7 +142,12 @@ func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn svcmodel.UpdateProjectMemberFunc) error {
-	args := m.Called(ctx, projectID, userID, fn)
+func (m *ProjectRepository) UpdateMemberRole(
+	ctx context.Context,
+	projectID,
+	userID uuid.UUID,
+	updateFn func(m svcmodel.ProjectMember) (svcmodel.ProjectMember, error),
+) error {
+	args := m.Called(ctx, projectID, userID, updateFn)
 	return args.Error(0)
 }
