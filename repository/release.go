@@ -74,7 +74,7 @@ func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID
 func (r *ReleaseRepository) UpdateRelease(
 	ctx context.Context,
 	releaseID uuid.UUID,
-	fn svcmodel.UpdateReleaseFunc,
+	updateFn func(r svcmodel.Release) (svcmodel.Release, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		rls, err := r.readRelease(ctx, tx, query.AppendForUpdate(query.ReadRelease), pgx.NamedArgs{
@@ -84,7 +84,7 @@ func (r *ReleaseRepository) UpdateRelease(
 			return fmt.Errorf("reading release: %w", err)
 		}
 
-		rls, err = fn(rls)
+		rls, err = updateFn(rls)
 		if err != nil {
 			return err
 		}

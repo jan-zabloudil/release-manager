@@ -38,8 +38,12 @@ func (m *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectI
 	return args.Get(0).([]svcmodel.Release), args.Error(1)
 }
 
-func (m *ReleaseRepository) UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn svcmodel.UpdateReleaseFunc) error {
-	args := m.Called(ctx, releaseID, fn)
+func (m *ReleaseRepository) UpdateRelease(
+	ctx context.Context,
+	releaseID uuid.UUID,
+	updateFn func(r svcmodel.Release) (svcmodel.Release, error),
+) error {
+	args := m.Called(ctx, releaseID, updateFn)
 	return args.Error(0)
 }
 

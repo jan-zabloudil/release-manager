@@ -80,8 +80,6 @@ func NewRelease(input CreateReleaseInput, tagURL url.URL, projectID, authorUserI
 	return r, nil
 }
 
-type UpdateReleaseFunc func(r Release) (Release, error)
-
 func (r *Release) Update(input UpdateReleaseInput) error {
 	if input.ReleaseTitle != nil {
 		r.ReleaseTitle = *input.ReleaseTitle

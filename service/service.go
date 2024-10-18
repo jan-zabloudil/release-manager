@@ -16,11 +16,20 @@ type projectRepository interface {
 	ListProjects(ctx context.Context) ([]model.Project, error)
 	ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
 	DeleteProject(ctx context.Context, id uuid.UUID) error
-	UpdateProject(ctx context.Context, projectID uuid.UUID, fn model.UpdateProjectFunc) error
+	UpdateProject(
+		ctx context.Context,
+		projectID uuid.UUID,
+		updateFn func(p model.Project) (model.Project, error),
+	) error
 
 	CreateEnvironment(ctx context.Context, env model.Environment) error
 	ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (model.Environment, error)
-	UpdateEnvironment(ctx context.Context, projectID, envID uuid.UUID, fn model.UpdateEnvironmentFunc) error
+	UpdateEnvironment(
+		ctx context.Context,
+		projectID,
+		envID uuid.UUID,
+		updateFn func(e model.Environment) (model.Environment, error),
+	) error
 	DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error
 	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
 
@@ -29,7 +38,11 @@ type projectRepository interface {
 	ReadPendingInvitationByHash(ctx context.Context, hash cryptox.Hash) (model.ProjectInvitation, error)
 	DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error
 	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
-	AcceptPendingInvitation(ctx context.Context, invitationID uuid.UUID, fn model.AcceptProjectInvitationFunc) error
+	AcceptPendingInvitation(
+		ctx context.Context,
+		invitationID uuid.UUID,
+		acceptFn func(i *model.ProjectInvitation),
+	) error
 
 	CreateMember(ctx context.Context, member model.ProjectMember) error
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
@@ -37,7 +50,12 @@ type projectRepository interface {
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
 	ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (model.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
-	UpdateMemberRole(ctx context.Context, projectID, userID uuid.UUID, fn model.UpdateProjectMemberFunc) error
+	UpdateMemberRole(
+		ctx context.Context,
+		projectID,
+		userID uuid.UUID,
+		updateFn func(m model.ProjectMember) (model.ProjectMember, error),
+	) error
 }
 
 type userRepository interface {
@@ -48,7 +66,10 @@ type userRepository interface {
 }
 
 type settingsRepository interface {
-	Upsert(ctx context.Context, fn model.UpdateSettingsFunc) error
+	Upsert(
+		ctx context.Context,
+		upsertFn func(s model.Settings) (model.Settings, error),
+	) error
 	Read(ctx context.Context) (model.Settings, error)
 }
 
@@ -59,7 +80,11 @@ type releaseRepository interface {
 	DeleteRelease(ctx context.Context, releaseID uuid.UUID) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
 	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
-	UpdateRelease(ctx context.Context, releaseID uuid.UUID, fn model.UpdateReleaseFunc) error
+	UpdateRelease(
+		ctx context.Context,
+		releaseID uuid.UUID,
+		updateFn func(r model.Release) (model.Release, error),
+	) error
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
 	ListDeploymentsForProject(ctx context.Context, params model.DeploymentFilterParams, projectID uuid.UUID) ([]model.Deployment, error)

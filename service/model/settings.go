@@ -25,8 +25,6 @@ type UpdateSettingsInput struct {
 	Github            UpdateGithubSettingsInput
 }
 
-type UpdateSettingsFunc func(s Settings) (Settings, error)
-
 func (s *Settings) Update(u UpdateSettingsInput) error {
 	if u.OrganizationName != nil {
 		s.OrganizationName = *u.OrganizationName
