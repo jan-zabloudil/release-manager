@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
@@ -22,13 +23,9 @@ func NewUserService(guard authGuard, repo userRepository) *UserService {
 	}
 }
 
-// Get retrieves a user by ID, can be accessed by the user themselves.
-func (s *UserService) Get(ctx context.Context, userID uuid.UUID) (model.User, error) {
-	if err := s.authGuard.AuthorizeUserRoleUser(ctx, userID); err != nil {
-		return model.User{}, fmt.Errorf("authorizing user role: %w", err)
-	}
-
-	u, err := s.repository.Read(ctx, userID)
+// GetForAuth Get retrieves a user by ID, can be accessed by the user themselves.
+func (s *UserService) GetForAuth(ctx context.Context, userID id.AuthUser) (model.User, error) {
+	u, err := s.repository.ReadForAuth(ctx, userID)
 	if err != nil {
 		return model.User{}, fmt.Errorf("reading user: %w", err)
 	}
@@ -47,7 +44,7 @@ func (s *UserService) GetByEmail(ctx context.Context, email string) (model.User,
 }
 
 // GetForAdmin retrieves a user by ID, can be accessed only by admin user.
-func (s *UserService) GetForAdmin(ctx context.Context, userID uuid.UUID, authUserID uuid.UUID) (model.User, error) {
+func (s *UserService) GetForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) (model.User, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.User{}, fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -61,7 +58,7 @@ func (s *UserService) GetForAdmin(ctx context.Context, userID uuid.UUID, authUse
 }
 
 // DeleteForAdmin deletes a user by ID, can be accessed only by admin user.
-func (s *UserService) DeleteForAdmin(ctx context.Context, userID uuid.UUID, authUserID uuid.UUID) error {
+func (s *UserService) DeleteForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -80,7 +77,7 @@ func (s *UserService) DeleteForAdmin(ctx context.Context, userID uuid.UUID, auth
 }
 
 // ListAllForAdmin lists all users, can be accessed only by admin user.
-func (s *UserService) ListAllForAdmin(ctx context.Context, authUserID uuid.UUID) ([]model.User, error) {
+func (s *UserService) ListAllForAdmin(ctx context.Context, authUserID id.AuthUser) ([]model.User, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}

@@ -8,15 +8,15 @@ import (
 
 	"release-manager/auth"
 	cryptox "release-manager/pkg/crypto"
+	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/util"
 
-	"github.com/google/uuid"
 	httpx "go.strv.io/net/http"
 )
 
 type AuthClient interface {
-	Authenticate(ctx context.Context, token string) (uuid.UUID, error)
+	Authenticate(ctx context.Context, token string) (id.AuthUser, error)
 }
 
 func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
@@ -25,7 +25,7 @@ func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
 			authorizationHeader := r.Header.Get(httpx.Header.Authorization)
 
 			if authorizationHeader == "" {
-				r = util.ContextSetAuthUserID(r, uuid.Nil)
+				r = util.ContextSetAuthUserID(r, id.AuthUser{})
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -38,7 +38,7 @@ func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
 
 			tokenString := headerParts[1]
 
-			id, err := authClient.Authenticate(r.Context(), tokenString)
+			userID, err := authClient.Authenticate(r.Context(), tokenString)
 			if err != nil {
 				if errors.Is(err, auth.ErrInvalidOrExpiredToken) {
 					util.WriteResponseError(w, resperrors.NewExpiredOrInvalidTokenError().Wrap(err))
@@ -49,7 +49,7 @@ func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
 				return
 			}
 
-			r = util.ContextSetAuthUserID(r, id)
+			r = util.ContextSetAuthUserID(r, userID)
 
 			next.ServeHTTP(w, r)
 		})
@@ -58,7 +58,7 @@ func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
 
 func RequireAuthUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if id := util.ContextAuthUserID(r); id == uuid.Nil {
+		if userID := util.ContextAuthUserID(r); userID.IsEmpty() {
 			util.WriteResponseError(w, resperrors.NewMissingBearerTokenError())
 			return
 		}

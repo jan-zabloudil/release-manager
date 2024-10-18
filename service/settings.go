@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type SettingsService struct {
@@ -22,7 +21,7 @@ func NewSettingsService(guard authGuard, r settingsRepository) *SettingsService 
 	}
 }
 
-func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.Settings, error) {
+func (s *SettingsService) Get(ctx context.Context, authUserID id.AuthUser) (model.Settings, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.Settings{}, fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -35,7 +34,7 @@ func (s *SettingsService) Get(ctx context.Context, authUserID uuid.UUID) (model.
 	return settings, nil
 }
 
-func (s *SettingsService) Update(ctx context.Context, input model.UpdateSettingsInput, authUserID uuid.UUID) error {
+func (s *SettingsService) Update(ctx context.Context, input model.UpdateSettingsInput, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}

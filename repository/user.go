@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"release-manager/pkg/id"
 	"release-manager/repository/helper"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
@@ -29,12 +30,43 @@ func NewUserRepository(client *supabase.Client, pool *pgxpool.Pool) *UserReposit
 	}
 }
 
+func (r *UserRepository) ReadForAuth(ctx context.Context, userID id.AuthUser) (svcmodel.User, error) {
+	u, err := helper.ReadValue[model.User](ctx, r.dbpool, query.ReadUser, pgx.NamedArgs{"id": userID})
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.User{}, svcerrors.NewUnauthorizedUnknownUserError().Wrap(err)
+		}
+
+		return svcmodel.User{}, err
+	}
+
+	return model.ToSvcUser(u), nil
+}
+
 func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.User, error) {
-	return r.read(ctx, r.dbpool, query.ReadUser, pgx.NamedArgs{"id": userID})
+	u, err := helper.ReadValue[model.User](ctx, r.dbpool, query.ReadUser, pgx.NamedArgs{"id": userID})
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.User{}, svcerrors.NewUserNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.User{}, err
+	}
+
+	return model.ToSvcUser(u), nil
 }
 
 func (r *UserRepository) ReadByEmail(ctx context.Context, email string) (svcmodel.User, error) {
-	return r.read(ctx, r.dbpool, query.ReadUserByEmail, pgx.NamedArgs{"email": email})
+	u, err := helper.ReadValue[model.User](ctx, r.dbpool, query.ReadUserByEmail, pgx.NamedArgs{"email": email})
+	if err != nil {
+		if helper.IsNotFound(err) {
+			return svcmodel.User{}, svcerrors.NewUserNotFoundError().Wrap(err)
+		}
+
+		return svcmodel.User{}, err
+	}
+
+	return model.ToSvcUser(u), nil
 }
 
 func (r *UserRepository) ListAll(ctx context.Context) ([]svcmodel.User, error) {
@@ -62,17 +94,4 @@ func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
-}
-
-func (r *UserRepository) read(ctx context.Context, q helper.Querier, query string, args pgx.NamedArgs) (svcmodel.User, error) {
-	u, err := helper.ReadValue[model.User](ctx, q, query, args)
-	if err != nil {
-		if helper.IsNotFound(err) {
-			return svcmodel.User{}, svcerrors.NewUserNotFoundError().Wrap(err)
-		}
-
-		return svcmodel.User{}, err
-	}
-
-	return model.ToSvcUser(u), nil
 }

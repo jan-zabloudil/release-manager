@@ -6,18 +6,19 @@ import (
 	"net/url"
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
 )
 
 type Release struct {
-	ID           uuid.UUID `db:"id"`
-	ProjectID    uuid.UUID `db:"project_id"`
-	ReleaseTitle string    `db:"release_title"`
-	ReleaseNotes string    `db:"release_notes"`
-	AuthorUserID uuid.UUID `db:"created_by"`
-	GitTagName   string    `db:"git_tag_name"`
+	ID           uuid.UUID   `db:"id"`
+	ProjectID    uuid.UUID   `db:"project_id"`
+	ReleaseTitle string      `db:"release_title"`
+	ReleaseNotes string      `db:"release_notes"`
+	AuthorUserID id.AuthUser `db:"created_by"`
+	GitTagName   string      `db:"git_tag_name"`
 	// GithubRepoSlug and GithubOwnerSlug are fetched from the project
 	// and are used to generate the tag URL
 	GithubRepoSlug  sql.NullString      `db:"github_repo_slug"`

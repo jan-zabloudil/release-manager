@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"release-manager/pkg/id"
 	"release-manager/pkg/pointer"
 	"release-manager/pkg/urlx"
 
@@ -64,7 +65,7 @@ func TestRelease_NewRelease(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewRelease(tt.input, tt.gitTagURL, uuid.New(), uuid.New())
+			_, err := NewRelease(tt.input, tt.gitTagURL, uuid.New(), id.AuthUser{})
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -121,7 +122,7 @@ func TestRelease_Update(t *testing.T) {
 					Host:   "github.com",
 					Path:   "/owner/repo/releases/tag/v1.0.0",
 				},
-				AuthorUserID: uuid.New(),
+				AuthorUserID: id.AuthUser{},
 				CreatedAt:    time.Now(),
 				UpdatedAt:    time.Now(),
 			}

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	cryptox "release-manager/pkg/crypto"
+	"release-manager/pkg/id"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -69,7 +70,7 @@ func TestProjectInvitation_NewProjectInvitation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			_, err = NewProjectInvitation(tt.creation, tkn, uuid.New())
+			_, err = NewProjectInvitation(tt.creation, tkn, id.AuthUser{})
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

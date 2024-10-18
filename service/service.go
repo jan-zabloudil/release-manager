@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	cryptox "release-manager/pkg/crypto"
+	"release-manager/pkg/id"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ type projectRepository interface {
 	CreateProjectWithOwner(ctx context.Context, p model.Project, owner model.ProjectMember) error
 	ReadProject(ctx context.Context, id uuid.UUID) (model.Project, error)
 	ListProjects(ctx context.Context) ([]model.Project, error)
-	ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
+	ListProjectsForUser(ctx context.Context, userID id.AuthUser) ([]model.Project, error)
 	DeleteProject(ctx context.Context, id uuid.UUID) error
 	UpdateProject(
 		ctx context.Context,
@@ -49,7 +50,7 @@ type projectRepository interface {
 		createMemberFn func(i model.ProjectInvitation) (model.ProjectMember, error),
 	) error
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
-	ListMembersForUser(ctx context.Context, userID uuid.UUID) ([]model.ProjectMember, error)
+	ListMembersForUser(ctx context.Context, userID id.AuthUser) ([]model.ProjectMember, error)
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
 	ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (model.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
@@ -63,6 +64,7 @@ type projectRepository interface {
 
 type userRepository interface {
 	Read(ctx context.Context, id uuid.UUID) (model.User, error)
+	ReadForAuth(ctx context.Context, id id.AuthUser) (model.User, error)
 	ReadByEmail(ctx context.Context, email string) (model.User, error)
 	ListAll(ctx context.Context) ([]model.User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -95,13 +97,12 @@ type releaseRepository interface {
 }
 
 type authGuard interface {
-	GetAuthorizedUser(ctx context.Context, userID uuid.UUID) (model.User, error)
-	AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error
-	AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error
-	AuthorizeProjectRoleEditor(ctx context.Context, projectID, userID uuid.UUID) error
-	AuthorizeProjectRoleViewer(ctx context.Context, projectID, userID uuid.UUID) error
-	AuthorizeReleaseEditor(ctx context.Context, releaseID, userID uuid.UUID) error
-	AuthorizeReleaseViewer(ctx context.Context, releaseID, userID uuid.UUID) error
+	AuthorizeUserRoleAdmin(ctx context.Context, userID id.AuthUser) error
+	AuthorizeUserRoleUser(ctx context.Context, userID id.AuthUser) error
+	AuthorizeProjectRoleEditor(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error
+	AuthorizeProjectRoleViewer(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error
+	AuthorizeReleaseEditor(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error
+	AuthorizeReleaseViewer(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error
 }
 
 type settingsGetter interface {
@@ -111,16 +112,17 @@ type settingsGetter interface {
 }
 
 type userGetter interface {
-	Get(ctx context.Context, userID uuid.UUID) (model.User, error)
+	GetForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) (model.User, error)
+	GetForAuth(ctx context.Context, userID id.AuthUser) (model.User, error)
 	GetByEmail(ctx context.Context, email string) (model.User, error)
 }
 
 type projectGetter interface {
-	GetProject(ctx context.Context, projectID uuid.UUID, authUserID uuid.UUID) (model.Project, error)
+	GetProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) (model.Project, error)
 }
 
 type environmentGetter interface {
-	GetEnvironment(ctx context.Context, projectID, envID, authUserID uuid.UUID) (model.Environment, error)
+	GetEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID id.AuthUser) (model.Environment, error)
 }
 
 type githubManager interface {

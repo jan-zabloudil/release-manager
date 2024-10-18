@@ -3,6 +3,7 @@ package mock
 import (
 	"context"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -20,6 +21,11 @@ func (m *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.U
 
 func (m *UserRepository) ReadByEmail(ctx context.Context, email string) (svcmodel.User, error) {
 	args := m.Called(ctx, email)
+	return args.Get(0).(svcmodel.User), args.Error(1)
+}
+
+func (m *UserRepository) ReadForAuth(ctx context.Context, userID id.AuthUser) (svcmodel.User, error) {
+	args := m.Called(ctx, userID)
 	return args.Get(0).(svcmodel.User), args.Error(1)
 }
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"release-manager/pkg/id"
 	repomock "release-manager/repository/mock"
 	svcerrors "release-manager/service/errors"
 	svcmock "release-manager/service/mock"
@@ -15,7 +16,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestUserService_Get(t *testing.T) {
+func TestUserService_GetForAdmin(t *testing.T) {
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -49,7 +50,7 @@ func TestUserService_Get(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.GetForAdmin(context.Background(), uuid.New(), uuid.New())
+			_, err := userService.GetForAdmin(context.Background(), uuid.New(), id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -62,7 +63,7 @@ func TestUserService_Get(t *testing.T) {
 	}
 }
 
-func TestUserService_GetAll(t *testing.T) {
+func TestUserService_ListAllForAdmin(t *testing.T) {
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -96,7 +97,7 @@ func TestUserService_GetAll(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.ListAllForAdmin(context.Background(), uuid.New())
+			_, err := userService.ListAllForAdmin(context.Background(), id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -109,7 +110,7 @@ func TestUserService_GetAll(t *testing.T) {
 	}
 }
 
-func TestUserService_Delete(t *testing.T) {
+func TestUserService_DeleteForAdmin(t *testing.T) {
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -166,7 +167,7 @@ func TestUserService_Delete(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			err := userService.DeleteForAdmin(context.Background(), uuid.New(), uuid.New())
+			err := userService.DeleteForAdmin(context.Background(), uuid.New(), id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {

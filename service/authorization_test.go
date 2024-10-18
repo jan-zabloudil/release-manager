@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"release-manager/pkg/id"
 	repo "release-manager/repository/mock"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
@@ -25,21 +26,21 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 		{
 			name: "User role admin",
 			mockSetup: func(userRepo *repo.UserRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(adminUser, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "User role user",
 			mockSetup: func(userRepo *repo.UserRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(user, nil)
 			},
 			wantErr: true,
 		},
 		{
 			name: "User not found",
 			mockSetup: func(userRepo *repo.UserRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -54,7 +55,7 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 
 			tc.mockSetup(userRepo)
 
-			err := service.AuthorizeUserRoleAdmin(context.Background(), uuid.New())
+			err := service.AuthorizeUserRoleAdmin(context.Background(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -79,21 +80,21 @@ func TestAuthService_AuthorizeUserRoleUser(t *testing.T) {
 		{
 			name: "User role admin",
 			mockSetup: func(userRepo *repo.UserRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(adminUser, nil)
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(adminUser, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "User role user",
 			mockSetup: func(userRepo *repo.UserRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(user, nil)
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(user, nil)
 			},
 			wantErr: false,
 		},
 		{
 			name: "User not found",
 			mockSetup: func(userRepo *repo.UserRepository) {
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -108,7 +109,7 @@ func TestAuthService_AuthorizeUserRoleUser(t *testing.T) {
 
 			tc.mockSetup(userRepo)
 
-			err := service.AuthorizeUserRoleUser(context.Background(), uuid.New())
+			err := service.AuthorizeUserRoleUser(context.Background(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -150,7 +151,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleUser,
 				}, nil)
 			},
@@ -161,7 +162,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleAdmin,
 				}, nil)
 			},
@@ -198,7 +199,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo)
 
-			err := service.AuthorizeProjectRoleEditor(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeProjectRoleEditor(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -241,7 +242,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleUser,
 				}, nil)
 			},
@@ -252,7 +253,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 			mockSetup: func(userRepo *repo.UserRepository, projectRepo *repo.ProjectRepository) {
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleAdmin,
 				}, nil)
 			},
@@ -289,7 +290,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo)
 
-			err := service.AuthorizeProjectRoleViewer(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeProjectRoleViewer(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -335,7 +336,7 @@ func TestAuth_AuthorizeReleaseEditor(t *testing.T) {
 				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleUser,
 				}, nil)
 			},
@@ -347,7 +348,7 @@ func TestAuth_AuthorizeReleaseEditor(t *testing.T) {
 				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleAdmin,
 				}, nil)
 			},
@@ -384,7 +385,7 @@ func TestAuth_AuthorizeReleaseEditor(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseEditor(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeReleaseEditor(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -431,7 +432,7 @@ func TestAuth_AuthorizeReleaseViewer(t *testing.T) {
 				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleUser,
 				}, nil)
 			},
@@ -443,7 +444,7 @@ func TestAuth_AuthorizeReleaseViewer(t *testing.T) {
 				releaseRepo.On("ReadRelease", mock.Anything, mock.Anything).Return(model.Release{}, nil)
 				projectRepo.On("ReadMember", mock.Anything, mock.Anything, mock.Anything).Return(model.ProjectMember{}, svcerrors.NewProjectMemberNotFoundError())
 				projectRepo.On("ReadProject", mock.Anything, mock.Anything).Return(model.Project{}, nil)
-				userRepo.On("Read", mock.Anything, mock.Anything).Return(model.User{
+				userRepo.On("ReadForAuth", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleAdmin,
 				}, nil)
 			},
@@ -480,7 +481,7 @@ func TestAuth_AuthorizeReleaseViewer(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseViewer(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeReleaseViewer(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)

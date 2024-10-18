@@ -3,6 +3,7 @@ package mock
 import (
 	"context"
 
+	"release-manager/pkg/id"
 	"release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -13,7 +14,12 @@ type UserService struct {
 	mock.Mock
 }
 
-func (m *UserService) Get(ctx context.Context, userID uuid.UUID) (model.User, error) {
+func (m *UserService) GetForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) (model.User, error) {
+	args := m.Called(ctx, userID, authUserID)
+	return args.Get(0).(model.User), args.Error(1)
+}
+
+func (m *UserService) GetForAuth(ctx context.Context, userID id.AuthUser) (model.User, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(model.User), args.Error(1)
 }

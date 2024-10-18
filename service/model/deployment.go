@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"release-manager/pkg/id"
+
 	"github.com/google/uuid"
 )
 
@@ -31,11 +33,11 @@ type Deployment struct {
 	ID               uuid.UUID
 	Release          Release
 	Environment      Environment
-	DeployedByUserID uuid.UUID
+	DeployedByUserID id.AuthUser
 	DeployedAt       time.Time
 }
 
-func NewDeployment(rls Release, env Environment, deployedByUserID uuid.UUID) Deployment {
+func NewDeployment(rls Release, env Environment, deployedByUserID id.AuthUser) Deployment {
 	return Deployment{
 		ID:               uuid.New(),
 		Release:          rls,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"release-manager/pkg/id"
 	"release-manager/pkg/pointer"
 	repo "release-manager/repository/mock"
 	svcerrors "release-manager/service/errors"
@@ -65,7 +66,7 @@ func TestSettingsService_Update(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsRepo)
 
-			err := settingsSvc.Update(context.Background(), tc.update, tc.userID)
+			err := settingsSvc.Update(context.Background(), tc.update, id.AuthUser{})
 
 			if tc.expectErr {
 				assert.Error(t, err)
