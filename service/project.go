@@ -81,7 +81,12 @@ func (s *ProjectService) GetProject(ctx context.Context, projectID, authUserID u
 		return model.Project{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	return s.getProject(ctx, projectID)
+	p, err := s.repo.ReadProject(ctx, projectID)
+	if err != nil {
+		return model.Project{}, fmt.Errorf("reading project: %w", err)
+	}
+
+	return p, err
 }
 
 func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
@@ -169,9 +174,9 @@ func (s *ProjectService) GetGithubRepoForProject(ctx context.Context, projectID,
 		return model.GithubRepo{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	p, err := s.getProject(ctx, projectID)
+	p, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
-		return model.GithubRepo{}, fmt.Errorf("getting project: %w", err)
+		return model.GithubRepo{}, fmt.Errorf("reading project: %w", err)
 	}
 
 	if !p.IsGithubRepoSet() {
@@ -275,7 +280,7 @@ func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, auth
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	project, err := s.getProject(ctx, projectID)
+	p, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("reading project: %w", err)
 	}
@@ -285,11 +290,11 @@ func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, auth
 		return nil, fmt.Errorf("getting Github token: %w", err)
 	}
 
-	if !project.IsGithubRepoSet() {
+	if !p.IsGithubRepoSet() {
 		return nil, svcerrors.NewGithubRepoNotSetForProjectError()
 	}
 
-	t, err := s.githubManager.ReadTagsForRepo(ctx, tkn, *project.GithubRepo)
+	t, err := s.githubManager.ReadTagsForRepo(ctx, tkn, *p.GithubRepo)
 	if err != nil {
 		return nil, fmt.Errorf("reading tags for github repo: %w", err)
 	}
@@ -302,7 +307,7 @@ func (s *ProjectService) Invite(ctx context.Context, input model.CreateProjectIn
 		return model.ProjectInvitation{}, err
 	}
 
-	p, err := s.getProject(ctx, input.ProjectID)
+	p, err := s.repo.ReadProject(ctx, input.ProjectID)
 	if err != nil {
 		return model.ProjectInvitation{}, fmt.Errorf("reading project: %w", err)
 	}
@@ -508,15 +513,6 @@ func (s *ProjectService) UpdateMemberRole(
 	return nil
 }
 
-func (s *ProjectService) getProject(ctx context.Context, projectID uuid.UUID) (model.Project, error) {
-	p, err := s.repo.ReadProject(ctx, projectID)
-	if err != nil {
-		return model.Project{}, fmt.Errorf("reading project: %w", err)
-	}
-
-	return p, nil
-}
-
 func (s *ProjectService) getDefaultReleaseNotificationConfig(ctx context.Context) (model.ReleaseNotificationConfig, error) {
 	msg, err := s.settingsGetter.GetDefaultReleaseMessage(ctx)
 	if err != nil {
@@ -534,8 +530,7 @@ func (s *ProjectService) getDefaultReleaseNotificationConfig(ctx context.Context
 }
 
 func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
-	_, err := s.repo.ReadProject(ctx, projectID)
-	if err != nil {
+	if _, err := s.repo.ReadProject(ctx, projectID); err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectNotFound):
 			return false, nil
@@ -548,8 +543,7 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 }
 
 func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {
-	_, err := s.repo.ReadMemberByEmail(ctx, projectID, email)
-	if err != nil {
+	if _, err := s.repo.ReadMemberByEmail(ctx, projectID, email); err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound):
 			return false, nil
