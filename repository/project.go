@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"release-manager/pkg/crypto"
+	"release-manager/pkg/id"
 	"release-manager/repository/helper"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
@@ -70,7 +71,7 @@ func (r *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Projec
 	return r.listProjects(ctx, query.ListProjects, nil)
 }
 
-func (r *ProjectRepository) ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.Project, error) {
+func (r *ProjectRepository) ListProjectsForUser(ctx context.Context, userID id.AuthUser) ([]svcmodel.Project, error) {
 	return r.listProjects(ctx, query.ListProjectsForUser, pgx.NamedArgs{"userID": userID})
 }
 
@@ -338,7 +339,7 @@ func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID
 	return r.listMembers(ctx, r.dbpool, query.ListMembersForProject, pgx.NamedArgs{"projectID": projectID})
 }
 
-func (r *ProjectRepository) ListMembersForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+func (r *ProjectRepository) ListMembersForUser(ctx context.Context, userID id.AuthUser) ([]svcmodel.ProjectMember, error) {
 	return r.listMembers(ctx, r.dbpool, query.ListMembersForUser, pgx.NamedArgs{"userID": userID})
 }
 

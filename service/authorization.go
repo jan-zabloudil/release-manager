@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
@@ -24,36 +25,36 @@ func NewAuthorizationService(userRepo userRepository, projectRepo projectReposit
 	}
 }
 
-func (s *AuthorizationService) AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error {
+func (s *AuthorizationService) AuthorizeUserRoleUser(ctx context.Context, userID id.AuthUser) error {
 	return s.authorizeUserRole(ctx, userID, model.UserRoleUser)
 }
 
-func (s *AuthorizationService) AuthorizeUserRoleAdmin(ctx context.Context, userID uuid.UUID) error {
+func (s *AuthorizationService) AuthorizeUserRoleAdmin(ctx context.Context, userID id.AuthUser) error {
 	return s.authorizeUserRole(ctx, userID, model.UserRoleAdmin)
 }
 
-func (s *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, projectID, userID uuid.UUID) error {
+func (s *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error {
 	return s.authorizeProjectRole(ctx, projectID, userID, model.ProjectRoleEditor)
 }
 
-func (s *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, projectID, userID uuid.UUID) error {
+func (s *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error {
 	return s.authorizeProjectRole(ctx, projectID, userID, model.ProjectRoleViewer)
 }
 
 // AuthorizeReleaseEditor authorizes the user that has editor role or higher in the release's project.
 // the function can be used to authorize release action in the release service if the project ID is not directly provided.
-func (s *AuthorizationService) AuthorizeReleaseEditor(ctx context.Context, releaseID, userID uuid.UUID) error {
+func (s *AuthorizationService) AuthorizeReleaseEditor(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error {
 	return s.authorizeProjectRoleByRelease(ctx, releaseID, userID, model.ProjectRoleEditor)
 }
 
 // AuthorizeReleaseViewer authorizes the user that has viewer role or higher in the release's project.
 // the function can be used to authorize release action in the release service if the project ID is not directly provided.
-func (s *AuthorizationService) AuthorizeReleaseViewer(ctx context.Context, releaseID, userID uuid.UUID) error {
+func (s *AuthorizationService) AuthorizeReleaseViewer(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error {
 	return s.authorizeProjectRoleByRelease(ctx, releaseID, userID, model.ProjectRoleViewer)
 }
 
 // authorizeProjectRoleByRelease checks if the user has the required or higher role in the project of the release.
-func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context, releaseID uuid.UUID, userID uuid.UUID, role model.ProjectRole) error {
+func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser, role model.ProjectRole) error {
 	// Approach of reading the release and then calling authorizeProjectRole was chosen rather than
 	// having repo function ReadProjectMemberByReleaseID, because:
 	//
@@ -72,8 +73,8 @@ func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context
 // If the user is not a member of the project, it checks if the user has admin role.
 // If user is not a member with required role (or higher) and not an admin, it returns an error (ErrCodeUserNotProjectMember or ErrCodeInsufficientProjectRole).
 // If project does not exist, it returns an error (ErrCodeProjectNotFound).
-func (s *AuthorizationService) authorizeProjectRole(ctx context.Context, projectID, userID uuid.UUID, role model.ProjectRole) error {
-	member, err := s.projectRepo.ReadMember(ctx, projectID, userID)
+func (s *AuthorizationService) authorizeProjectRole(ctx context.Context, projectID uuid.UUID, userID id.AuthUser, role model.ProjectRole) error {
+	member, err := s.projectRepo.ReadMember(ctx, projectID, uuid.UUID(userID))
 	if err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound):
@@ -106,22 +107,22 @@ func (s *AuthorizationService) authorizeProjectRole(ctx context.Context, project
 	return nil
 }
 
-func (s *AuthorizationService) authorizeUserRole(ctx context.Context, userID uuid.UUID, role model.UserRole) error {
-	user, err := s.getUser(ctx, userID)
+func (s *AuthorizationService) authorizeUserRole(ctx context.Context, userID id.AuthUser, role model.UserRole) error {
+	u, err := s.getUser(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("getting user: %w", err)
 	}
 
-	if !user.HasAtLeastRole(role) {
+	if !u.HasAtLeastRole(role) {
 		return svcerrors.NewInsufficientUserRoleError()
 	}
 
 	return nil
 }
 
-func (s *AuthorizationService) getUser(ctx context.Context, userID uuid.UUID) (model.User, error) {
+func (s *AuthorizationService) getUser(ctx context.Context, userID id.AuthUser) (model.User, error) {
 	// Cannot use GetAuthenticated function from UserService because it would create a circular dependency.
-	u, err := s.userRepo.Read(ctx, userID)
+	u, err := s.userRepo.Read(ctx, uuid.UUID(userID))
 	if err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound):

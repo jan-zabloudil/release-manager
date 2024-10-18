@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
+	"release-manager/pkg/id"
+
 	"github.com/nedpals/supabase-go"
 )
 
@@ -24,21 +25,21 @@ func NewClient(client *supabase.Client) *Client {
 	}
 }
 
-func (c *Client) Authenticate(ctx context.Context, token string) (uuid.UUID, error) {
+func (c *Client) Authenticate(ctx context.Context, token string) (id.AuthUser, error) {
 	user, err := c.client.Auth.User(ctx, token)
 	if err != nil {
 		var errResponse *supabase.ErrorResponse
 		if errors.As(err, &errResponse) && errResponse.Code == http.StatusForbidden {
-			return uuid.UUID{}, fmt.Errorf("%w: %s", ErrInvalidOrExpiredToken, errResponse.Message)
+			return id.AuthUser{}, fmt.Errorf("%w: %s", ErrInvalidOrExpiredToken, errResponse.Message)
 		}
 
-		return uuid.UUID{}, fmt.Errorf("authenticating user: %w", err)
+		return id.AuthUser{}, fmt.Errorf("authenticating user: %w", err)
 	}
 
-	id, err := uuid.Parse(user.ID)
-	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("parsing user ID: %w", err)
+	var userID id.AuthUser
+	if err := userID.FromString(user.ID); err != nil {
+		return id.AuthUser{}, fmt.Errorf("parsing user ID: %w", err)
 	}
 
-	return id, nil
+	return userID, nil
 }

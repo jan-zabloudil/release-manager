@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"release-manager/pkg/id"
 	repo "release-manager/repository/mock"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
@@ -54,7 +55,7 @@ func TestAuthService_AuthorizeUserRoleAdmin(t *testing.T) {
 
 			tc.mockSetup(userRepo)
 
-			err := service.AuthorizeUserRoleAdmin(context.Background(), uuid.New())
+			err := service.AuthorizeUserRoleAdmin(context.Background(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -108,7 +109,7 @@ func TestAuthService_AuthorizeUserRoleUser(t *testing.T) {
 
 			tc.mockSetup(userRepo)
 
-			err := service.AuthorizeUserRoleUser(context.Background(), uuid.New())
+			err := service.AuthorizeUserRoleUser(context.Background(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -198,7 +199,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo)
 
-			err := service.AuthorizeProjectRoleEditor(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeProjectRoleEditor(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -289,7 +290,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo)
 
-			err := service.AuthorizeProjectRoleViewer(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeProjectRoleViewer(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -384,7 +385,7 @@ func TestAuth_AuthorizeReleaseEditor(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseEditor(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeReleaseEditor(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -480,7 +481,7 @@ func TestAuth_AuthorizeReleaseViewer(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseViewer(context.Background(), uuid.New(), uuid.New())
+			err := service.AuthorizeReleaseViewer(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)

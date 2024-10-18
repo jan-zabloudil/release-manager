@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"time"
 
+	"release-manager/pkg/id"
+
 	"github.com/google/uuid"
 )
 
@@ -43,7 +45,7 @@ type Release struct {
 	ProjectID    uuid.UUID
 	ReleaseTitle string
 	ReleaseNotes string
-	AuthorUserID uuid.UUID
+	AuthorUserID id.AuthUser
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	GitTagName   string
@@ -59,7 +61,7 @@ type ReleaseAttachment struct {
 	CreatedAt time.Time
 }
 
-func NewRelease(input CreateReleaseInput, tagURL url.URL, projectID, authorUserID uuid.UUID) (Release, error) {
+func NewRelease(input CreateReleaseInput, tagURL url.URL, projectID uuid.UUID, authorUserID id.AuthUser) (Release, error) {
 	now := time.Now()
 	r := Release{
 		ID:           uuid.New(),

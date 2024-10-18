@@ -3,21 +3,22 @@ package model
 import (
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
 )
 
 type ProjectInvitation struct {
-	ID            uuid.UUID `db:"id"`
-	ProjectID     uuid.UUID `db:"project_id"`
-	Email         string    `db:"email"`
-	ProjectRole   string    `db:"project_role"`
-	Status        string    `db:"status"`
-	TokenHash     []byte    `db:"token_hash"`
-	InviterUserID uuid.UUID `db:"invited_by"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
+	ID            uuid.UUID   `db:"id"`
+	ProjectID     uuid.UUID   `db:"project_id"`
+	Email         string      `db:"email"`
+	ProjectRole   string      `db:"project_role"`
+	Status        string      `db:"status"`
+	TokenHash     []byte      `db:"token_hash"`
+	InviterUserID id.AuthUser `db:"invited_by"`
+	CreatedAt     time.Time   `db:"created_at"`
+	UpdatedAt     time.Time   `db:"updated_at"`
 }
 
 func ToSvcProjectInvitation(i ProjectInvitation) svcmodel.ProjectInvitation {

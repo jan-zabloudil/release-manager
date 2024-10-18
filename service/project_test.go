@@ -7,6 +7,7 @@ import (
 
 	githubmock "release-manager/github/mock"
 	cryptox "release-manager/pkg/crypto"
+	"release-manager/pkg/id"
 	"release-manager/pkg/pointer"
 	repo "release-manager/repository/mock"
 	resendmock "release-manager/resend/mock"
@@ -93,7 +94,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, userSvc, github, projectRepo)
 
-			_, err := service.CreateProject(context.Background(), tc.project, uuid.New())
+			_, err := service.CreateProject(context.Background(), tc.project, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -157,7 +158,7 @@ func TestProjectService_ListProjects(t *testing.T) {
 
 			tc.mockSetup(userSvc, projectRepo)
 
-			_, err := service.ListProjects(context.Background(), uuid.New())
+			_, err := service.ListProjects(context.Background(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -167,6 +168,7 @@ func TestProjectService_ListProjects(t *testing.T) {
 
 			projectRepo.AssertExpectations(t)
 			authSvc.AssertExpectations(t)
+			userSvc.AssertExpectations(t)
 		})
 	}
 }
@@ -210,7 +212,7 @@ func TestProjectService_GetProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.GetProject(context.Background(), tc.projectID, uuid.New())
+			_, err := service.GetProject(context.Background(), tc.projectID, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -263,7 +265,7 @@ func TestProjectService_DeleteProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.DeleteProject(context.Background(), tc.projectID, uuid.New())
+			err := service.DeleteProject(context.Background(), tc.projectID, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -335,7 +337,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.UpdateProject(context.Background(), tc.update, uuid.New(), uuid.New())
+			err := service.UpdateProject(context.Background(), tc.update, uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -410,7 +412,7 @@ func TestProjectService_CreateEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.CreateEnvironment(context.Background(), tc.envCreate, uuid.New())
+			_, err := service.CreateEnvironment(context.Background(), tc.envCreate, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -466,7 +468,7 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.GetEnvironment(context.Background(), tc.projectID, tc.envID, uuid.New())
+			_, err := service.GetEnvironment(context.Background(), tc.projectID, tc.envID, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -522,7 +524,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.UpdateEnvironment(context.Background(), tc.envUpdate, uuid.New(), uuid.New(), uuid.UUID{})
+			err := service.UpdateEnvironment(context.Background(), tc.envUpdate, uuid.New(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -578,7 +580,7 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.ListEnvironments(context.Background(), tc.projectID, uuid.New())
+			_, err := service.ListEnvironments(context.Background(), tc.projectID, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -634,7 +636,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.DeleteEnvironment(context.Background(), tc.projectID, tc.envID, uuid.New())
+			err := service.DeleteEnvironment(context.Background(), tc.projectID, tc.envID, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -749,7 +751,7 @@ func TestProjectService_Invite(t *testing.T) {
 
 			tc.mockSetup(authSvc, userSvc, email, projectRepo)
 
-			_, err := service.Invite(context.Background(), tc.creation, uuid.New())
+			_, err := service.Invite(context.Background(), tc.creation, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -815,7 +817,7 @@ func TestProjectService_GetInvitations(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.ListInvitations(context.Background(), uuid.New(), uuid.New())
+			_, err := service.ListInvitations(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -865,7 +867,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.CancelInvitation(context.Background(), uuid.New(), uuid.New(), uuid.New())
+			err := service.CancelInvitation(context.Background(), uuid.New(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1048,7 +1050,7 @@ func TestProjectService_ListMembersForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.ListMembersForProject(context.Background(), tc.projectID, uuid.New())
+			_, err := service.ListMembersForProject(context.Background(), tc.projectID, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1090,7 +1092,7 @@ func TestProjectService_ListMembersForUser(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.ListMembersForUser(context.Background(), uuid.New())
+			_, err := service.ListMembersForUser(context.Background(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1143,7 +1145,7 @@ func TestProjectService_DeleteMember(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.DeleteMember(context.Background(), tc.projectID, uuid.New(), uuid.New())
+			err := service.DeleteMember(context.Background(), tc.projectID, uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1198,7 +1200,7 @@ func TestProjectService_UpdateMemberRole(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.UpdateMemberRole(context.Background(), tc.newRole, tc.projectID, uuid.New(), uuid.New())
+			err := service.UpdateMemberRole(context.Background(), tc.newRole, tc.projectID, uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1259,7 +1261,7 @@ func TestProjectService_SetGithubRepoForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, github, projectRepo)
 
-			err := service.SetGithubRepoForProject(context.Background(), "https://github.com/test/test", uuid.New(), uuid.New())
+			err := service.SetGithubRepoForProject(context.Background(), "https://github.com/test/test", uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1324,7 +1326,7 @@ func TestProjectService_GetGithubRepoForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.GetGithubRepoForProject(context.Background(), uuid.New(), uuid.New())
+			_, err := service.GetGithubRepoForProject(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1399,7 +1401,7 @@ func TestProjectService_ListGithubRepoTags(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, github, projectRepo)
 
-			_, err := service.ListGithubRepoTags(context.Background(), uuid.New(), uuid.New())
+			_, err := service.ListGithubRepoTags(context.Background(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)

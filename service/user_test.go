@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"release-manager/pkg/id"
 	repomock "release-manager/repository/mock"
 	svcerrors "release-manager/service/errors"
 	svcmock "release-manager/service/mock"
@@ -49,7 +50,7 @@ func TestUserService_GetAuthenticated(t *testing.T) {
 				repo,
 			)
 
-			_, err := userService.GetAuthenticated(context.Background(), uuid.New())
+			_, err := userService.GetAuthenticated(context.Background(), id.AuthUser{})
 			if tc.expectedErr != nil {
 				assert.EqualError(t, err, tc.expectedErr.Error())
 			} else {
@@ -95,7 +96,7 @@ func TestUserService_GetForAdmin(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.GetForAdmin(context.Background(), uuid.New(), uuid.New())
+			_, err := userService.GetForAdmin(context.Background(), uuid.New(), id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -142,7 +143,7 @@ func TestUserService_ListAllForAdmin(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.ListAllForAdmin(context.Background(), uuid.New())
+			_, err := userService.ListAllForAdmin(context.Background(), id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -212,7 +213,7 @@ func TestUserService_DeleteForAdmin(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			err := userService.DeleteForAdmin(context.Background(), uuid.New(), uuid.New())
+			err := userService.DeleteForAdmin(context.Background(), uuid.New(), id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {

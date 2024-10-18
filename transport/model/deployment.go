@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -16,14 +17,14 @@ type CreateDeploymentInput struct {
 }
 
 type Deployment struct {
-	ID                    uuid.UUID `json:"id"`
-	ReleaseID             uuid.UUID `json:"release_id"`
-	ReleaseTitle          string    `json:"release_title"`
-	EnvironmentID         uuid.UUID `json:"environment_id"`
-	EnvironmentName       string    `json:"environment_name"`
-	EnvironmentServiceURL string    `json:"environment_service_url"`
-	DeployedByUserID      uuid.UUID `json:"deployed_by_user_id"`
-	DeployedAt            time.Time `json:"deployed_at"`
+	ID                    uuid.UUID   `json:"id"`
+	ReleaseID             uuid.UUID   `json:"release_id"`
+	ReleaseTitle          string      `json:"release_title"`
+	EnvironmentID         uuid.UUID   `json:"environment_id"`
+	EnvironmentName       string      `json:"environment_name"`
+	EnvironmentServiceURL string      `json:"environment_service_url"`
+	DeployedByUserID      id.AuthUser `json:"deployed_by_user_id"`
+	DeployedAt            time.Time   `json:"deployed_at"`
 }
 
 func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDeploymentInput {
@@ -38,19 +39,19 @@ func ToSvcDeploymentFilterParams(releaseIDParam, environmentIDParam, latestOnlyP
 	var latestOnly *bool
 
 	if releaseIDParam != "" {
-		id, err := uuid.Parse(releaseIDParam)
+		parsedID, err := uuid.Parse(releaseIDParam)
 		if err != nil {
 			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for release id: %w", err)
 		}
-		releaseID = &id
+		releaseID = &parsedID
 	}
 
 	if environmentIDParam != "" {
-		id, err := uuid.Parse(environmentIDParam)
+		parsedID, err := uuid.Parse(environmentIDParam)
 		if err != nil {
 			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for environment id: %w", err)
 		}
-		environmentID = &id
+		environmentID = &parsedID
 	}
 
 	if latestOnlyParam != "" {
