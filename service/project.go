@@ -280,14 +280,14 @@ func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID, auth
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
 
-	p, err := s.repo.ReadProject(ctx, projectID)
-	if err != nil {
-		return nil, fmt.Errorf("reading project: %w", err)
-	}
-
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting Github token: %w", err)
+	}
+
+	p, err := s.repo.ReadProject(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("reading project: %w", err)
 	}
 
 	if !p.IsGithubRepoSet() {

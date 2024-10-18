@@ -1337,3 +1337,80 @@ func TestProjectService_GetGithubRepoForProject(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectService_ListGithubRepoTags(t *testing.T) {
+	testCases := []struct {
+		name      string
+		mockSetup func(*svc.AuthorizationService, *svc.SettingsService, *githubmock.Client, *repo.ProjectRepository)
+		wantErr   bool
+	}{
+		{
+			name: "Success",
+			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, githubClient *githubmock.Client, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
+					GithubRepo: &model.GithubRepo{
+						OwnerSlug: "test",
+						RepoSlug:  "test",
+					},
+				}, nil)
+				githubClient.On("ReadTagsForRepo", mock.Anything, mock.Anything, mock.Anything).Return([]model.GitTag{}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Github integration not enabled",
+			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, githubClient *githubmock.Client, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("", svcerrors.NewGithubIntegrationNotEnabledError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Project not found",
+			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, githubClient *githubmock.Client, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
+			},
+			wantErr: true,
+		},
+		{
+			name: "Github repo not set",
+			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, githubClient *githubmock.Client, projectRepo *repo.ProjectRepository) {
+				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				settingsSvc.On("GetGithubToken", mock.Anything).Return("token", nil)
+				projectRepo.On("ReadProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectRepo := new(repo.ProjectRepository)
+			github := new(githubmock.Client)
+			email := new(resendmock.Client)
+			userSvc := new(svc.UserService)
+			settingsSvc := new(svc.SettingsService)
+			authSvc := new(svc.AuthorizationService)
+			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
+
+			tc.mockSetup(authSvc, settingsSvc, github, projectRepo)
+
+			_, err := service.ListGithubRepoTags(context.Background(), uuid.New(), uuid.New())
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			authSvc.AssertExpectations(t)
+			projectRepo.AssertExpectations(t)
+			settingsSvc.AssertExpectations(t)
+			github.AssertExpectations(t)
+		})
+	}
+}
