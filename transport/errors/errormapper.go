@@ -1,8 +1,6 @@
 package errors
 
 import (
-	"errors"
-
 	svcerrors "release-manager/service/errors"
 )
 
@@ -26,69 +24,56 @@ func ToError(err error) *Error {
 }
 
 func IsNotFoundError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeUserNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepoNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepoNotSetForProject) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotFound)
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoNotSetForProject) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotFound)
 }
 
 func IsUnprocessableModelError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeProjectUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectUnprocessable) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
 }
 
 func IsUnauthorizedError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeUnauthorizedUnknownUser) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackClientUnauthorized)
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUnauthorizedUnknownUser) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackClientUnauthorized)
 }
 
 func IsForbiddenError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeInsufficientUserRole) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubClientForbidden) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeInsufficientProjectRole) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeUserNotProjectMember) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeAdminUserCannotBeDeleted)
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInsufficientUserRole) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubClientForbidden) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInsufficientProjectRole) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotProjectMember) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeAdminUserCannotBeDeleted)
 }
 
 func IsConflictError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeEnvironmentDuplicateName) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeReleaseGitTagAlreadyUsed) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeProjectGithubRepoAlreadyUsed)
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentDuplicateName) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseGitTagAlreadyUsed) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectGithubRepoAlreadyUsed)
 }
 
 func IsBadRequestError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotSetForProject) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled) ||
-		isSvcErrorWithCode(err, svcerrors.ErrCodeGithubGeneratedNotesInvalidInput)
-}
-
-func IsGithubIntegrationNotEnabledError(err error) bool {
-	return isSvcErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled)
-}
-
-func isSvcErrorWithCode(err error, code string) bool {
-	var svcErr *svcerrors.Error
-	if errors.As(err, &svcErr) {
-		return svcErr.Code == code
-	}
-
-	return false
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotSetForProject) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubGeneratedNotesInvalidInput)
 }

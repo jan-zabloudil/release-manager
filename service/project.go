@@ -395,12 +395,12 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 	}
 
 	u, err := s.userGetter.GetByEmail(ctx, invitation.Email)
-	if err != nil && !svcerrors.IsNotFoundError(err) {
+	if err != nil && !svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound) {
 		return fmt.Errorf("reading user: %w", err)
 	}
 
 	// User does not exist yet
-	if svcerrors.IsNotFoundError(err) {
+	if svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound) {
 		if err := s.repo.AcceptPendingInvitation(ctx, invitation.ID, func(i *model.ProjectInvitation) {
 			i.Accept()
 		}); err != nil {
@@ -534,7 +534,7 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 	_, err := s.repo.ReadProject(ctx, projectID)
 	if err != nil {
 		switch {
-		case svcerrors.IsNotFoundError(err):
+		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectNotFound):
 			return false, nil
 		default:
 			return false, fmt.Errorf("reading project: %w", err)
@@ -548,7 +548,7 @@ func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, 
 	_, err := s.repo.ReadMemberByEmail(ctx, projectID, email)
 	if err != nil {
 		switch {
-		case svcerrors.IsNotFoundError(err):
+		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound):
 			return false, nil
 		default:
 			return false, fmt.Errorf("reading member: %w", err)

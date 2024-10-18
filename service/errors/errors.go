@@ -327,32 +327,7 @@ func NewAdminUserCannotBeDeletedError() *Error {
 	}
 }
 
-func IsNotFoundError(err error) bool {
-	return isErrorWithCode(err, ErrCodeUserNotFound) ||
-		isErrorWithCode(err, ErrCodeProjectNotFound) ||
-		isErrorWithCode(err, ErrCodeEnvironmentNotFound) ||
-		isErrorWithCode(err, ErrCodeProjectInvitationNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubRepoNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubRepoNotSetForProject) ||
-		isErrorWithCode(err, ErrCodeGithubIntegrationNotEnabled) ||
-		isErrorWithCode(err, ErrCodeProjectMemberNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubIntegrationNotEnabled) ||
-		isErrorWithCode(err, ErrCodeGithubRepoInvalidURL) ||
-		isErrorWithCode(err, ErrCodeReleaseNotFound) ||
-		isErrorWithCode(err, ErrCodeGitTagNotFound) ||
-		isErrorWithCode(err, ErrCodeGithubReleaseNotFound) ||
-		isErrorWithCode(err, ErrCodeDeploymentNotFound)
-}
-
-func IsInsufficientUserRoleError(err error) bool {
-	return isErrorWithCode(err, ErrCodeInsufficientUserRole)
-}
-
-func IsGithubReleaseNotFoundError(err error) bool {
-	return isErrorWithCode(err, ErrCodeGithubReleaseNotFound)
-}
-
-func isErrorWithCode(err error, code string) bool {
+func IsErrorWithCode(err error, code string) bool {
 	var svcErr *Error
 	if errors.As(err, &svcErr) {
 		return svcErr.Code == code

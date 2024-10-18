@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"release-manager/pkg/validator"
+	svcerrors "release-manager/service/errors"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
@@ -25,7 +26,7 @@ func (h *Handler) handleGithubReleaseWebhook(w http.ResponseWriter, r *http.Requ
 
 	secret, err := h.SettingsSvc.GetGithubWebhookSecret(r.Context())
 	if err != nil {
-		if resperrors.IsGithubIntegrationNotEnabledError(err) {
+		if svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) {
 			// If the GitHub integration is not enabled, the webhook should not be processed.
 			// And we should return 204, because from the webhook perspective it is not an error case.
 			w.WriteHeader(http.StatusNoContent)
