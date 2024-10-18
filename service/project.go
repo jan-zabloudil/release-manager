@@ -500,7 +500,7 @@ func (s *ProjectService) UpdateMemberRole(
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	if err := s.repo.UpdateMemberRole(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
+	if err := s.repo.UpdateMember(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
 		if err := m.UpdateProjectRole(newRole); err != nil {
 			return model.ProjectMember{}, svcerrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
 		}

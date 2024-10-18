@@ -1170,7 +1170,7 @@ func TestProjectService_UpdateMemberRole(t *testing.T) {
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateMemberRole", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewProjectMemberNotFoundError())
+				projectRepo.On("UpdateMember", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewProjectMemberNotFoundError())
 			},
 			wantErr: true,
 		},
@@ -1180,7 +1180,7 @@ func TestProjectService_UpdateMemberRole(t *testing.T) {
 			projectID: uuid.New(),
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateMemberRole", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				projectRepo.On("UpdateMember", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
 		},

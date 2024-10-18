@@ -363,7 +363,7 @@ func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 	return nil
 }
 
-func (r *ProjectRepository) UpdateMemberRole(
+func (r *ProjectRepository) UpdateMember(
 	ctx context.Context,
 	projectID,
 	userID uuid.UUID,
