@@ -103,7 +103,16 @@ func (r *ProjectRepository) UpdateProject(
 			return err
 		}
 
-		if _, err := tx.Exec(ctx, query.UpdateProject, toUpdateProjectArgs(p)); err != nil {
+		if _, err := tx.Exec(ctx, query.UpdateProject, pgx.NamedArgs{
+			"id":             p.ID,
+			"name":           p.Name,
+			"slackChannelID": p.SlackChannelID,
+			// convert to db model in order to correctly save the struct to json field
+			"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
+			"githubOwnerSlug":           p.GithubOwnerSlug(),
+			"githubRepoSlug":            p.GithubRepoSlug(),
+			"updatedAt":                 p.UpdatedAt,
+		}); err != nil {
 			if helper.IsUniqueConstraintViolation(err, uniqueGithubRepoConstraintName) {
 				return svcerrors.NewProjectGithubRepoAlreadyUsedError().Wrap(err)
 			}
@@ -477,23 +486,4 @@ func (r *ProjectRepository) readMember(ctx context.Context, q helper.Querier, qu
 	}
 
 	return model.ToSvcProjectMember(m), nil
-}
-
-func toUpdateProjectArgs(p svcmodel.Project) pgx.NamedArgs {
-	var ownerSlug, repoSlug *string
-	if p.GithubRepo != nil {
-		ownerSlug = &p.GithubRepo.OwnerSlug
-		repoSlug = &p.GithubRepo.RepoSlug
-	}
-
-	return pgx.NamedArgs{
-		"id":             p.ID,
-		"name":           p.Name,
-		"slackChannelID": p.SlackChannelID,
-		// Converted to the struct with json tags (the field is saved as json in the database).
-		"releaseNotificationConfig": model.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
-		"githubOwnerSlug":           ownerSlug,
-		"githubRepoSlug":            repoSlug,
-		"updatedAt":                 p.UpdatedAt,
-	}
 }
