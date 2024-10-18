@@ -83,18 +83,13 @@ func (m *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) AcceptPendingInvitation(
+func (m *ProjectRepository) UpdateInvitation(
 	ctx context.Context,
-	invitationID uuid.UUID,
-	acceptFn func(i *svcmodel.ProjectInvitation),
+	invitationHash crypto.Hash,
+	updateFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectInvitation, error),
 ) error {
-	args := m.Called(ctx, invitationID, acceptFn)
+	args := m.Called(ctx, invitationHash, updateFn)
 	return args.Error(0)
-}
-
-func (m *ProjectRepository) ReadPendingInvitationByHash(ctx context.Context, hash crypto.Hash) (svcmodel.ProjectInvitation, error) {
-	args := m.Called(ctx, hash)
-	return args.Get(0).(svcmodel.ProjectInvitation), args.Error(1)
 }
 
 func (m *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
@@ -112,8 +107,12 @@ func (m *ProjectRepository) DeleteInvitationByTokenHashAndStatus(ctx context.Con
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) CreateMember(ctx context.Context, member svcmodel.ProjectMember) error {
-	args := m.Called(ctx, member)
+func (m *ProjectRepository) CreateMember(
+	ctx context.Context,
+	tokenHash crypto.Hash,
+	createMemberFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectMember, error),
+) error {
+	args := m.Called(ctx, tokenHash, createMemberFn)
 	return args.Error(0)
 }
 

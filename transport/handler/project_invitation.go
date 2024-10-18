@@ -60,7 +60,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {

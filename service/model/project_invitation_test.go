@@ -153,3 +153,39 @@ func TestProjectInvitation_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectInvitation_Accept(t *testing.T) {
+	tests := []struct {
+		name          string
+		initialStatus ProjectInvitationStatus
+		expectedError error
+	}{
+		{
+			name:          "invitation is already accepted",
+			initialStatus: InvitationStatusAccepted,
+			expectedError: ErrProjectInvitationAlreadyAccepted,
+		},
+		{
+			name:          "invitation is pending",
+			initialStatus: InvitationStatusPending,
+			expectedError: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			invitation := &ProjectInvitation{
+				Status: tt.initialStatus,
+			}
+
+			err := invitation.Accept()
+
+			assert.Equal(t, tt.expectedError, err)
+
+			if tt.expectedError == nil {
+				assert.Equal(t, InvitationStatusAccepted, invitation.Status)
+				assert.False(t, invitation.UpdatedAt.IsZero(), "UpdatedAt should be set")
+			}
+		})
+	}
+}

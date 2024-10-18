@@ -46,16 +46,12 @@ var (
 	//go:embed scripts/list_projects_for_user.sql
 	ListProjectsForUser string
 
-	//go:embed scripts/read_invitation_by_id_and_status.sql
-	ReadInvitationByIDAndStatus string
-	//go:embed scripts/read_invitation_by_hash_and_status.sql
-	ReadInvitationByHashAndStatus string
+	//go:embed scripts/read_invitation_by_hash.sql
+	ReadInvitationByHash string
 	//go:embed scripts/list_invitations_for_project.sql
 	ListInvitationsForProject string
 	//go:embed scripts/delete_invitation.sql
 	DeleteInvitation string
-	//go:embed scripts/delete_invitation_by_email_and_project_id.sql
-	DeleteInvitationByEmailAndProjectID string
 	//go:embed scripts/delete_invitation_by_hash_and_status.sql
 	DeleteInvitationByHashAndStatus string
 	//go:embed scripts/create_invitation.sql

@@ -1,5 +1,4 @@
 SELECT *
 FROM project_invitations
 WHERE
-    id = @id AND
-    status = @status
+    token_hash = @hash

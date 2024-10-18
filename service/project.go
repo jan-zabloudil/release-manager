@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	cryptox "release-manager/pkg/crypto"
@@ -372,52 +373,54 @@ func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invita
 
 func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token) error {
 	// When accepting an invitation, two possible scenarios can happen:
-	// 1. User does not exist yet, in which case invitation is only accepted
-	//    When a user registers later, a project member will be created (PostgreSQL function handle_new_user() is triggered upon user creation)
-	//    Must be done via Postgres function because user registration is not controlled by this API
-	// 2. User already exists, in which case a project member is created and invitation is deleted
+	// 1. User does not exist yet, in which case invitation is only accepted.
+	//    When a user registers later, a project member will be created (PostgreSQL function handle_new_user() is triggered upon user creation).
+	//    Must be done via Postgres function because user registration is not controlled by this API.
+	// 2. User already exists, in which case a project member is created and invitation is deleted.
 	//
-	// To keep more logic in service, we first fetch the invitation to get invitation's email
-	// Then we check if user with given email exists
-	// First two steps could be done in one query, but it would require mixing entities from two different repositories
-	// Based on user existence we either accept the invitation or create a project member and delete the invitation
+	// The current implementation aims to keep business logic in the service layer and prevent any race conditions.
 	//
-	// There is one possible race condition:
-	// 1. We check if user exists (and he does not)
-	// 2. We only accept the invitation
-	// But user would register between these two steps
-	// Resulting in a project member not being created for existing user
-	// The race condition is handled by the PostgreSQL function check_accepted_invitations_for_registered_users()
+	// If we create a project member before updating or deleting the invitation, we might end up in an inconsistent state.
+	// If the user does not exist when creating the member, the invitation would only be accepted.
+	// However, if the user registers between these two steps (checking if the user exists and updating the invitation),
+	// we could end up with an active user who has an accepted invitation but no associated project member.
+	//
+	// It is also possible to handle all logic within a single repository function, but that would require moving business logic into the repository layer.
 
-	invitation, err := s.repo.ReadPendingInvitationByHash(ctx, tkn.ToHash())
+	err := s.repo.UpdateInvitation(ctx, tkn.ToHash(), func(i model.ProjectInvitation) (model.ProjectInvitation, error) {
+		if err := i.Accept(); err != nil {
+			if errors.Is(err, model.ErrProjectInvitationAlreadyAccepted) {
+				return model.ProjectInvitation{}, svcerrors.NewProjectInvitationNotFoundError().Wrap(err)
+			}
+
+			return model.ProjectInvitation{}, err
+		}
+		return i, nil
+	})
 	if err != nil {
-		return fmt.Errorf("reading invitation: %w", err)
+		return fmt.Errorf("updating invitation: %w", err)
 	}
 
-	u, err := s.userGetter.GetByEmail(ctx, invitation.Email)
-	if err != nil && !svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound) {
-		return fmt.Errorf("reading user: %w", err)
-	}
-
-	// User does not exist yet
-	if svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound) {
-		if err := s.repo.AcceptPendingInvitation(ctx, invitation.ID, func(i *model.ProjectInvitation) {
-			i.Accept()
-		}); err != nil {
-			return fmt.Errorf("accepting invitation: %w", err)
+	err = s.repo.CreateMember(ctx, tkn.ToHash(), func(i model.ProjectInvitation) (model.ProjectMember, error) {
+		u, err := s.userGetter.GetByEmail(ctx, i.Email)
+		if err != nil {
+			return model.ProjectMember{}, fmt.Errorf("getting user by email: %w", err)
 		}
 
-		return nil
-	}
+		m, err := model.NewProjectMember(u, i.ProjectID, i.ProjectRole)
+		if err != nil {
+			return model.ProjectMember{}, fmt.Errorf("creating member object: %w", err)
+		}
 
-	member, err := model.NewProjectMember(u, invitation.ProjectID, invitation.ProjectRole)
+		return m, nil
+	})
 	if err != nil {
-		return fmt.Errorf("creating project member object: %w", err)
-	}
+		if svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound) {
+			// member is not created because user does not exist yet, that is expected case, not an error
+			return nil
+		}
 
-	// Creates a project member and deletes the invitation
-	if err := s.repo.CreateMember(ctx, member); err != nil {
-		return fmt.Errorf("creating project member in repo: %w", err)
+		return fmt.Errorf("creating member: %w", err)
 	}
 
 	return nil
