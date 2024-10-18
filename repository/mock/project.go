@@ -141,7 +141,7 @@ func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) UpdateMemberRole(
+func (m *ProjectRepository) UpdateMember(
 	ctx context.Context,
 	projectID,
 	userID uuid.UUID,

@@ -114,6 +114,22 @@ func (p *Project) IsGithubRepoSet() bool {
 	return p.GithubRepo != nil
 }
 
+func (p *Project) GithubOwnerSlug() *string {
+	if p.GithubRepo == nil {
+		return nil
+	}
+
+	return &p.GithubRepo.OwnerSlug
+}
+
+func (p *Project) GithubRepoSlug() *string {
+	if p.GithubRepo == nil {
+		return nil
+	}
+
+	return &p.GithubRepo.RepoSlug
+}
+
 func (c *ReleaseNotificationConfig) Update(u UpdateReleaseNotificationConfigInput) {
 	if u.Message != nil {
 		c.Message = *u.Message

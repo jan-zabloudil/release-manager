@@ -53,7 +53,7 @@ type projectRepository interface {
 	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
 	ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (model.ProjectMember, error)
 	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
-	UpdateMemberRole(
+	UpdateMember(
 		ctx context.Context,
 		projectID,
 		userID uuid.UUID,

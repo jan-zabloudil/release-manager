@@ -242,3 +242,55 @@ func TestReleaseNotificationConfig_IsEmpty(t *testing.T) {
 		})
 	}
 }
+
+func TestProject_GithubOwnerSlug(t *testing.T) {
+	tests := []struct {
+		name           string
+		project        *Project
+		expectedResult *string
+	}{
+		{
+			name:           "GithubRepo is nil",
+			project:        &Project{GithubRepo: nil},
+			expectedResult: nil,
+		},
+		{
+			name:           "OwnerSlug is returned",
+			project:        &Project{GithubRepo: &GithubRepo{OwnerSlug: "owner123"}},
+			expectedResult: pointer.StringPtr("owner123"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.project.GithubOwnerSlug()
+			assert.Equal(t, tt.expectedResult, result)
+		})
+	}
+}
+
+func TestProject_GithubRepoSlug(t *testing.T) {
+	tests := []struct {
+		name           string
+		project        *Project
+		expectedResult *string
+	}{
+		{
+			name:           "GithubRepo is nil",
+			project:        &Project{GithubRepo: nil},
+			expectedResult: nil,
+		},
+		{
+			name:           "RepoSlug is returned",
+			project:        &Project{GithubRepo: &GithubRepo{RepoSlug: "repo123"}},
+			expectedResult: pointer.StringPtr("repo123"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.project.GithubRepoSlug()
+			assert.Equal(t, tt.expectedResult, result)
+		})
+	}
+}
