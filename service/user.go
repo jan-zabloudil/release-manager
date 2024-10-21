@@ -22,7 +22,7 @@ func NewUserService(guard authGuard, repo userRepository) *UserService {
 	}
 }
 
-// GetAuthenticated retrieves a user by ID, can be accessed only by the user itself.
+// GetAuthenticated retrieves authenticated user by ID.
 func (s *UserService) GetAuthenticated(ctx context.Context, userID uuid.UUID) (model.User, error) {
 	u, err := s.repository.Read(ctx, userID)
 	if err != nil {
