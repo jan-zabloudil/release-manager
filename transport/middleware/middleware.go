@@ -71,13 +71,13 @@ func RequireAuthUser(next http.HandlerFunc) http.HandlerFunc {
 func SetResourceUUIDToContext(idKey string, f util.ContextSetUUIDFunc) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			id, err := util.GetUUIDFromURL(r, idKey)
+			resourceID, err := util.GetUUIDFromURL(r, idKey)
 			if err != nil {
 				util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err))
 				return
 			}
 
-			r = f(r, id)
+			r = f(r, resourceID)
 
 			next.ServeHTTP(w, r)
 		})
