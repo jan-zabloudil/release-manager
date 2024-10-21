@@ -30,7 +30,7 @@ func (i CreateDeploymentInput) Validate() error {
 }
 
 type Deployment struct {
-	ID               uuid.UUID
+	ID               id.Deployment
 	Release          Release
 	Environment      Environment
 	DeployedByUserID id.AuthUser
@@ -39,7 +39,7 @@ type Deployment struct {
 
 func NewDeployment(rls Release, env Environment, deployedByUserID id.AuthUser) Deployment {
 	return Deployment{
-		ID:               uuid.New(),
+		ID:               id.NewDeployment(),
 		Release:          rls,
 		Environment:      env,
 		DeployedByUserID: deployedByUserID,

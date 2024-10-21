@@ -17,14 +17,14 @@ type CreateDeploymentInput struct {
 }
 
 type Deployment struct {
-	ID                    uuid.UUID   `json:"id"`
-	ReleaseID             uuid.UUID   `json:"release_id"`
-	ReleaseTitle          string      `json:"release_title"`
-	EnvironmentID         uuid.UUID   `json:"environment_id"`
-	EnvironmentName       string      `json:"environment_name"`
-	EnvironmentServiceURL string      `json:"environment_service_url"`
-	DeployedByUserID      id.AuthUser `json:"deployed_by_user_id"`
-	DeployedAt            time.Time   `json:"deployed_at"`
+	ID                    id.Deployment `json:"id"`
+	ReleaseID             uuid.UUID     `json:"release_id"`
+	ReleaseTitle          string        `json:"release_title"`
+	EnvironmentID         uuid.UUID     `json:"environment_id"`
+	EnvironmentName       string        `json:"environment_name"`
+	EnvironmentServiceURL string        `json:"environment_service_url"`
+	DeployedByUserID      id.AuthUser   `json:"deployed_by_user_id"`
+	DeployedAt            time.Time     `json:"deployed_at"`
 }
 
 func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDeploymentInput {
