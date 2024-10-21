@@ -248,7 +248,7 @@ func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, proje
 	return model.ToSvcProjectInvitations(i), nil
 }
 
-func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
+func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation) error {
 	return r.deleteInvitation(ctx, r.dbpool, query.DeleteInvitation, pgx.NamedArgs{
 		"projectID":    projectID,
 		"invitationID": invitationID,

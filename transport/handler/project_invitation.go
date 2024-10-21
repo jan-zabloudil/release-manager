@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
@@ -39,13 +40,18 @@ func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectSvc.CancelInvitation(
+	invitationID, err := util.GetPathParam[id.ProjectInvitation](r, "invitation_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid invitation ID"))
+		return
+	}
+
+	if err := h.ProjectSvc.CancelInvitation(
 		r.Context(),
 		util.ContextProjectID(r),
-		util.ContextProjectInvitationID(r),
+		invitationID,
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
@@ -54,8 +60,7 @@ func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectSvc.AcceptInvitation(r.Context(), util.ContextProjectInvitationToken(r))
-	if err != nil {
+	if err := h.ProjectSvc.AcceptInvitation(r.Context(), util.ContextProjectInvitationToken(r)); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
@@ -64,8 +69,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectSvc.RejectInvitation(r.Context(), util.ContextProjectInvitationToken(r))
-	if err != nil {
+	if err := h.ProjectSvc.RejectInvitation(r.Context(), util.ContextProjectInvitationToken(r)); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}

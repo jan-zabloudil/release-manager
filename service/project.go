@@ -364,7 +364,7 @@ func (s *ProjectService) ListInvitations(ctx context.Context, projectID uuid.UUI
 	return invitations, nil
 }
 
-func (s *ProjectService) CancelInvitation(ctx context.Context, projectID, invitationID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ProjectService) CancelInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return err
 	}

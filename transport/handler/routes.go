@@ -55,7 +55,6 @@ func (h *Handler) setupRoutes() {
 				r.Post("/", middleware.RequireAuthUser(h.createInvitation))
 				r.Get("/", middleware.RequireAuthUser(h.listInvitations))
 				r.Route("/{invitation_id}", func(r chi.Router) {
-					r.Use(middleware.SetResourceUUIDToContext("invitation_id", util.ContextSetProjectInvitationID))
 					r.Delete("/", middleware.RequireAuthUser(h.cancelInvitation))
 				})
 			})

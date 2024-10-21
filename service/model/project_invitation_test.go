@@ -89,7 +89,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 		{
 			name: "Valid Project Invitation",
 			invitation: ProjectInvitation{
-				ID:          uuid.New(),
+				ID:          id.NewProjectInvitation(),
 				ProjectID:   uuid.New(),
 				Email:       "test@example.com",
 				ProjectRole: "editor",
@@ -100,7 +100,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - missing email",
 			invitation: ProjectInvitation{
-				ID:          uuid.New(),
+				ID:          id.NewProjectInvitation(),
 				ProjectID:   uuid.New(),
 				Email:       "",
 				ProjectRole: "editor",
@@ -111,7 +111,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - invalid email",
 			invitation: ProjectInvitation{
-				ID:          uuid.New(),
+				ID:          id.NewProjectInvitation(),
 				ProjectID:   uuid.New(),
 				Email:       "test@test",
 				ProjectRole: "editor",
@@ -122,7 +122,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - invalid role",
 			invitation: ProjectInvitation{
-				ID:          uuid.New(),
+				ID:          id.NewProjectInvitation(),
 				ProjectID:   uuid.New(),
 				Email:       "test@test",
 				ProjectRole: "admin",
@@ -133,7 +133,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - invalid status",
 			invitation: ProjectInvitation{
-				ID:          uuid.New(),
+				ID:          id.NewProjectInvitation(),
 				ProjectID:   uuid.New(),
 				Email:       "test@test",
 				ProjectRole: "owner",

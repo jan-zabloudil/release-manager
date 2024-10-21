@@ -98,7 +98,7 @@ func (m *ProjectRepository) ListInvitationsForProject(ctx context.Context, proje
 	return args.Get(0).([]svcmodel.ProjectInvitation), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error {
+func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation) error {
 	args := m.Called(ctx, projectID, invitationID)
 	return args.Error(0)
 }
