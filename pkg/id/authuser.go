@@ -4,10 +4,6 @@ import "github.com/google/uuid"
 
 type AuthUser uuid.UUID
 
-func NewEmptyAuthUser() AuthUser {
-	return AuthUser(uuid.Nil)
-}
-
 func (u AuthUser) IsEmpty() bool {
 	return uuid.UUID(u) == uuid.Nil
 }
