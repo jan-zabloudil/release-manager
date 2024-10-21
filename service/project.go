@@ -59,7 +59,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, input model.CreatePr
 		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
 
-	u, err := s.userGetter.Get(ctx, authUserID)
+	u, err := s.userGetter.GetAuthenticated(ctx, authUserID)
 	if err != nil {
 		return model.Project{}, fmt.Errorf("reading user: %w", err)
 	}
@@ -90,13 +90,13 @@ func (s *ProjectService) GetProject(ctx context.Context, projectID, authUserID u
 }
 
 func (s *ProjectService) ListProjects(ctx context.Context, authUserID uuid.UUID) ([]model.Project, error) {
-	user, err := s.authGuard.GetAuthorizedUser(ctx, authUserID)
+	u, err := s.userGetter.GetAuthenticated(ctx, authUserID)
 	if err != nil {
-		return nil, fmt.Errorf("getting authorized user: %w", err)
+		return nil, fmt.Errorf("getting authenticated user: %w", err)
 	}
 
 	// Admin user can see all projects
-	if user.IsAdmin() {
+	if u.IsAdmin() {
 		p, err := s.repo.ListProjects(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("listing projects for admin user: %w", err)

@@ -22,15 +22,16 @@ func NewUserService(guard authGuard, repo userRepository) *UserService {
 	}
 }
 
-// Get retrieves a user by ID, can be accessed by the user themselves.
-func (s *UserService) Get(ctx context.Context, userID uuid.UUID) (model.User, error) {
-	if err := s.authGuard.AuthorizeUserRoleUser(ctx, userID); err != nil {
-		return model.User{}, fmt.Errorf("authorizing user role: %w", err)
-	}
-
+// GetAuthenticated retrieves authenticated user by ID.
+func (s *UserService) GetAuthenticated(ctx context.Context, userID uuid.UUID) (model.User, error) {
 	u, err := s.repository.Read(ctx, userID)
 	if err != nil {
-		return model.User{}, fmt.Errorf("reading user: %w", err)
+		switch {
+		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound):
+			return model.User{}, svcerrors.NewUnauthenticatedUserError().Wrap(err)
+		default:
+			return model.User{}, fmt.Errorf("reading user: %w", err)
+		}
 	}
 
 	return u, nil
@@ -66,9 +67,9 @@ func (s *UserService) DeleteForAdmin(ctx context.Context, userID uuid.UUID, auth
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	u, err := s.GetForAdmin(ctx, userID, authUserID)
+	u, err := s.repository.Read(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("getting user: %w", err)
+		return fmt.Errorf("reading user: %w", err)
 	}
 
 	// Admin user can be deleted only directly from the database.

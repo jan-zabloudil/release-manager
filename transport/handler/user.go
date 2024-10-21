@@ -11,7 +11,7 @@ import (
 func (h *Handler) getAuthUser(w http.ResponseWriter, r *http.Request) {
 	authUserID := util.ContextAuthUserID(r)
 
-	u, err := h.UserSvc.Get(r.Context(), authUserID)
+	u, err := h.UserSvc.GetAuthenticated(r.Context(), authUserID)
 	if err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return

@@ -51,7 +51,7 @@ func IsUnprocessableModelError(err error) bool {
 }
 
 func IsUnauthorizedError(err error) bool {
-	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUnauthorizedUnknownUser) ||
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUnauthenticatedUser) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackClientUnauthorized)
 }

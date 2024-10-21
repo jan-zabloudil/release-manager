@@ -13,7 +13,7 @@ type UserService struct {
 	mock.Mock
 }
 
-func (m *UserService) Get(ctx context.Context, userID uuid.UUID) (model.User, error) {
+func (m *UserService) GetAuthenticated(ctx context.Context, userID uuid.UUID) (model.User, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).(model.User), args.Error(1)
 }

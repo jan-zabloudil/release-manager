@@ -24,11 +24,6 @@ func NewAuthorizationService(userRepo userRepository, projectRepo projectReposit
 	}
 }
 
-// GetAuthorizedUser returns the user. If the user is not found, it returns ErrCodeUnauthorizedUnknownUser error.
-func (s *AuthorizationService) GetAuthorizedUser(ctx context.Context, userID uuid.UUID) (model.User, error) {
-	return s.getUser(ctx, userID)
-}
-
 func (s *AuthorizationService) AuthorizeUserRoleUser(ctx context.Context, userID uuid.UUID) error {
 	return s.authorizeUserRole(ctx, userID, model.UserRoleUser)
 }
@@ -125,15 +120,16 @@ func (s *AuthorizationService) authorizeUserRole(ctx context.Context, userID uui
 }
 
 func (s *AuthorizationService) getUser(ctx context.Context, userID uuid.UUID) (model.User, error) {
-	user, err := s.userRepo.Read(ctx, userID)
+	// Cannot use GetAuthenticated function from UserService because it would create a circular dependency.
+	u, err := s.userRepo.Read(ctx, userID)
 	if err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound):
-			return model.User{}, svcerrors.NewUnauthorizedUnknownUserError().Wrap(err)
+			return model.User{}, svcerrors.NewUnauthenticatedUserError().Wrap(err)
 		default:
 			return model.User{}, fmt.Errorf("reading user: %w", err)
 		}
 	}
 
-	return user, nil
+	return u, nil
 }

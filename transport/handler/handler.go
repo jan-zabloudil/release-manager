@@ -41,7 +41,7 @@ type projectService interface {
 }
 
 type userService interface {
-	Get(ctx context.Context, userID uuid.UUID) (svcmodel.User, error)
+	GetAuthenticated(ctx context.Context, userID uuid.UUID) (svcmodel.User, error)
 	GetForAdmin(ctx context.Context, userID, authUserID uuid.UUID) (svcmodel.User, error)
 	ListAllForAdmin(ctx context.Context, authUserID uuid.UUID) ([]svcmodel.User, error)
 	DeleteForAdmin(ctx context.Context, userID, authUserID uuid.UUID) error
