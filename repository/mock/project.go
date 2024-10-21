@@ -127,7 +127,7 @@ func (m *ProjectRepository) ListMembersForUser(ctx context.Context, userID id.Au
 	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
 }
 
-func (m *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID id.User) (svcmodel.ProjectMember, error) {
 	args := m.Called(ctx, projectID, userID)
 	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
 }
@@ -137,15 +137,15 @@ func (m *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uui
 	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
+func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User) error {
 	args := m.Called(ctx, projectID, userID)
 	return args.Error(0)
 }
 
 func (m *ProjectRepository) UpdateMember(
 	ctx context.Context,
-	projectID,
-	userID uuid.UUID,
+	projectID uuid.UUID,
+	userID id.User,
 	updateFn func(m svcmodel.ProjectMember) (svcmodel.ProjectMember, error),
 ) error {
 	args := m.Called(ctx, projectID, userID, updateFn)

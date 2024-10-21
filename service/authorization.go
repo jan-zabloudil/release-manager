@@ -74,7 +74,7 @@ func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context
 // If user is not a member with required role (or higher) and not an admin, it returns an error (ErrCodeUserNotProjectMember or ErrCodeInsufficientProjectRole).
 // If project does not exist, it returns an error (ErrCodeProjectNotFound).
 func (s *AuthorizationService) authorizeProjectRole(ctx context.Context, projectID uuid.UUID, userID id.AuthUser, role model.ProjectRole) error {
-	member, err := s.projectRepo.ReadMember(ctx, projectID, uuid.UUID(userID))
+	member, err := s.projectRepo.ReadMember(ctx, projectID, id.User(userID))
 	if err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound):
@@ -122,7 +122,7 @@ func (s *AuthorizationService) authorizeUserRole(ctx context.Context, userID id.
 
 func (s *AuthorizationService) getUser(ctx context.Context, userID id.AuthUser) (model.User, error) {
 	// Cannot use GetAuthenticated function from UserService because it would create a circular dependency.
-	u, err := s.userRepo.Read(ctx, uuid.UUID(userID))
+	u, err := s.userRepo.Read(ctx, id.User(userID))
 	if err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound):

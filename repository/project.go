@@ -344,7 +344,7 @@ func (r *ProjectRepository) ListMembersForUser(ctx context.Context, userID id.Au
 	return r.listMembers(ctx, r.dbpool, query.ListMembersForUser, pgx.NamedArgs{"userID": userID})
 }
 
-func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (svcmodel.ProjectMember, error) {
+func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID id.User) (svcmodel.ProjectMember, error) {
 	return r.readMember(ctx, r.dbpool, query.ReadMember, pgx.NamedArgs{
 		"projectID": projectID,
 		"userID":    userID,
@@ -358,7 +358,7 @@ func (r *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uui
 	})
 }
 
-func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error {
+func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User) error {
 	result, err := r.dbpool.Exec(ctx, query.DeleteMember, pgx.NamedArgs{
 		"projectID": projectID,
 		"userID":    userID,
@@ -376,8 +376,8 @@ func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID, userID 
 
 func (r *ProjectRepository) UpdateMember(
 	ctx context.Context,
-	projectID,
-	userID uuid.UUID,
+	projectID uuid.UUID,
+	userID id.User,
 	updateFn func(m svcmodel.ProjectMember) (svcmodel.ProjectMember, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {

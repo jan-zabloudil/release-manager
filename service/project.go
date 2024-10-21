@@ -478,7 +478,7 @@ func (s *ProjectService) ListMembersForUser(ctx context.Context, authUserID id.A
 	return m, nil
 }
 
-func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ProjectService) DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -493,8 +493,8 @@ func (s *ProjectService) DeleteMember(ctx context.Context, projectID, userID uui
 func (s *ProjectService) UpdateMemberRole(
 	ctx context.Context,
 	newRole model.ProjectRole,
-	projectID,
-	userID uuid.UUID,
+	projectID uuid.UUID,
+	userID id.User,
 	authUserID id.AuthUser,
 ) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {

@@ -11,7 +11,6 @@ import (
 	svcmock "release-manager/service/mock"
 	"release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -96,7 +95,7 @@ func TestUserService_GetForAdmin(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			_, err := userService.GetForAdmin(context.Background(), uuid.New(), id.AuthUser{})
+			_, err := userService.GetForAdmin(context.Background(), id.User{}, id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -213,7 +212,7 @@ func TestUserService_DeleteForAdmin(t *testing.T) {
 			mockAuthSvc, mockUserRepo := tc.setupMocks()
 			userService := NewUserService(mockAuthSvc, mockUserRepo)
 
-			err := userService.DeleteForAdmin(context.Background(), uuid.New(), id.AuthUser{})
+			err := userService.DeleteForAdmin(context.Background(), id.User{}, id.AuthUser{})
 			if tc.expectErr {
 				assert.Error(t, err)
 			} else {

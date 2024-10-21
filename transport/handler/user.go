@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
@@ -11,7 +12,7 @@ import (
 func (h *Handler) getAuthUser(w http.ResponseWriter, r *http.Request) {
 	authUserID := util.ContextAuthUserID(r)
 
-	u, err := h.UserSvc.GetAuthenticated(r.Context(), authUserID)
+	u, err := h.UserSvc.GetAuthenticated(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
@@ -27,9 +28,15 @@ func (h *Handler) getAuthUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
+	userID, err := util.GetPathParam[id.User](r, "id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid user ID"))
+		return
+	}
+
 	u, err := h.UserSvc.GetForAdmin(
 		r.Context(),
-		util.ContextUserID(r),
+		userID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -51,9 +58,15 @@ func (h *Handler) listUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
+	userID, err := util.GetPathParam[id.User](r, "id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid user ID"))
+		return
+	}
+
 	if err := h.UserSvc.DeleteForAdmin(
 		r.Context(),
-		util.ContextUserID(r),
+		userID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))

@@ -7,8 +7,6 @@ import (
 	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type UserService struct {
@@ -25,7 +23,7 @@ func NewUserService(guard authGuard, repo userRepository) *UserService {
 
 // GetAuthenticated retrieves authenticated user by ID.
 func (s *UserService) GetAuthenticated(ctx context.Context, userID id.AuthUser) (model.User, error) {
-	u, err := s.repository.Read(ctx, uuid.UUID(userID))
+	u, err := s.repository.Read(ctx, id.User(userID))
 	if err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound):
@@ -49,7 +47,7 @@ func (s *UserService) GetByEmail(ctx context.Context, email string) (model.User,
 }
 
 // GetForAdmin retrieves a user by ID, can be accessed only by admin user.
-func (s *UserService) GetForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) (model.User, error) {
+func (s *UserService) GetForAdmin(ctx context.Context, userID id.User, authUserID id.AuthUser) (model.User, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return model.User{}, fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -63,7 +61,7 @@ func (s *UserService) GetForAdmin(ctx context.Context, userID uuid.UUID, authUse
 }
 
 // DeleteForAdmin deletes a user by ID, can be accessed only by admin user.
-func (s *UserService) DeleteForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) error {
+func (s *UserService) DeleteForAdmin(ctx context.Context, userID id.User, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}

@@ -3,7 +3,8 @@ package model
 import (
 	"testing"
 
-	"github.com/google/uuid"
+	"release-manager/pkg/id"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +23,7 @@ func TestUser_HasAtLeastRole(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			user := User{
-				ID:        uuid.New(),
+				ID:        id.User{},
 				Email:     "test@example.com",
 				Name:      "Test User",
 				AvatarURL: "https://example.com/avatar.jpg",
@@ -66,7 +67,7 @@ func TestUser_IsAdmin(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			user := User{
-				ID:   uuid.New(),
+				ID:   id.User{},
 				Role: tc.userRole,
 			}
 

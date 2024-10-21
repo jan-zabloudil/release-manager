@@ -37,15 +37,15 @@ type projectService interface {
 
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]svcmodel.ProjectMember, error)
 	ListMembersForUser(ctx context.Context, authUserID id.AuthUser) ([]svcmodel.ProjectMember, error)
-	DeleteMember(ctx context.Context, projectID, userID uuid.UUID, authUserID id.AuthUser) error
-	UpdateMemberRole(ctx context.Context, newRole svcmodel.ProjectRole, projectID, userID uuid.UUID, authUserID id.AuthUser) error
+	DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User, authUserID id.AuthUser) error
+	UpdateMemberRole(ctx context.Context, newRole svcmodel.ProjectRole, projectID uuid.UUID, userID id.User, authUserID id.AuthUser) error
 }
 
 type userService interface {
 	GetAuthenticated(ctx context.Context, authUserID id.AuthUser) (svcmodel.User, error)
-	GetForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) (svcmodel.User, error)
+	GetForAdmin(ctx context.Context, userID id.User, authUserID id.AuthUser) (svcmodel.User, error)
 	ListAllForAdmin(ctx context.Context, authUserID id.AuthUser) ([]svcmodel.User, error)
-	DeleteForAdmin(ctx context.Context, userID uuid.UUID, authUserID id.AuthUser) error
+	DeleteForAdmin(ctx context.Context, userID id.User, authUserID id.AuthUser) error
 }
 
 type settingsService interface {
