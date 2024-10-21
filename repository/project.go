@@ -223,6 +223,7 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 		"projectRole":  i.ProjectRole,
 		"tokenHash":    i.TokenHash.ToBase64(),
 		"status":       i.Status,
+		"invitedBy":    i.InviterUserID,
 		"createdAt":    i.CreatedAt,
 		"updatedAt":    i.UpdatedAt,
 	}); err != nil {
