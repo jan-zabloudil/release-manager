@@ -19,7 +19,7 @@ func (m *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, au
 	return args.Get(0).(model.Project), args.Error(1)
 }
 
-func (m *ProjectService) GetEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID id.AuthUser) (model.Environment, error) {
+func (m *ProjectService) GetEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment, authUserID id.AuthUser) (model.Environment, error) {
 	args := m.Called(ctx, projectID, envID, authUserID)
 	return args.Get(0).(model.Environment), args.Error(1)
 }

@@ -12,19 +12,19 @@ import (
 )
 
 type CreateDeploymentInput struct {
-	ReleaseID     uuid.UUID `json:"release_id"`
-	EnvironmentID uuid.UUID `json:"environment_id"`
+	ReleaseID     uuid.UUID      `json:"release_id"`
+	EnvironmentID id.Environment `json:"environment_id"`
 }
 
 type Deployment struct {
-	ID                    id.Deployment `json:"id"`
-	ReleaseID             uuid.UUID     `json:"release_id"`
-	ReleaseTitle          string        `json:"release_title"`
-	EnvironmentID         uuid.UUID     `json:"environment_id"`
-	EnvironmentName       string        `json:"environment_name"`
-	EnvironmentServiceURL string        `json:"environment_service_url"`
-	DeployedByUserID      id.AuthUser   `json:"deployed_by_user_id"`
-	DeployedAt            time.Time     `json:"deployed_at"`
+	ID                    id.Deployment  `json:"id"`
+	ReleaseID             uuid.UUID      `json:"release_id"`
+	ReleaseTitle          string         `json:"release_title"`
+	EnvironmentID         id.Environment `json:"environment_id"`
+	EnvironmentName       string         `json:"environment_name"`
+	EnvironmentServiceURL string         `json:"environment_service_url"`
+	DeployedByUserID      id.AuthUser    `json:"deployed_by_user_id"`
+	DeployedAt            time.Time      `json:"deployed_at"`
 }
 
 func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDeploymentInput {
@@ -35,7 +35,8 @@ func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDepl
 }
 
 func ToSvcDeploymentFilterParams(releaseIDParam, environmentIDParam, latestOnlyParam string) (svcmodel.DeploymentFilterParams, error) {
-	var releaseID, environmentID *uuid.UUID
+	var releaseID *uuid.UUID
+	var environmentID *id.Environment
 	var latestOnly *bool
 
 	if releaseIDParam != "" {
@@ -47,8 +48,8 @@ func ToSvcDeploymentFilterParams(releaseIDParam, environmentIDParam, latestOnlyP
 	}
 
 	if environmentIDParam != "" {
-		parsedID, err := uuid.Parse(environmentIDParam)
-		if err != nil {
+		var parsedID id.Environment
+		if err := parsedID.FromString(environmentIDParam); err != nil {
 			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for environment id: %w", err)
 		}
 		environmentID = &parsedID

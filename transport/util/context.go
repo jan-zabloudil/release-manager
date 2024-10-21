@@ -16,7 +16,6 @@ type contextKey string
 const (
 	authUserIDContextKey             contextKey = "auth_user_id"
 	projectIDContextKey              contextKey = "project_id"
-	environmentIDContextKey          contextKey = "environment_id"
 	projectInvitationTokenContextKey contextKey = "project_invitation_token"
 	releaseIDContextKey              contextKey = "release_id"
 )
@@ -29,14 +28,6 @@ func ContextProjectID(r *http.Request) uuid.UUID {
 
 func ContextSetProjectID(r *http.Request, id uuid.UUID) *http.Request {
 	return contextSetUUID(r, id, projectIDContextKey)
-}
-
-func ContextEnvironmentID(r *http.Request) uuid.UUID {
-	return contextUUID(r, environmentIDContextKey)
-}
-
-func ContextSetEnvironmentID(r *http.Request, id uuid.UUID) *http.Request {
-	return contextSetUUID(r, id, environmentIDContextKey)
 }
 
 func ContextReleaseID(r *http.Request) uuid.UUID {

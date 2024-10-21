@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"time"
 
+	"release-manager/pkg/id"
 	"release-manager/pkg/validator"
 
 	"github.com/google/uuid"
@@ -17,7 +18,7 @@ var (
 )
 
 type Environment struct {
-	ID         uuid.UUID
+	ID         id.Environment
 	ProjectID  uuid.UUID
 	Name       string
 	ServiceURL url.URL
@@ -44,7 +45,7 @@ func NewEnvironment(c CreateEnvironmentInput) (Environment, error) {
 
 	now := time.Now()
 	env := Environment{
-		ID:         uuid.New(),
+		ID:         id.NewEnvironment(),
 		ProjectID:  c.ProjectID,
 		Name:       c.Name,
 		ServiceURL: u,

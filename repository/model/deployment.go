@@ -23,12 +23,12 @@ type Deployment struct {
 	ReleaseCreatedAt    time.Time   `db:"release_created_at"`
 	ReleaseUpdatedAt    time.Time   `db:"release_updated_at"`
 
-	EnvID         uuid.UUID `db:"env_id"`
-	EnvProjectID  uuid.UUID `db:"env_project_id"`
-	EnvName       string    `db:"env_name"`
-	EnvServiceURL string    `db:"env_service_url"`
-	EnvCreatedAt  time.Time `db:"env_created_at"`
-	EnvUpdatedAt  time.Time `db:"env_updated_at"`
+	EnvID         id.Environment `db:"env_id"`
+	EnvProjectID  uuid.UUID      `db:"env_project_id"`
+	EnvName       string         `db:"env_name"`
+	EnvServiceURL string         `db:"env_service_url"`
+	EnvCreatedAt  time.Time      `db:"env_created_at"`
+	EnvUpdatedAt  time.Time      `db:"env_updated_at"`
 }
 
 func ToSvcDeployment(dpl Deployment) (svcmodel.Deployment, error) {

@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
@@ -29,6 +30,12 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
+	envID, err := util.GetPathParam[id.Environment](r, "environment_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid environment ID"))
+		return
+	}
+
 	var req model.UpdateEnvironmentInput
 	if err := util.UnmarshalRequest(r, &req); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -39,7 +46,7 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		model.ToSvcUpdateEnvironmentInput(req),
 		util.ContextProjectID(r),
-		util.ContextEnvironmentID(r),
+		envID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -50,10 +57,16 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
+	envID, err := util.GetPathParam[id.Environment](r, "environment_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid environment ID"))
+		return
+	}
+
 	env, err := h.ProjectSvc.GetEnvironment(
 		r.Context(),
 		util.ContextProjectID(r),
-		util.ContextEnvironmentID(r),
+		envID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -79,13 +92,18 @@ func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteEnvironment(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectSvc.DeleteEnvironment(
+	envID, err := util.GetPathParam[id.Environment](r, "environment_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid environment ID"))
+		return
+	}
+
+	if err := h.ProjectSvc.DeleteEnvironment(
 		r.Context(),
 		util.ContextProjectID(r),
-		util.ContextEnvironmentID(r),
+		envID,
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}

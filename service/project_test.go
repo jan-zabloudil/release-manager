@@ -468,7 +468,7 @@ func TestProjectService_GetEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			_, err := service.GetEnvironment(context.Background(), tc.projectID, tc.envID, id.AuthUser{})
+			_, err := service.GetEnvironment(context.Background(), tc.projectID, id.NewEnvironment(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -524,7 +524,7 @@ func TestProjectService_UpdateEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.UpdateEnvironment(context.Background(), tc.envUpdate, uuid.New(), uuid.New(), id.AuthUser{})
+			err := service.UpdateEnvironment(context.Background(), tc.envUpdate, uuid.New(), id.NewEnvironment(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -551,8 +551,8 @@ func TestProjectService_GetEnvironments(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				projectRepo.On("ListEnvironmentsForProject", mock.Anything, mock.Anything).Return([]model.Environment{
-					{ID: uuid.New()},
-					{ID: uuid.New()},
+					{ID: id.NewEnvironment()},
+					{ID: id.NewEnvironment()},
 				}, nil)
 			},
 			wantErr: false,
@@ -636,7 +636,7 @@ func TestProjectService_DeleteEnvironment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.DeleteEnvironment(context.Background(), tc.projectID, tc.envID, id.AuthUser{})
+			err := service.DeleteEnvironment(context.Background(), tc.projectID, id.NewEnvironment(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
