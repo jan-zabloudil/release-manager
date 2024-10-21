@@ -24,10 +24,6 @@ func NewUserService(guard authGuard, repo userRepository) *UserService {
 
 // GetAuthenticated retrieves a user by ID, can be accessed only by the user itself.
 func (s *UserService) GetAuthenticated(ctx context.Context, userID uuid.UUID) (model.User, error) {
-	if err := s.authGuard.AuthorizeUserRoleUser(ctx, userID); err != nil {
-		return model.User{}, fmt.Errorf("authorizing user role: %w", err)
-	}
-
 	u, err := s.repository.Read(ctx, userID)
 	if err != nil {
 		switch {
@@ -71,9 +67,9 @@ func (s *UserService) DeleteForAdmin(ctx context.Context, userID uuid.UUID, auth
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
 
-	u, err := s.GetForAdmin(ctx, userID, authUserID)
+	u, err := s.repository.Read(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("getting user: %w", err)
+		return fmt.Errorf("reading user: %w", err)
 	}
 
 	// Admin user can be deleted only directly from the database.

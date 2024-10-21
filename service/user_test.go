@@ -15,7 +15,53 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestUserService_Get(t *testing.T) {
+func TestUserService_GetAuthenticated(t *testing.T) {
+	testCases := []struct {
+		name        string
+		setupMocks  func() *repomock.UserRepository
+		expectedErr error
+	}{
+		{
+			name: "Success",
+			setupMocks: func() *repomock.UserRepository {
+				repo := new(repomock.UserRepository)
+				repo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, nil)
+				return repo
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Unauthenticated user",
+			setupMocks: func() *repomock.UserRepository {
+				repo := new(repomock.UserRepository)
+				repo.On("Read", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUserNotFoundError())
+				return repo
+			},
+			expectedErr: svcerrors.NewUnauthenticatedUserError().Wrap(svcerrors.NewUserNotFoundError()),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := tc.setupMocks()
+			userService := NewUserService(
+				new(svcmock.AuthorizationService),
+				repo,
+			)
+
+			_, err := userService.GetAuthenticated(context.Background(), uuid.New())
+			if tc.expectedErr != nil {
+				assert.EqualError(t, err, tc.expectedErr.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+
+			repo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestUserService_GetForAdmin(t *testing.T) {
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -62,7 +108,7 @@ func TestUserService_Get(t *testing.T) {
 	}
 }
 
-func TestUserService_GetAll(t *testing.T) {
+func TestUserService_ListAllForAdmin(t *testing.T) {
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
@@ -109,7 +155,7 @@ func TestUserService_GetAll(t *testing.T) {
 	}
 }
 
-func TestUserService_Delete(t *testing.T) {
+func TestUserService_DeleteForAdmin(t *testing.T) {
 	testCases := []struct {
 		name       string
 		setupMocks func() (*svcmock.AuthorizationService, *repomock.UserRepository)
