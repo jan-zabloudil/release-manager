@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
@@ -20,13 +21,18 @@ func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
-	err := h.ProjectSvc.DeleteMember(
+	userID, err := util.GetPathParam[id.User](r, "user_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid user ID"))
+		return
+	}
+
+	if err := h.ProjectSvc.DeleteMember(
 		r.Context(),
 		util.ContextProjectID(r),
-		util.ContextUserID(r),
+		userID,
 		util.ContextAuthUserID(r),
-	)
-	if err != nil {
+	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
@@ -35,6 +41,12 @@ func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
+	userID, err := util.GetPathParam[id.User](r, "user_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid user ID"))
+		return
+	}
+
 	var input model.UpdateProjectMemberRoleInput
 	if err := util.UnmarshalRequest(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -45,7 +57,7 @@ func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		svcmodel.ProjectRole(input.ProjectRole),
 		util.ContextProjectID(r),
-		util.ContextUserID(r),
+		userID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))

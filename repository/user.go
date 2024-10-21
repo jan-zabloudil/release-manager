@@ -5,13 +5,13 @@ import (
 	"errors"
 	"net/http"
 
+	"release-manager/pkg/id"
 	"release-manager/repository/helper"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nedpals/supabase-go"
@@ -29,7 +29,7 @@ func NewUserRepository(client *supabase.Client, pool *pgxpool.Pool) *UserReposit
 	}
 }
 
-func (r *UserRepository) Read(ctx context.Context, userID uuid.UUID) (svcmodel.User, error) {
+func (r *UserRepository) Read(ctx context.Context, userID id.User) (svcmodel.User, error) {
 	return r.read(ctx, r.dbpool, query.ReadUser, pgx.NamedArgs{"id": userID})
 }
 
@@ -46,7 +46,7 @@ func (r *UserRepository) ListAll(ctx context.Context) ([]svcmodel.User, error) {
 	return model.ToSvcUsers(u), nil
 }
 
-func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *UserRepository) Delete(ctx context.Context, id id.User) error {
 	// Deletes a user from both the authentication table (auth.users) and the public.users table
 	// This action must be done via Supabase client
 	// Because auth.users cannot be accessed directly in the database

@@ -3,13 +3,12 @@ package model
 import (
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        uuid.UUID `db:"id"`
+	ID        id.User   `db:"id"`
 	Email     string    `db:"email"`
 	Name      string    `db:"name"`
 	AvatarURL string    `db:"avatar_url"`

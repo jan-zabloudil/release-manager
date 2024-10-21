@@ -1145,7 +1145,7 @@ func TestProjectService_DeleteMember(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.DeleteMember(context.Background(), tc.projectID, uuid.New(), id.AuthUser{})
+			err := service.DeleteMember(context.Background(), tc.projectID, id.User{}, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -1200,7 +1200,7 @@ func TestProjectService_UpdateMemberRole(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.UpdateMemberRole(context.Background(), tc.newRole, tc.projectID, uuid.New(), id.AuthUser{})
+			err := service.UpdateMemberRole(context.Background(), tc.newRole, tc.projectID, id.User{}, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)

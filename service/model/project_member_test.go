@@ -3,6 +3,8 @@ package model
 import (
 	"testing"
 
+	"release-manager/pkg/id"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,28 +19,28 @@ func TestProjectMember_NewProjectMember(t *testing.T) {
 	}{
 		{
 			name:      "Valid Project Member - Owner",
-			user:      User{ID: uuid.New(), Email: "test@example.com"},
+			user:      User{ID: id.User{}, Email: "test@example.com"},
 			projectID: uuid.New(),
 			role:      ProjectRoleOwner,
 			wantErr:   false,
 		},
 		{
 			name:      "Valid Project Member - Editor",
-			user:      User{ID: uuid.New(), Email: "test@example.com"},
+			user:      User{ID: id.User{}, Email: "test@example.com"},
 			projectID: uuid.New(),
 			role:      ProjectRoleEditor,
 			wantErr:   false,
 		},
 		{
 			name:      "Valid Project Member - Viewer",
-			user:      User{ID: uuid.New(), Email: "test@example.com"},
+			user:      User{ID: id.User{}, Email: "test@example.com"},
 			projectID: uuid.New(),
 			role:      ProjectRoleViewer,
 			wantErr:   false,
 		},
 		{
 			name:      "Invalid Project Member - Invalid Role",
-			user:      User{ID: uuid.New(), Email: "test@example.com"},
+			user:      User{ID: id.User{}, Email: "test@example.com"},
 			projectID: uuid.New(),
 			role:      "admin",
 			wantErr:   true,
@@ -87,7 +89,7 @@ func TestProjectMember_UpdateProjectRole(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			member := ProjectMember{
-				User:        User{ID: uuid.New(), Email: "test@example.com"},
+				User:        User{ID: id.User{}, Email: "test@example.com"},
 				ProjectID:   uuid.New(),
 				ProjectRole: tt.role,
 			}

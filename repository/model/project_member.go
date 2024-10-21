@@ -3,13 +3,14 @@ package model
 import (
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
 )
 
 type ProjectMember struct {
-	UserID        uuid.UUID `db:"user_id"`
+	UserID        id.User   `db:"user_id"`
 	UserEmail     string    `db:"user_email"`
 	UserName      string    `db:"user_name"`
 	UserAvatarURL string    `db:"user_avatar_url"`

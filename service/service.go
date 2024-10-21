@@ -51,22 +51,22 @@ type projectRepository interface {
 	) error
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
 	ListMembersForUser(ctx context.Context, userID id.AuthUser) ([]model.ProjectMember, error)
-	ReadMember(ctx context.Context, projectID, userID uuid.UUID) (model.ProjectMember, error)
+	ReadMember(ctx context.Context, projectID uuid.UUID, userID id.User) (model.ProjectMember, error)
 	ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (model.ProjectMember, error)
-	DeleteMember(ctx context.Context, projectID, userID uuid.UUID) error
+	DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User) error
 	UpdateMember(
 		ctx context.Context,
-		projectID,
-		userID uuid.UUID,
+		projectID uuid.UUID,
+		userID id.User,
 		updateFn func(m model.ProjectMember) (model.ProjectMember, error),
 	) error
 }
 
 type userRepository interface {
-	Read(ctx context.Context, id uuid.UUID) (model.User, error)
+	Read(ctx context.Context, id id.User) (model.User, error)
 	ReadByEmail(ctx context.Context, email string) (model.User, error)
 	ListAll(ctx context.Context) ([]model.User, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id id.User) error
 }
 
 type settingsRepository interface {

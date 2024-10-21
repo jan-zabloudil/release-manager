@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"release-manager/pkg/id"
 )
 
 const (
@@ -22,7 +22,7 @@ var userRolePriority = map[UserRole]int{
 type UserRole string
 
 type User struct {
-	ID        uuid.UUID
+	ID        id.User
 	Email     string
 	Name      string
 	AvatarURL string

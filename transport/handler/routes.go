@@ -23,7 +23,6 @@ func (h *Handler) setupRoutes() {
 	h.Mux.Route("/admin/users", func(r chi.Router) {
 		r.Get("/", middleware.RequireAuthUser(h.listUsers))
 		r.Route("/{id}", func(r chi.Router) {
-			r.Use(middleware.SetResourceUUIDToContext("id", util.ContextSetUserID))
 			r.Get("/", middleware.RequireAuthUser(h.getUser))
 			r.Delete("/", middleware.RequireAuthUser(h.deleteUser))
 		})
@@ -63,7 +62,6 @@ func (h *Handler) setupRoutes() {
 			r.Route("/members", func(r chi.Router) {
 				r.Get("/", middleware.RequireAuthUser(h.listMembers))
 				r.Route("/{user_id}", func(r chi.Router) {
-					r.Use(middleware.SetResourceUUIDToContext("user_id", util.ContextSetUserID))
 					r.Delete("/", middleware.RequireAuthUser(h.deleteMember))
 					r.Patch("/", middleware.RequireAuthUser(h.updateMemberRole))
 				})
