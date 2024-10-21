@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrCodeUnauthorizedUnknownUser          = "ERR_UNAUTHORIZED_ACCESS_UNKNOWN_USER"
+	ErrCodeUnauthenticatedUser              = "ERR_UNAUTHENTICATED_USER"
 	ErrCodeInsufficientUserRole             = "ERR_INSUFFICIENT_USER_ROLE"
 	ErrCodeInsufficientProjectRole          = "ERR_INSUFFICIENT_PROJECT_ROLE"
 	ErrCodeUserNotProjectMember             = "ERR_USER_NOT_PROJECT_MEMBER"
@@ -117,10 +117,10 @@ func NewSettingsUnprocessableError() *Error {
 	}
 }
 
-func NewUnauthorizedUnknownUserError() *Error {
+func NewUnauthenticatedUserError() *Error {
 	return &Error{
-		Code:    ErrCodeUnauthorizedUnknownUser,
-		Message: "Unauthorized access, unknown user.",
+		Code:    ErrCodeUnauthenticatedUser,
+		Message: "Unauthenticated user, user not found.",
 	}
 }
 

@@ -36,7 +36,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			mockSetup: func(auth *svc.AuthorizationService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
 				settings.On("GetDefaultReleaseMessage", mock.Anything).Return("message", nil)
-				user.On("Get", mock.Anything, mock.Anything).Return(model.User{}, nil)
+				user.On("GetAuthenticated", mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -50,7 +50,7 @@ func TestProjectService_CreateProject(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizationService, settings *svc.SettingsService, user *svc.UserService, github *githubmock.Client, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeUserRoleAdmin", mock.Anything, mock.Anything).Return(nil)
-				user.On("Get", mock.Anything, mock.Anything).Return(model.User{}, nil)
+				user.On("GetAuthenticated", mock.Anything, mock.Anything).Return(model.User{}, nil)
 				projectRepo.On("CreateProjectWithOwner", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -113,13 +113,13 @@ func TestProjectService_CreateProject(t *testing.T) {
 func TestProjectService_ListProjects(t *testing.T) {
 	testCases := []struct {
 		name      string
-		mockSetup func(*svc.AuthorizationService, *repo.ProjectRepository)
+		mockSetup func(*svc.UserService, *repo.ProjectRepository)
 		wantErr   bool
 	}{
 		{
 			name: "Non admin user",
-			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
-				auth.On("GetAuthorizedUser", mock.Anything, mock.Anything).Return(model.User{
+			mockSetup: func(user *svc.UserService, projectRepo *repo.ProjectRepository) {
+				user.On("GetAuthenticated", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleUser,
 				}, nil)
 				projectRepo.On("ListProjectsForUser", mock.Anything, mock.Anything).Return([]model.Project{}, nil)
@@ -128,8 +128,8 @@ func TestProjectService_ListProjects(t *testing.T) {
 		},
 		{
 			name: "Admin user",
-			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
-				auth.On("GetAuthorizedUser", mock.Anything, mock.Anything).Return(model.User{
+			mockSetup: func(user *svc.UserService, projectRepo *repo.ProjectRepository) {
+				user.On("GetAuthenticated", mock.Anything, mock.Anything).Return(model.User{
 					Role: model.UserRoleAdmin,
 				}, nil)
 				projectRepo.On("ListProjects", mock.Anything).Return([]model.Project{}, nil)
@@ -138,8 +138,8 @@ func TestProjectService_ListProjects(t *testing.T) {
 		},
 		{
 			name: "Unauthenticated user",
-			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
-				auth.On("GetAuthorizedUser", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUnauthorizedUnknownUserError())
+			mockSetup: func(user *svc.UserService, projectRepo *repo.ProjectRepository) {
+				user.On("GetAuthenticated", mock.Anything, mock.Anything).Return(model.User{}, svcerrors.NewUnauthenticatedUserError())
 			},
 			wantErr: true,
 		},
@@ -155,7 +155,7 @@ func TestProjectService_ListProjects(t *testing.T) {
 			authSvc := new(svc.AuthorizationService)
 			service := NewProjectService(authSvc, settingsSvc, userSvc, email, github, projectRepo)
 
-			tc.mockSetup(authSvc, projectRepo)
+			tc.mockSetup(userSvc, projectRepo)
 
 			_, err := service.ListProjects(context.Background(), uuid.New())
 
