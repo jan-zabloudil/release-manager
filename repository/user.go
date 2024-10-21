@@ -46,13 +46,12 @@ func (r *UserRepository) ListAll(ctx context.Context) ([]svcmodel.User, error) {
 	return model.ToSvcUsers(u), nil
 }
 
-// Delete deletes a user from both the authentication table (auth.users) and the public.users table
-// This action must be done via Supabase client
-// Because auth.users cannot be accessed directly in the database
-// public.users reference the auth.users table, so deleting a user from auth.users will also delete the user from public.users
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	err := r.client.Admin.DeleteUser(ctx, id.String())
-	if err != nil {
+	// Deletes a user from both the authentication table (auth.users) and the public.users table
+	// This action must be done via Supabase client
+	// Because auth.users cannot be accessed directly in the database
+	// public.users reference the auth.users table, so deleting a user from auth.users will also delete the user from public.users
+	if err := r.client.Admin.DeleteUser(ctx, id.String()); err != nil {
 		var errResponse *supabase.ErrorResponse
 		if errors.As(err, &errResponse) && errResponse.Code == http.StatusNotFound {
 			return svcerrors.NewUserNotFoundError().Wrap(err)

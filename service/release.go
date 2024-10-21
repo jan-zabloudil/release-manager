@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
@@ -43,8 +44,8 @@ func NewReleaseService(
 func (s *ReleaseService) CreateRelease(
 	ctx context.Context,
 	input model.CreateReleaseInput,
-	projectID,
-	authUserID uuid.UUID,
+	projectID uuid.UUID,
+	authUserID id.AuthUser,
 ) (model.Release, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return model.Release{}, fmt.Errorf("authorizing project member: %w", err)
@@ -93,7 +94,7 @@ func (s *ReleaseService) CreateRelease(
 	return rls, nil
 }
 
-func (s *ReleaseService) GetRelease(ctx context.Context, releaseID, authUserID uuid.UUID) (model.Release, error) {
+func (s *ReleaseService) GetRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) (model.Release, error) {
 	if err := s.authGuard.AuthorizeReleaseViewer(ctx, releaseID, authUserID); err != nil {
 		return model.Release{}, fmt.Errorf("authorizing release viewer: %w", err)
 	}
@@ -108,7 +109,7 @@ func (s *ReleaseService) GetRelease(ctx context.Context, releaseID, authUserID u
 
 // DeleteRelease deletes a release. If deleteGithubRelease is true, it will also delete associacted GitHub release (if exists).
 // Deleting GitHub release is idempotent, so if the release does not exist on GitHub, it will not return an error.
-func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteReleaseInput, releaseID, authUserID uuid.UUID) error {
+func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteReleaseInput, releaseID uuid.UUID, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
 		return fmt.Errorf("authorizing release editor: %w", err)
 	}
@@ -143,8 +144,8 @@ func (s *ReleaseService) DeleteReleaseByGitTag(ctx context.Context, githubOwnerS
 func (s *ReleaseService) UpdateRelease(
 	ctx context.Context,
 	input model.UpdateReleaseInput,
-	releaseID,
-	authUserID uuid.UUID,
+	releaseID uuid.UUID,
+	authUserID id.AuthUser,
 ) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
 		return fmt.Errorf("authorizing release editor: %w", err)
@@ -163,7 +164,7 @@ func (s *ReleaseService) UpdateRelease(
 	return nil
 }
 
-func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID, authUserID uuid.UUID) ([]model.Release, error) {
+func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]model.Release, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -176,7 +177,7 @@ func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID, 
 	return rls, nil
 }
 
-func (s *ReleaseService) SendReleaseNotification(ctx context.Context, releaseID, authUserID uuid.UUID) error {
+func (s *ReleaseService) SendReleaseNotification(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
 		return fmt.Errorf("authorizing release viewer: %w", err)
 	}
@@ -212,7 +213,7 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, releaseID,
 	return nil
 }
 
-func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID, authUserID uuid.UUID) error {
+func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
 		return fmt.Errorf("authorizing release editor: %w", err)
 	}
@@ -246,8 +247,8 @@ func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID, aut
 func (s *ReleaseService) GenerateGithubReleaseNotes(
 	ctx context.Context,
 	input model.GithubGeneratedReleaseNotesInput,
-	projectID,
-	authUserID uuid.UUID,
+	projectID uuid.UUID,
+	authUserID id.AuthUser,
 ) (model.GithubGeneratedReleaseNotes, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("authorizing project member: %w", err)
@@ -282,8 +283,8 @@ func (s *ReleaseService) GenerateGithubReleaseNotes(
 func (s *ReleaseService) CreateDeployment(
 	ctx context.Context,
 	input model.CreateDeploymentInput,
-	projectID,
-	authUserID uuid.UUID,
+	projectID uuid.UUID,
+	authUserID id.AuthUser,
 ) (model.Deployment, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return model.Deployment{}, fmt.Errorf("authorizing project member: %w", err)
@@ -316,8 +317,8 @@ func (s *ReleaseService) CreateDeployment(
 func (s *ReleaseService) ListDeploymentsForProject(
 	ctx context.Context,
 	params model.DeploymentFilterParams,
-	projectID,
-	authUserID uuid.UUID,
+	projectID uuid.UUID,
+	authUserID id.AuthUser,
 ) ([]model.Deployment, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)
@@ -345,7 +346,7 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	return dpls, nil
 }
 
-func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID, authUserID uuid.UUID) error {
+func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error {
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
 		return fmt.Errorf("getting github token: %w", err)

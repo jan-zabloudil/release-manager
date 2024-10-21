@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"release-manager/pkg/crypto"
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -29,7 +30,7 @@ func (m *ProjectRepository) ListProjects(ctx context.Context) ([]svcmodel.Projec
 	return args.Get(0).([]svcmodel.Project), args.Error(1)
 }
 
-func (m *ProjectRepository) ListProjectsForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.Project, error) {
+func (m *ProjectRepository) ListProjectsForUser(ctx context.Context, userID id.AuthUser) ([]svcmodel.Project, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).([]svcmodel.Project), args.Error(1)
 }
@@ -121,7 +122,7 @@ func (m *ProjectRepository) ListMembersForProject(ctx context.Context, projectID
 	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
 }
 
-func (m *ProjectRepository) ListMembersForUser(ctx context.Context, userID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) ListMembersForUser(ctx context.Context, userID id.AuthUser) ([]svcmodel.ProjectMember, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
 }

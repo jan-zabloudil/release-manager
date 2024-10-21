@@ -5,6 +5,7 @@ import (
 	"time"
 
 	cryptox "release-manager/pkg/crypto"
+	"release-manager/pkg/id"
 	validator "release-manager/pkg/validator"
 
 	"github.com/google/uuid"
@@ -35,7 +36,7 @@ type ProjectInvitation struct {
 	ProjectRole   ProjectRole
 	Status        ProjectInvitationStatus
 	TokenHash     cryptox.Hash
-	InviterUserID uuid.UUID
+	InviterUserID id.AuthUser
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -48,7 +49,7 @@ type CreateProjectInvitationInput struct {
 
 type ProjectInvitationStatus string
 
-func NewProjectInvitation(c CreateProjectInvitationInput, tkn cryptox.Token, inviterUserID uuid.UUID) (ProjectInvitation, error) {
+func NewProjectInvitation(c CreateProjectInvitationInput, tkn cryptox.Token, inviterUserID id.AuthUser) (ProjectInvitation, error) {
 	now := time.Now()
 
 	i := ProjectInvitation{

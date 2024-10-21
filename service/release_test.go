@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	github "release-manager/github/mock"
+	"release-manager/pkg/id"
 	"release-manager/pkg/pointer"
 	repo "release-manager/repository/mock"
 	svcerrors "release-manager/service/errors"
@@ -161,7 +162,7 @@ func TestReleaseService_CreateRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			_, err := service.CreateRelease(context.TODO(), tc.release, uuid.New(), uuid.New())
+			_, err := service.CreateRelease(context.TODO(), tc.release, uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -213,7 +214,7 @@ func TestReleaseService_GetRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, releaseRepo)
 
-			_, err := service.GetRelease(context.TODO(), uuid.New(), uuid.New())
+			_, err := service.GetRelease(context.TODO(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -323,7 +324,7 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			err := service.DeleteRelease(context.TODO(), tc.deleteReleaseInput, uuid.New(), uuid.New())
+			err := service.DeleteRelease(context.TODO(), tc.deleteReleaseInput, uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -382,7 +383,7 @@ func TestReleaseService_ListReleasesForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.ListReleasesForProject(context.Background(), tc.projectID, uuid.New())
+			_, err := service.ListReleasesForProject(context.Background(), tc.projectID, id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -451,7 +452,7 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, releaseRepo)
 
-			err := service.UpdateRelease(context.Background(), tc.update, uuid.New(), uuid.New())
+			err := service.UpdateRelease(context.Background(), tc.update, uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -534,7 +535,7 @@ func TestReleaseService_SendReleaseNotification(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, settingsSvc, slackClient, releaseRepo)
 
-			err := service.SendReleaseNotification(context.TODO(), uuid.New(), uuid.New())
+			err := service.SendReleaseNotification(context.TODO(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -605,7 +606,7 @@ func TestReleaseService_UpsertGithubRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			err := service.UpsertGithubRelease(context.TODO(), uuid.New(), uuid.New())
+			err := service.UpsertGithubRelease(context.TODO(), uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -718,7 +719,7 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			_, err := service.GenerateGithubReleaseNotes(context.TODO(), tc.input, uuid.New(), uuid.New())
+			_, err := service.GenerateGithubReleaseNotes(context.TODO(), tc.input, uuid.New(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -806,7 +807,7 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.CreateDeployment(context.TODO(), tc.input, uuid.Nil, uuid.Nil)
+			_, err := service.CreateDeployment(context.TODO(), tc.input, uuid.Nil, id.AuthUser{})
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -903,7 +904,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.ListDeploymentsForProject(context.TODO(), tc.params, uuid.Nil, uuid.Nil)
+			_, err := service.ListDeploymentsForProject(context.TODO(), tc.params, uuid.Nil, id.AuthUser{})
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
