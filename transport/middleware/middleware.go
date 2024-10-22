@@ -58,7 +58,7 @@ func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
 
 func RequireAuthUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if userID := util.ContextAuthUserID(r); userID.IsEmpty() {
+		if userID := util.ContextAuthUserID(r); userID.IsNil() {
 			util.WriteResponseError(w, resperrors.NewMissingBearerTokenError())
 			return
 		}

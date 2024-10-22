@@ -213,7 +213,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, input model.Crea
 	return env, nil
 }
 
-func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID id.AuthUser) (model.Environment, error) {
+func (s *ProjectService) GetEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment, authUserID id.AuthUser) (model.Environment, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return model.Environment{}, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -229,8 +229,8 @@ func (s *ProjectService) GetEnvironment(ctx context.Context, projectID, envID uu
 func (s *ProjectService) UpdateEnvironment(
 	ctx context.Context,
 	input model.UpdateEnvironmentInput,
-	projectID,
-	envID uuid.UUID,
+	projectID uuid.UUID,
+	envID id.Environment,
 	authUserID id.AuthUser,
 ) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
@@ -263,7 +263,7 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID uuid.UU
 	return envs, nil
 }
 
-func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}

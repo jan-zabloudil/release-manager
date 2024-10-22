@@ -4,18 +4,19 @@ import (
 	"net/url"
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
 )
 
 type Environment struct {
-	ID         uuid.UUID `db:"id"`
-	ProjectID  uuid.UUID `db:"project_id"`
-	Name       string    `db:"name"`
-	ServiceURL string    `db:"service_url"`
-	CreatedAt  time.Time `db:"created_at"`
-	UpdatedAt  time.Time `db:"updated_at"`
+	ID         id.Environment `db:"id"`
+	ProjectID  uuid.UUID      `db:"project_id"`
+	Name       string         `db:"name"`
+	ServiceURL string         `db:"service_url"`
+	CreatedAt  time.Time      `db:"created_at"`
+	UpdatedAt  time.Time      `db:"updated_at"`
 }
 
 func ToSvcEnvironment(e Environment) (svcmodel.Environment, error) {

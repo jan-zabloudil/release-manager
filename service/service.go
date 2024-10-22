@@ -24,14 +24,14 @@ type projectRepository interface {
 	) error
 
 	CreateEnvironment(ctx context.Context, env model.Environment) error
-	ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (model.Environment, error)
+	ReadEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) (model.Environment, error)
 	UpdateEnvironment(
 		ctx context.Context,
-		projectID,
-		envID uuid.UUID,
+		projectID uuid.UUID,
+		envID id.Environment,
 		updateFn func(e model.Environment) (model.Environment, error),
 	) error
-	DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error
+	DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) error
 	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
@@ -120,7 +120,7 @@ type projectGetter interface {
 }
 
 type environmentGetter interface {
-	GetEnvironment(ctx context.Context, projectID, envID uuid.UUID, authUserID id.AuthUser) (model.Environment, error)
+	GetEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment, authUserID id.AuthUser) (model.Environment, error)
 }
 
 type githubManager interface {

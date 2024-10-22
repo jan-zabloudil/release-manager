@@ -747,7 +747,7 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 			name: "success",
 			input: model.CreateDeploymentInput{
 				ReleaseID:     uuid.New(),
-				EnvironmentID: uuid.New(),
+				EnvironmentID: id.NewEnvironment(),
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -761,7 +761,7 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 			name: "invalid input",
 			input: model.CreateDeploymentInput{
 				ReleaseID:     uuid.Nil,
-				EnvironmentID: uuid.Nil,
+				EnvironmentID: id.Environment(uuid.Nil),
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -772,7 +772,7 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 			name: "release not found",
 			input: model.CreateDeploymentInput{
 				ReleaseID:     uuid.New(),
-				EnvironmentID: uuid.New(),
+				EnvironmentID: id.NewEnvironment(),
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -784,7 +784,7 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 			name: "env not found",
 			input: model.CreateDeploymentInput{
 				ReleaseID:     uuid.New(),
-				EnvironmentID: uuid.New(),
+				EnvironmentID: id.NewEnvironment(),
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -822,6 +822,8 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 }
 
 func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
+	envID := id.NewEnvironment()
+
 	testCases := []struct {
 		name      string
 		params    model.DeploymentFilterParams
@@ -847,7 +849,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 		{
 			name: "Deployments fetched successfully - with valid params",
 			params: model.DeploymentFilterParams{
-				EnvironmentID: pointer.UUIDPtr(uuid.New()),
+				EnvironmentID: &envID,
 				ReleaseID:     pointer.UUIDPtr(uuid.New()),
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
@@ -868,7 +870,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 		{
 			name: "Deployments fetched successfully - release provided in params not found",
 			params: model.DeploymentFilterParams{
-				EnvironmentID: pointer.UUIDPtr(uuid.New()),
+				EnvironmentID: &envID,
 				ReleaseID:     pointer.UUIDPtr(uuid.New()),
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
@@ -880,7 +882,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 		{
 			name: "Deployments fetched successfully - env provided in params not found",
 			params: model.DeploymentFilterParams{
-				EnvironmentID: pointer.UUIDPtr(uuid.New()),
+				EnvironmentID: &envID,
 				ReleaseID:     pointer.UUIDPtr(uuid.New()),
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {

@@ -16,14 +16,14 @@ var (
 
 type CreateDeploymentInput struct {
 	ReleaseID     uuid.UUID
-	EnvironmentID uuid.UUID
+	EnvironmentID id.Environment
 }
 
 func (i CreateDeploymentInput) Validate() error {
 	if i.ReleaseID == uuid.Nil {
 		return errReleaseIDRequired
 	}
-	if i.EnvironmentID == uuid.Nil {
+	if i.EnvironmentID.IsNil() {
 		return errEnvironmentIDRequired
 	}
 	return nil
@@ -49,6 +49,6 @@ func NewDeployment(rls Release, env Environment, deployedByUserID id.AuthUser) D
 
 type DeploymentFilterParams struct {
 	ReleaseID     *uuid.UUID
-	EnvironmentID *uuid.UUID
+	EnvironmentID *id.Environment
 	LatestOnly    *bool
 }

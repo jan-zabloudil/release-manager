@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -19,11 +20,11 @@ type UpdateEnvironmentInput struct {
 }
 
 type Environment struct {
-	ID         uuid.UUID `json:"id"`
-	Name       string    `json:"name"`
-	ServiceURL string    `json:"service_url"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID         id.Environment `json:"id"`
+	Name       string         `json:"name"`
+	ServiceURL string         `json:"service_url"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
 func ToSvcCreateEnvironmentInput(c CreateEnvironmentInput, projectID uuid.UUID) svcmodel.CreateEnvironmentInput {

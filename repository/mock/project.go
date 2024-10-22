@@ -54,7 +54,7 @@ func (m *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
+func (m *ProjectRepository) ReadEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) (svcmodel.Environment, error) {
 	args := m.Called(ctx, projectID, envID)
 	return args.Get(0).(svcmodel.Environment), args.Error(1)
 }
@@ -64,15 +64,15 @@ func (m *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, proj
 	return args.Get(0).([]svcmodel.Environment), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error {
+func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) error {
 	args := m.Called(ctx, projectID, envID)
 	return args.Error(0)
 }
 
 func (m *ProjectRepository) UpdateEnvironment(
 	ctx context.Context,
-	projectID,
-	envID uuid.UUID,
+	projectID uuid.UUID,
+	envID id.Environment,
 	updateFn func(e svcmodel.Environment) (svcmodel.Environment, error),
 ) error {
 	args := m.Called(ctx, projectID, envID, updateFn)

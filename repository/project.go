@@ -144,7 +144,7 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 	return nil
 }
 
-func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID, envID uuid.UUID) (svcmodel.Environment, error) {
+func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) (svcmodel.Environment, error) {
 	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironment, pgx.NamedArgs{
 		"projectID": projectID,
 		"envID":     envID,
@@ -162,7 +162,7 @@ func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, proj
 	return model.ToSvcEnvironments(e)
 }
 
-func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, envID uuid.UUID) error {
+func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) error {
 	result, err := r.dbpool.Exec(ctx, query.DeleteEnvironment, pgx.NamedArgs{
 		"envID":     envID,
 		"projectID": projectID,
@@ -180,8 +180,8 @@ func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID, en
 
 func (r *ProjectRepository) UpdateEnvironment(
 	ctx context.Context,
-	projectID,
-	envID uuid.UUID,
+	projectID uuid.UUID,
+	envID id.Environment,
 	updateFn func(e svcmodel.Environment) (svcmodel.Environment, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {

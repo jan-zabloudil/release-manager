@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type AuthUser uuid.UUID
 
-func (u AuthUser) IsEmpty() bool {
+func (u AuthUser) IsNil() bool {
 	return uuid.UUID(u) == uuid.Nil
 }
 

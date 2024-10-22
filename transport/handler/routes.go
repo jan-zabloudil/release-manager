@@ -45,7 +45,6 @@ func (h *Handler) setupRoutes() {
 				r.Post("/", middleware.RequireAuthUser(h.createEnvironment))
 				r.Get("/", middleware.RequireAuthUser(h.listEnvironments))
 				r.Route("/{environment_id}", func(r chi.Router) {
-					r.Use(middleware.SetResourceUUIDToContext("environment_id", util.ContextSetEnvironmentID))
 					r.Get("/", middleware.RequireAuthUser(h.getEnvironment))
 					r.Patch("/", middleware.RequireAuthUser(h.updateEnvironment))
 					r.Delete("/", middleware.RequireAuthUser(h.deleteEnvironment))
