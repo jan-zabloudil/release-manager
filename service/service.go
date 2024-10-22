@@ -36,7 +36,7 @@ type projectRepository interface {
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
 	ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
-	DeleteInvitation(ctx context.Context, projectID, invitationID uuid.UUID) error
+	DeleteInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation) error
 	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
 	UpdateInvitation(
 		ctx context.Context,

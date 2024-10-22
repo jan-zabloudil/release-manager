@@ -31,7 +31,7 @@ type projectService interface {
 
 	Invite(ctx context.Context, c svcmodel.CreateProjectInvitationInput, authUserID id.AuthUser) (svcmodel.ProjectInvitation, error)
 	ListInvitations(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]svcmodel.ProjectInvitation, error)
-	CancelInvitation(ctx context.Context, projectID, invitationID uuid.UUID, authUserID id.AuthUser) error
+	CancelInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation, authUserID id.AuthUser) error
 	AcceptInvitation(ctx context.Context, tkn cryptox.Token) error
 	RejectInvitation(ctx context.Context, tkn cryptox.Token) error
 

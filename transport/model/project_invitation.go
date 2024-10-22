@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -14,12 +15,12 @@ type CreateProjectInvitationInput struct {
 }
 
 type ProjectInvitation struct {
-	ID          uuid.UUID `json:"id"`
-	Email       string    `json:"email"`
-	ProjectRole string    `json:"project_role"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          id.ProjectInvitation `json:"id"`
+	Email       string               `json:"email"`
+	ProjectRole string               `json:"project_role"`
+	Status      string               `json:"status"`
+	CreatedAt   time.Time            `json:"created_at"`
+	UpdatedAt   time.Time            `json:"updated_at"`
 }
 
 func ToSvcCreateProjectInvitationInput(i CreateProjectInvitationInput, projectID uuid.UUID) svcmodel.CreateProjectInvitationInput {

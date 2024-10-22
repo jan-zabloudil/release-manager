@@ -17,7 +17,6 @@ const (
 	authUserIDContextKey             contextKey = "auth_user_id"
 	projectIDContextKey              contextKey = "project_id"
 	environmentIDContextKey          contextKey = "environment_id"
-	projectInvitationIDContextKey    contextKey = "project_invitation_id"
 	projectInvitationTokenContextKey contextKey = "project_invitation_token"
 	releaseIDContextKey              contextKey = "release_id"
 )
@@ -38,14 +37,6 @@ func ContextEnvironmentID(r *http.Request) uuid.UUID {
 
 func ContextSetEnvironmentID(r *http.Request, id uuid.UUID) *http.Request {
 	return contextSetUUID(r, id, environmentIDContextKey)
-}
-
-func ContextProjectInvitationID(r *http.Request) uuid.UUID {
-	return contextUUID(r, projectInvitationIDContextKey)
-}
-
-func ContextSetProjectInvitationID(r *http.Request, id uuid.UUID) *http.Request {
-	return contextSetUUID(r, id, projectInvitationIDContextKey)
 }
 
 func ContextReleaseID(r *http.Request) uuid.UUID {

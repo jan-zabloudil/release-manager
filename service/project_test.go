@@ -867,7 +867,7 @@ func TestProjectService_CancelInvitation(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectRepo)
 
-			err := service.CancelInvitation(context.Background(), uuid.New(), uuid.New(), id.AuthUser{})
+			err := service.CancelInvitation(context.Background(), uuid.New(), id.NewProjectInvitation(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)

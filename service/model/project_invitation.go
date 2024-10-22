@@ -30,7 +30,7 @@ var (
 )
 
 type ProjectInvitation struct {
-	ID            uuid.UUID
+	ID            id.ProjectInvitation
 	ProjectID     uuid.UUID
 	Email         string
 	ProjectRole   ProjectRole
@@ -53,7 +53,7 @@ func NewProjectInvitation(c CreateProjectInvitationInput, tkn cryptox.Token, inv
 	now := time.Now()
 
 	i := ProjectInvitation{
-		ID:            uuid.New(),
+		ID:            id.NewProjectInvitation(),
 		ProjectID:     c.ProjectID,
 		Email:         c.Email,
 		ProjectRole:   ProjectRole(c.ProjectRole),
