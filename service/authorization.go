@@ -43,18 +43,18 @@ func (s *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, p
 
 // AuthorizeReleaseEditor authorizes the user that has editor role or higher in the release's project.
 // the function can be used to authorize release action in the release service if the project ID is not directly provided.
-func (s *AuthorizationService) AuthorizeReleaseEditor(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error {
+func (s *AuthorizationService) AuthorizeReleaseEditor(ctx context.Context, releaseID id.Release, userID id.AuthUser) error {
 	return s.authorizeProjectRoleByRelease(ctx, releaseID, userID, model.ProjectRoleEditor)
 }
 
 // AuthorizeReleaseViewer authorizes the user that has viewer role or higher in the release's project.
 // the function can be used to authorize release action in the release service if the project ID is not directly provided.
-func (s *AuthorizationService) AuthorizeReleaseViewer(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error {
+func (s *AuthorizationService) AuthorizeReleaseViewer(ctx context.Context, releaseID id.Release, userID id.AuthUser) error {
 	return s.authorizeProjectRoleByRelease(ctx, releaseID, userID, model.ProjectRoleViewer)
 }
 
 // authorizeProjectRoleByRelease checks if the user has the required or higher role in the project of the release.
-func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser, role model.ProjectRole) error {
+func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context, releaseID id.Release, userID id.AuthUser, role model.ProjectRole) error {
 	// Approach of reading the release and then calling authorizeProjectRole was chosen rather than
 	// having repo function ReadProjectMemberByReleaseID, because:
 	//

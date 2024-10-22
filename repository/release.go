@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"release-manager/pkg/id"
 	"release-manager/repository/helper"
 	"release-manager/repository/model"
 	"release-manager/repository/query"
@@ -58,13 +59,13 @@ func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Rele
 	return nil
 }
 
-func (r *ReleaseRepository) ReadRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Release, error) {
+func (r *ReleaseRepository) ReadRelease(ctx context.Context, releaseID id.Release) (svcmodel.Release, error) {
 	return r.readRelease(ctx, r.dbpool, query.ReadRelease, pgx.NamedArgs{
 		"releaseID": releaseID,
 	})
 }
 
-func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (svcmodel.Release, error) {
+func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID uuid.UUID, releaseID id.Release) (svcmodel.Release, error) {
 	return r.readRelease(ctx, r.dbpool, query.ReadReleaseForProject, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
@@ -73,7 +74,7 @@ func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID
 
 func (r *ReleaseRepository) UpdateRelease(
 	ctx context.Context,
-	releaseID uuid.UUID,
+	releaseID id.Release,
 	updateFn func(r svcmodel.Release) (svcmodel.Release, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
@@ -110,7 +111,7 @@ func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwn
 	})
 }
 
-func (r *ReleaseRepository) DeleteRelease(ctx context.Context, releaseID uuid.UUID) error {
+func (r *ReleaseRepository) DeleteRelease(ctx context.Context, releaseID id.Release) error {
 	return r.deleteRelease(ctx, r.dbpool, query.DeleteRelease, pgx.NamedArgs{
 		"releaseID": releaseID,
 	})
@@ -160,7 +161,7 @@ func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, param
 	return model.ToSvcDeployments(dpls)
 }
 
-func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (svcmodel.Deployment, error) {
+func (r *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, releaseID id.Release) (svcmodel.Deployment, error) {
 	dpl, err := helper.ReadValue[model.Deployment](ctx, r.dbpool, query.ReadLastDeploymentForRelease, pgx.NamedArgs{
 		"releaseID": releaseID,
 	})

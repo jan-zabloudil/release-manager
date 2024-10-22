@@ -41,7 +41,7 @@ type UpdateReleaseInput struct {
 }
 
 type Release struct {
-	ID           uuid.UUID
+	ID           id.Release
 	ProjectID    uuid.UUID
 	ReleaseTitle string
 	ReleaseNotes string
@@ -64,7 +64,7 @@ type ReleaseAttachment struct {
 func NewRelease(input CreateReleaseInput, tagURL url.URL, projectID uuid.UUID, authorUserID id.AuthUser) (Release, error) {
 	now := time.Now()
 	r := Release{
-		ID:           uuid.New(),
+		ID:           id.NewRelease(),
 		ProjectID:    projectID,
 		ReleaseTitle: input.ReleaseTitle,
 		ReleaseNotes: input.ReleaseNotes,

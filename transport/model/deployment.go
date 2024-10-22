@@ -7,18 +7,16 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type CreateDeploymentInput struct {
-	ReleaseID     uuid.UUID      `json:"release_id"`
+	ReleaseID     id.Release     `json:"release_id"`
 	EnvironmentID id.Environment `json:"environment_id"`
 }
 
 type Deployment struct {
 	ID                    id.Deployment  `json:"id"`
-	ReleaseID             uuid.UUID      `json:"release_id"`
+	ReleaseID             id.Release     `json:"release_id"`
 	ReleaseTitle          string         `json:"release_title"`
 	EnvironmentID         id.Environment `json:"environment_id"`
 	EnvironmentName       string         `json:"environment_name"`
@@ -35,13 +33,13 @@ func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDepl
 }
 
 func ToSvcDeploymentFilterParams(releaseIDParam, environmentIDParam, latestOnlyParam string) (svcmodel.DeploymentFilterParams, error) {
-	var releaseID *uuid.UUID
+	var releaseID *id.Release
 	var environmentID *id.Environment
 	var latestOnly *bool
 
 	if releaseIDParam != "" {
-		parsedID, err := uuid.Parse(releaseIDParam)
-		if err != nil {
+		var parsedID id.Release
+		if err := parsedID.FromString(releaseIDParam); err != nil {
 			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for release id: %w", err)
 		}
 		releaseID = &parsedID

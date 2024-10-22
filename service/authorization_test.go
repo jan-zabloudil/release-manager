@@ -385,7 +385,7 @@ func TestAuth_AuthorizeReleaseEditor(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseEditor(context.Background(), uuid.New(), id.AuthUser{})
+			err := service.AuthorizeReleaseEditor(context.Background(), id.NewRelease(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -481,7 +481,7 @@ func TestAuth_AuthorizeReleaseViewer(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo, releaseRepo)
 
-			err := service.AuthorizeReleaseViewer(context.Background(), uuid.New(), id.AuthUser{})
+			err := service.AuthorizeReleaseViewer(context.Background(), id.NewRelease(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)

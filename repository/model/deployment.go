@@ -15,7 +15,7 @@ type Deployment struct {
 	DeployedByUserID id.AuthUser   `db:"deployed_by"`
 	DeployedAt       time.Time     `db:"deployed_at"`
 
-	ReleaseID           uuid.UUID   `db:"release_id"`
+	ReleaseID           id.Release  `db:"release_id"`
 	ReleaseProjectID    uuid.UUID   `db:"release_project_id"`
 	ReleaseTitle        string      `db:"release_title"`
 	ReleaseNotes        string      `db:"release_notes"`

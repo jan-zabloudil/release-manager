@@ -56,13 +56,13 @@ type settingsService interface {
 
 type releaseService interface {
 	CreateRelease(ctx context.Context, input svcmodel.CreateReleaseInput, projectID uuid.UUID, authUserID id.AuthUser) (svcmodel.Release, error)
-	GetRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) (svcmodel.Release, error)
-	DeleteRelease(ctx context.Context, input svcmodel.DeleteReleaseInput, releaseID uuid.UUID, authUserID id.AuthUser) error
+	GetRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) (svcmodel.Release, error)
+	DeleteRelease(ctx context.Context, input svcmodel.DeleteReleaseInput, releaseID id.Release, authUserID id.AuthUser) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
-	UpdateRelease(ctx context.Context, input svcmodel.UpdateReleaseInput, releaseID uuid.UUID, authUserID id.AuthUser) error
+	UpdateRelease(ctx context.Context, input svcmodel.UpdateReleaseInput, releaseID id.Release, authUserID id.AuthUser) error
 	ListReleasesForProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]svcmodel.Release, error)
-	SendReleaseNotification(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error
-	UpsertGithubRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error
+	SendReleaseNotification(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error
+	UpsertGithubRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error
 	GenerateGithubReleaseNotes(ctx context.Context, input svcmodel.GithubGeneratedReleaseNotesInput, projectID uuid.UUID, authUserID id.AuthUser) (svcmodel.GithubGeneratedReleaseNotes, error)
 
 	CreateDeployment(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID uuid.UUID, authUserID id.AuthUser) (svcmodel.Deployment, error)

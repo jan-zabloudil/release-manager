@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"release-manager/pkg/id"
-
-	"github.com/google/uuid"
 )
 
 var (
@@ -15,12 +13,12 @@ var (
 )
 
 type CreateDeploymentInput struct {
-	ReleaseID     uuid.UUID
+	ReleaseID     id.Release
 	EnvironmentID id.Environment
 }
 
 func (i CreateDeploymentInput) Validate() error {
-	if i.ReleaseID == uuid.Nil {
+	if i.ReleaseID.IsNil() {
 		return errReleaseIDRequired
 	}
 	if i.EnvironmentID.IsNil() {
@@ -48,7 +46,7 @@ func NewDeployment(rls Release, env Environment, deployedByUserID id.AuthUser) D
 }
 
 type DeploymentFilterParams struct {
-	ReleaseID     *uuid.UUID
+	ReleaseID     *id.Release
 	EnvironmentID *id.Environment
 	LatestOnly    *bool
 }

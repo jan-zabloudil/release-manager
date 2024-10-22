@@ -112,7 +112,7 @@ func TestRelease_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := Release{
-				ID:           uuid.New(),
+				ID:           id.NewRelease(),
 				ProjectID:    uuid.New(),
 				ReleaseTitle: "Initial Title",
 				ReleaseNotes: "Initial Notes",
