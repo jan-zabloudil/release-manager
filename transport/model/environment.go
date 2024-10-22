@@ -5,8 +5,6 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type CreateEnvironmentInput struct {
@@ -27,7 +25,12 @@ type Environment struct {
 	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
-func ToSvcCreateEnvironmentInput(c CreateEnvironmentInput, projectID uuid.UUID) svcmodel.CreateEnvironmentInput {
+type EnvironmentURLParams struct {
+	ProjectID     id.Project     `param:"path=project_id"`
+	EnvironmentID id.Environment `param:"path=environment_id"`
+}
+
+func ToSvcCreateEnvironmentInput(c CreateEnvironmentInput, projectID id.Project) svcmodel.CreateEnvironmentInput {
 	return svcmodel.CreateEnvironmentInput{
 		ProjectID:     projectID,
 		Name:          c.Name,

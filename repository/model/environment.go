@@ -6,13 +6,11 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type Environment struct {
 	ID         id.Environment `db:"id"`
-	ProjectID  uuid.UUID      `db:"project_id"`
+	ProjectID  id.Project     `db:"project_id"`
 	Name       string         `db:"name"`
 	ServiceURL string         `db:"service_url"`
 	CreatedAt  time.Time      `db:"created_at"`

@@ -7,8 +7,6 @@ import (
 	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type ReleaseService struct {
@@ -44,7 +42,7 @@ func NewReleaseService(
 func (s *ReleaseService) CreateRelease(
 	ctx context.Context,
 	input model.CreateReleaseInput,
-	projectID uuid.UUID,
+	projectID id.Project,
 	authUserID id.AuthUser,
 ) (model.Release, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
@@ -164,7 +162,7 @@ func (s *ReleaseService) UpdateRelease(
 	return nil
 }
 
-func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]model.Release, error) {
+func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) ([]model.Release, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -247,7 +245,7 @@ func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID id.R
 func (s *ReleaseService) GenerateGithubReleaseNotes(
 	ctx context.Context,
 	input model.GithubGeneratedReleaseNotesInput,
-	projectID uuid.UUID,
+	projectID id.Project,
 	authUserID id.AuthUser,
 ) (model.GithubGeneratedReleaseNotes, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
@@ -283,7 +281,7 @@ func (s *ReleaseService) GenerateGithubReleaseNotes(
 func (s *ReleaseService) CreateDeployment(
 	ctx context.Context,
 	input model.CreateDeploymentInput,
-	projectID uuid.UUID,
+	projectID id.Project,
 	authUserID id.AuthUser,
 ) (model.Deployment, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
@@ -317,7 +315,7 @@ func (s *ReleaseService) CreateDeployment(
 func (s *ReleaseService) ListDeploymentsForProject(
 	ctx context.Context,
 	params model.ListDeploymentsFilterParams,
-	projectID uuid.UUID,
+	projectID id.Project,
 	authUserID id.AuthUser,
 ) ([]model.Deployment, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {

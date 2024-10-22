@@ -7,8 +7,6 @@ import (
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	validator "release-manager/pkg/validator"
-
-	"github.com/google/uuid"
 )
 
 const (
@@ -31,7 +29,7 @@ var (
 
 type ProjectInvitation struct {
 	ID            id.ProjectInvitation
-	ProjectID     uuid.UUID
+	ProjectID     id.Project
 	Email         string
 	ProjectRole   ProjectRole
 	Status        ProjectInvitationStatus
@@ -42,7 +40,7 @@ type ProjectInvitation struct {
 }
 
 type CreateProjectInvitationInput struct {
-	ProjectID   uuid.UUID
+	ProjectID   id.Project
 	Email       string
 	ProjectRole string
 }

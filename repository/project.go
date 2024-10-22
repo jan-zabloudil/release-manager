@@ -11,7 +11,6 @@ import (
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -62,7 +61,7 @@ func (r *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 	})
 }
 
-func (r *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcmodel.Project, error) {
+func (r *ProjectRepository) ReadProject(ctx context.Context, id id.Project) (svcmodel.Project, error) {
 	return r.readProject(ctx, r.dbpool, query.ReadProject, pgx.NamedArgs{"id": id})
 }
 
@@ -74,7 +73,7 @@ func (r *ProjectRepository) ListProjectsForUser(ctx context.Context, userID id.A
 	return r.listProjects(ctx, query.ListProjectsForUser, pgx.NamedArgs{"userID": userID})
 }
 
-func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
+func (r *ProjectRepository) DeleteProject(ctx context.Context, id id.Project) error {
 	result, err := r.dbpool.Exec(ctx, query.DeleteProject, pgx.NamedArgs{"id": id})
 	if err != nil {
 		return err
@@ -89,7 +88,7 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) err
 
 func (r *ProjectRepository) UpdateProject(
 	ctx context.Context,
-	projectID uuid.UUID,
+	projectID id.Project,
 	updateFn func(p svcmodel.Project) (svcmodel.Project, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
@@ -143,14 +142,14 @@ func (r *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 	return nil
 }
 
-func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) (svcmodel.Environment, error) {
+func (r *ProjectRepository) ReadEnvironment(ctx context.Context, projectID id.Project, envID id.Environment) (svcmodel.Environment, error) {
 	return r.readEnvironment(ctx, r.dbpool, query.ReadEnvironment, pgx.NamedArgs{
 		"projectID": projectID,
 		"envID":     envID,
 	})
 }
 
-func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
+func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID id.Project) ([]svcmodel.Environment, error) {
 	e, err := helper.ListValues[model.Environment](ctx, r.dbpool, query.ListEnvironmentsForProject, pgx.NamedArgs{
 		"projectID": projectID},
 	)
@@ -161,7 +160,7 @@ func (r *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, proj
 	return model.ToSvcEnvironments(e)
 }
 
-func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) error {
+func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID id.Project, envID id.Environment) error {
 	result, err := r.dbpool.Exec(ctx, query.DeleteEnvironment, pgx.NamedArgs{
 		"envID":     envID,
 		"projectID": projectID,
@@ -179,7 +178,7 @@ func (r *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID uui
 
 func (r *ProjectRepository) UpdateEnvironment(
 	ctx context.Context,
-	projectID uuid.UUID,
+	projectID id.Project,
 	envID id.Environment,
 	updateFn func(e svcmodel.Environment) (svcmodel.Environment, error),
 ) error {
@@ -236,7 +235,7 @@ func (r *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 	return nil
 }
 
-func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
+func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID id.Project) ([]svcmodel.ProjectInvitation, error) {
 	i, err := helper.ListValues[model.ProjectInvitation](ctx, r.dbpool, query.ListInvitationsForProject, pgx.NamedArgs{
 		"projectID": projectID},
 	)
@@ -247,7 +246,7 @@ func (r *ProjectRepository) ListInvitationsForProject(ctx context.Context, proje
 	return model.ToSvcProjectInvitations(i), nil
 }
 
-func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation) error {
+func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID id.Project, invitationID id.ProjectInvitation) error {
 	return r.deleteInvitation(ctx, r.dbpool, query.DeleteInvitation, pgx.NamedArgs{
 		"projectID":    projectID,
 		"invitationID": invitationID,
@@ -335,7 +334,7 @@ func (r *ProjectRepository) CreateMember(
 	})
 }
 
-func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+func (r *ProjectRepository) ListMembersForProject(ctx context.Context, projectID id.Project) ([]svcmodel.ProjectMember, error) {
 	return r.listMembers(ctx, r.dbpool, query.ListMembersForProject, pgx.NamedArgs{"projectID": projectID})
 }
 
@@ -343,21 +342,21 @@ func (r *ProjectRepository) ListMembersForUser(ctx context.Context, userID id.Au
 	return r.listMembers(ctx, r.dbpool, query.ListMembersForUser, pgx.NamedArgs{"userID": userID})
 }
 
-func (r *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID id.User) (svcmodel.ProjectMember, error) {
+func (r *ProjectRepository) ReadMember(ctx context.Context, projectID id.Project, userID id.User) (svcmodel.ProjectMember, error) {
 	return r.readMember(ctx, r.dbpool, query.ReadMember, pgx.NamedArgs{
 		"projectID": projectID,
 		"userID":    userID,
 	})
 }
 
-func (r *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (svcmodel.ProjectMember, error) {
+func (r *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID id.Project, email string) (svcmodel.ProjectMember, error) {
 	return r.readMember(ctx, r.dbpool, query.ReadMemberByEmail, pgx.NamedArgs{
 		"projectID": projectID,
 		"email":     email,
 	})
 }
 
-func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User) error {
+func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID id.Project, userID id.User) error {
 	result, err := r.dbpool.Exec(ctx, query.DeleteMember, pgx.NamedArgs{
 		"projectID": projectID,
 		"userID":    userID,
@@ -375,7 +374,7 @@ func (r *ProjectRepository) DeleteMember(ctx context.Context, projectID uuid.UUI
 
 func (r *ProjectRepository) UpdateMember(
 	ctx context.Context,
-	projectID uuid.UUID,
+	projectID id.Project,
 	userID id.User,
 	updateFn func(m svcmodel.ProjectMember) (svcmodel.ProjectMember, error),
 ) error {

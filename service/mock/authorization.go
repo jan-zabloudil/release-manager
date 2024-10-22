@@ -5,7 +5,6 @@ import (
 
 	"release-manager/pkg/id"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -23,12 +22,12 @@ func (m *AuthorizationService) AuthorizeUserRoleUser(ctx context.Context, userID
 	return args.Error(0)
 }
 
-func (m *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error {
+func (m *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, projectID id.Project, userID id.AuthUser) error {
 	args := m.Called(ctx, projectID, userID)
 	return args.Error(0)
 }
 
-func (m *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error {
+func (m *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, projectID id.Project, userID id.AuthUser) error {
 	args := m.Called(ctx, projectID, userID)
 	return args.Error(0)
 }

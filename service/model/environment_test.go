@@ -3,10 +3,10 @@ package model
 import (
 	"testing"
 
+	"release-manager/pkg/id"
 	"release-manager/pkg/pointer"
 	"release-manager/pkg/urlx"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +19,7 @@ func TestEnvironment_NewEnvironment(t *testing.T) {
 		{
 			name: "Valid Environment",
 			creation: CreateEnvironmentInput{
-				ProjectID:     uuid.New(),
+				ProjectID:     id.NewProject(),
 				Name:          "dev",
 				ServiceRawURL: "http://example.com",
 			},
@@ -28,7 +28,7 @@ func TestEnvironment_NewEnvironment(t *testing.T) {
 		{
 			name: "Invalid Environment - not absolute service url",
 			creation: CreateEnvironmentInput{
-				ProjectID:     uuid.New(),
+				ProjectID:     id.NewProject(),
 				Name:          "dev",
 				ServiceRawURL: "example.com",
 			},
@@ -37,7 +37,7 @@ func TestEnvironment_NewEnvironment(t *testing.T) {
 		{
 			name: "Invalid Environment - empty name",
 			creation: CreateEnvironmentInput{
-				ProjectID:     uuid.New(),
+				ProjectID:     id.NewProject(),
 				Name:          "",
 				ServiceRawURL: "http://example.com",
 			},

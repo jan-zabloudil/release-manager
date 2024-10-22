@@ -9,7 +9,6 @@ import (
 	"release-manager/pkg/pointer"
 	"release-manager/pkg/urlx"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,7 +64,7 @@ func TestRelease_NewRelease(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewRelease(tt.input, tt.gitTagURL, uuid.New(), id.AuthUser{})
+			_, err := NewRelease(tt.input, tt.gitTagURL, id.NewProject(), id.AuthUser{})
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -113,7 +112,7 @@ func TestRelease_Update(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := Release{
 				ID:           id.NewRelease(),
-				ProjectID:    uuid.New(),
+				ProjectID:    id.NewProject(),
 				ReleaseTitle: "Initial Title",
 				ReleaseNotes: "Initial Notes",
 				GitTagName:   "v1.0.0",

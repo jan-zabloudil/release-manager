@@ -3,9 +3,9 @@ package model
 import (
 	"testing"
 
+	"release-manager/pkg/id"
 	"release-manager/pkg/pointer"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -66,7 +66,7 @@ func TestProject_Update(t *testing.T) {
 		{
 			name: "Valid Update",
 			project: Project{
-				ID:             uuid.New(),
+				ID:             id.NewProject(),
 				Name:           "Test Project",
 				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{
@@ -82,7 +82,7 @@ func TestProject_Update(t *testing.T) {
 		{
 			name: "Missing name",
 			project: Project{
-				ID:             uuid.New(),
+				ID:             id.NewProject(),
 				Name:           "Test Project",
 				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{
@@ -98,7 +98,7 @@ func TestProject_Update(t *testing.T) {
 		{
 			name: "Missing release config message",
 			project: Project{
-				ID:             uuid.New(),
+				ID:             id.NewProject(),
 				Name:           "Test Project",
 				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{
@@ -137,7 +137,7 @@ func TestProject_Validate(t *testing.T) {
 		{
 			name: "Valid Project",
 			project: Project{
-				ID:             uuid.New(),
+				ID:             id.NewProject(),
 				Name:           "Test Project",
 				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{
@@ -149,7 +149,7 @@ func TestProject_Validate(t *testing.T) {
 		{
 			name: "Missing name",
 			project: Project{
-				ID:             uuid.New(),
+				ID:             id.NewProject(),
 				Name:           "",
 				SlackChannelID: "channelID",
 			},
@@ -158,7 +158,7 @@ func TestProject_Validate(t *testing.T) {
 		{
 			name: "Missing release notification config message",
 			project: Project{
-				ID:             uuid.New(),
+				ID:             id.NewProject(),
 				Name:           "Test Project",
 				SlackChannelID: "channelID",
 				ReleaseNotificationConfig: ReleaseNotificationConfig{

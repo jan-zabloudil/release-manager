@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
+	"release-manager/pkg/id"
 )
 
 const (
@@ -50,25 +50,25 @@ func (r ProjectRole) IsRoleAtLeast(role ProjectRole) bool {
 
 type ProjectMember struct {
 	User        User
-	ProjectID   uuid.UUID
+	ProjectID   id.Project
 	ProjectRole ProjectRole
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
 
-func NewProjectOwner(u User, projectID uuid.UUID) (ProjectMember, error) {
+func NewProjectOwner(u User, projectID id.Project) (ProjectMember, error) {
 	return NewProjectMember(u, projectID, ProjectRoleOwner)
 }
 
-func NewProjectEditor(u User, projectID uuid.UUID) (ProjectMember, error) {
+func NewProjectEditor(u User, projectID id.Project) (ProjectMember, error) {
 	return NewProjectMember(u, projectID, ProjectRoleEditor)
 }
 
-func NewProjectViewer(u User, projectID uuid.UUID) (ProjectMember, error) {
+func NewProjectViewer(u User, projectID id.Project) (ProjectMember, error) {
 	return NewProjectMember(u, projectID, ProjectRoleViewer)
 }
 
-func NewProjectMember(u User, projectID uuid.UUID, role ProjectRole) (ProjectMember, error) {
+func NewProjectMember(u User, projectID id.Project, role ProjectRole) (ProjectMember, error) {
 	now := time.Now()
 
 	m := ProjectMember{

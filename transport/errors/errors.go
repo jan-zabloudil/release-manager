@@ -17,7 +17,6 @@ var (
 	errCodeDefaultForbidden           = "ERR_FORBIDDEN"
 	errCodeDefaultUnauthorized        = "ERR_UNAUTHORIZED"
 	errCodeMethodNotAllowed           = "ERR_METHOD_NOT_ALLOWED"
-	errCodeInvalidResourceID          = "ERR_INVALID_RESOURCE_ID"
 	errCodeDefaultBadRequest          = "ERR_BAD_REQUEST"
 	errCodeDefaultUnprocessableEntity = "ERR_UNPROCESSABLE_ENTITY"
 	errCodeDefaultConflict            = "ERR_CONFLICT"
@@ -108,13 +107,6 @@ func NewUnauthorizedError() *Error {
 	return &Error{
 		StatusCode: http.StatusUnauthorized,
 		Code:       errCodeDefaultUnauthorized,
-	}
-}
-
-func NewInvalidResourceIDError() *Error {
-	return &Error{
-		StatusCode: http.StatusNotFound,
-		Code:       errCodeInvalidResourceID,
 	}
 }
 

@@ -6,13 +6,12 @@ import (
 	"net/url"
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type Project struct {
-	ID                        uuid.UUID                 `db:"id"`
+	ID                        id.Project                `db:"id"`
 	Name                      string                    `db:"name"`
 	SlackChannelID            string                    `db:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `db:"release_notification_config"`

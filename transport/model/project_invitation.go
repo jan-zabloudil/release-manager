@@ -5,8 +5,6 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type CreateProjectInvitationInput struct {
@@ -23,7 +21,12 @@ type ProjectInvitation struct {
 	UpdatedAt   time.Time            `json:"updated_at"`
 }
 
-func ToSvcCreateProjectInvitationInput(i CreateProjectInvitationInput, projectID uuid.UUID) svcmodel.CreateProjectInvitationInput {
+type ProjectInvitationURLParams struct {
+	ProjectID    id.Project           `param:"path=project_id"`
+	InvitationID id.ProjectInvitation `param:"path=invitation_id"`
+}
+
+func ToSvcCreateProjectInvitationInput(i CreateProjectInvitationInput, projectID id.Project) svcmodel.CreateProjectInvitationInput {
 	return svcmodel.CreateProjectInvitationInput{
 		ProjectID:   projectID,
 		Email:       i.Email,

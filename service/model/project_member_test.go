@@ -5,51 +5,45 @@ import (
 
 	"release-manager/pkg/id"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestProjectMember_NewProjectMember(t *testing.T) {
 	tests := []struct {
-		name      string
-		user      User
-		projectID uuid.UUID
-		role      ProjectRole
-		wantErr   bool
+		name    string
+		user    User
+		role    ProjectRole
+		wantErr bool
 	}{
 		{
-			name:      "Valid Project Member - Owner",
-			user:      User{ID: id.User{}, Email: "test@example.com"},
-			projectID: uuid.New(),
-			role:      ProjectRoleOwner,
-			wantErr:   false,
+			name:    "Valid Project Member - Owner",
+			user:    User{ID: id.User{}, Email: "test@example.com"},
+			role:    ProjectRoleOwner,
+			wantErr: false,
 		},
 		{
-			name:      "Valid Project Member - Editor",
-			user:      User{ID: id.User{}, Email: "test@example.com"},
-			projectID: uuid.New(),
-			role:      ProjectRoleEditor,
-			wantErr:   false,
+			name:    "Valid Project Member - Editor",
+			user:    User{ID: id.User{}, Email: "test@example.com"},
+			role:    ProjectRoleEditor,
+			wantErr: false,
 		},
 		{
-			name:      "Valid Project Member - Viewer",
-			user:      User{ID: id.User{}, Email: "test@example.com"},
-			projectID: uuid.New(),
-			role:      ProjectRoleViewer,
-			wantErr:   false,
+			name:    "Valid Project Member - Viewer",
+			user:    User{ID: id.User{}, Email: "test@example.com"},
+			role:    ProjectRoleViewer,
+			wantErr: false,
 		},
 		{
-			name:      "Invalid Project Member - Invalid Role",
-			user:      User{ID: id.User{}, Email: "test@example.com"},
-			projectID: uuid.New(),
-			role:      "admin",
-			wantErr:   true,
+			name:    "Invalid Project Member - Invalid Role",
+			user:    User{ID: id.User{}, Email: "test@example.com"},
+			role:    "admin",
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewProjectMember(tt.user, tt.projectID, tt.role)
+			_, err := NewProjectMember(tt.user, id.NewProject(), tt.role)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -90,7 +84,7 @@ func TestProjectMember_UpdateProjectRole(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			member := ProjectMember{
 				User:        User{ID: id.User{}, Email: "test@example.com"},
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				ProjectRole: tt.role,
 			}
 			err := member.UpdateProjectRole(tt.newRole)

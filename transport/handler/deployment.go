@@ -3,12 +3,19 @@ package handler
 import (
 	"net/http"
 
+	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
 
 func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage("Invalid project ID"))
+		return
+	}
+
 	var input model.CreateDeploymentInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -18,7 +25,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 	dpl, err := h.ReleaseSvc.CreateDeployment(
 		r.Context(),
 		model.ToSvcCreateDeploymentInput(input),
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -30,7 +37,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Request) {
-	params, err := util.UnmarshalURLParams[model.ListDeploymentsFilterParams](r)
+	params, err := util.UnmarshalURLParams[model.ListDeploymentsParams](r)
 	if err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
@@ -39,7 +46,7 @@ func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Reque
 	dpls, err := h.ReleaseSvc.ListDeploymentsForProject(
 		r.Context(),
 		model.ToSvcListDeploymentsFilterParams(params),
-		util.ContextProjectID(r),
+		params.ProjectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {

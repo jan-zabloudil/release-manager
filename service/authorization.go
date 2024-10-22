@@ -7,8 +7,6 @@ import (
 	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type AuthorizationService struct {
@@ -33,11 +31,11 @@ func (s *AuthorizationService) AuthorizeUserRoleAdmin(ctx context.Context, userI
 	return s.authorizeUserRole(ctx, userID, model.UserRoleAdmin)
 }
 
-func (s *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error {
+func (s *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, projectID id.Project, userID id.AuthUser) error {
 	return s.authorizeProjectRole(ctx, projectID, userID, model.ProjectRoleEditor)
 }
 
-func (s *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error {
+func (s *AuthorizationService) AuthorizeProjectRoleViewer(ctx context.Context, projectID id.Project, userID id.AuthUser) error {
 	return s.authorizeProjectRole(ctx, projectID, userID, model.ProjectRoleViewer)
 }
 
@@ -73,7 +71,7 @@ func (s *AuthorizationService) authorizeProjectRoleByRelease(ctx context.Context
 // If the user is not a member of the project, it checks if the user has admin role.
 // If user is not a member with required role (or higher) and not an admin, it returns an error (ErrCodeUserNotProjectMember or ErrCodeInsufficientProjectRole).
 // If project does not exist, it returns an error (ErrCodeProjectNotFound).
-func (s *AuthorizationService) authorizeProjectRole(ctx context.Context, projectID uuid.UUID, userID id.AuthUser, role model.ProjectRole) error {
+func (s *AuthorizationService) authorizeProjectRole(ctx context.Context, projectID id.Project, userID id.AuthUser, role model.ProjectRole) error {
 	member, err := s.projectRepo.ReadMember(ctx, projectID, id.User(userID))
 	if err != nil {
 		switch {

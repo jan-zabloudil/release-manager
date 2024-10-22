@@ -23,7 +23,7 @@ func (i ProjectInvitation) String() string {
 }
 
 func (i *ProjectInvitation) Scan(data any) error {
-	return scanUUID((*uuid.UUID)(i), "Invitation", data)
+	return scanUUID((*uuid.UUID)(i), "ProjectInvitation", data)
 }
 
 func (i ProjectInvitation) MarshalText() ([]byte, error) {
@@ -31,5 +31,5 @@ func (i ProjectInvitation) MarshalText() ([]byte, error) {
 }
 
 func (i *ProjectInvitation) UnmarshalText(data []byte) error {
-	return unmarshalUUID((*uuid.UUID)(i), "Invitation", data)
+	return unmarshalUUID((*uuid.UUID)(i), "ProjectInvitation", data)
 }

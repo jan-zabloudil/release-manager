@@ -7,8 +7,6 @@ import (
 
 	"release-manager/pkg/id"
 	"release-manager/pkg/validator"
-
-	"github.com/google/uuid"
 )
 
 var (
@@ -19,7 +17,7 @@ var (
 
 type Environment struct {
 	ID         id.Environment
-	ProjectID  uuid.UUID
+	ProjectID  id.Project
 	Name       string
 	ServiceURL url.URL
 	CreatedAt  time.Time
@@ -27,7 +25,7 @@ type Environment struct {
 }
 
 type CreateEnvironmentInput struct {
-	ProjectID     uuid.UUID
+	ProjectID     id.Project
 	Name          string
 	ServiceRawURL string
 }

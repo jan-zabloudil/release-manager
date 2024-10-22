@@ -6,8 +6,6 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type Deployment struct {
@@ -16,7 +14,7 @@ type Deployment struct {
 	DeployedAt       time.Time     `db:"deployed_at"`
 
 	ReleaseID           id.Release  `db:"release_id"`
-	ReleaseProjectID    uuid.UUID   `db:"release_project_id"`
+	ReleaseProjectID    id.Project  `db:"release_project_id"`
 	ReleaseTitle        string      `db:"release_title"`
 	ReleaseNotes        string      `db:"release_notes"`
 	ReleaseAuthorUserID id.AuthUser `db:"release_created_by"`
@@ -24,7 +22,7 @@ type Deployment struct {
 	ReleaseUpdatedAt    time.Time   `db:"release_updated_at"`
 
 	EnvID         id.Environment `db:"env_id"`
-	EnvProjectID  uuid.UUID      `db:"env_project_id"`
+	EnvProjectID  id.Project     `db:"env_project_id"`
 	EnvName       string         `db:"env_name"`
 	EnvServiceURL string         `db:"env_service_url"`
 	EnvCreatedAt  time.Time      `db:"env_created_at"`

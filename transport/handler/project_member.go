@@ -11,7 +11,13 @@ import (
 )
 
 func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
-	m, err := h.ProjectSvc.ListMembersForProject(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	m, err := h.ProjectSvc.ListMembersForProject(r.Context(), projectID, util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
@@ -21,16 +27,16 @@ func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
-	userID, err := util.GetPathParam[id.User](r, "user_id")
+	params, err := util.UnmarshalURLParams[model.ProjectMemberURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid user ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	if err := h.ProjectSvc.DeleteMember(
 		r.Context(),
-		util.ContextProjectID(r),
-		userID,
+		params.ProjectID,
+		params.UserID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -41,9 +47,9 @@ func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
-	userID, err := util.GetPathParam[id.User](r, "user_id")
+	params, err := util.UnmarshalURLParams[model.ProjectMemberURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid user ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -56,8 +62,8 @@ func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 	if err := h.ProjectSvc.UpdateMemberRole(
 		r.Context(),
 		svcmodel.ProjectRole(input.ProjectRole),
-		util.ContextProjectID(r),
-		userID,
+		params.ProjectID,
+		params.UserID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))

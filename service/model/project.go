@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/google/uuid"
+	"release-manager/pkg/id"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 )
 
 type Project struct {
-	ID                        uuid.UUID
+	ID                        id.Project
 	Name                      string
 	SlackChannelID            string
 	ReleaseNotificationConfig ReleaseNotificationConfig
@@ -62,7 +62,7 @@ type UpdateReleaseNotificationConfigInput struct {
 func NewProject(c CreateProjectInput) (Project, error) {
 	now := time.Now()
 	p := Project{
-		ID:                        uuid.New(),
+		ID:                        id.NewProject(),
 		Name:                      c.Name,
 		SlackChannelID:            c.SlackChannelID,
 		ReleaseNotificationConfig: c.ReleaseNotificationConfig,
