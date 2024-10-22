@@ -835,10 +835,10 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{
 					{
-						ID: uuid.New(),
+						ID: id.NewDeployment(),
 					},
 					{
-						ID: uuid.New(),
+						ID: id.NewDeployment(),
 					},
 				}, nil)
 			},
@@ -856,10 +856,10 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 				projectSvc.On("GetEnvironment", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.Environment{}, nil)
 				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{
 					{
-						ID: uuid.New(),
+						ID: id.NewDeployment(),
 					},
 					{
-						ID: uuid.New(),
+						ID: id.NewDeployment(),
 					},
 				}, nil)
 			},

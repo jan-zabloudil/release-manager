@@ -11,9 +11,9 @@ import (
 )
 
 type Deployment struct {
-	ID               uuid.UUID   `db:"id"`
-	DeployedByUserID id.AuthUser `db:"deployed_by"`
-	DeployedAt       time.Time   `db:"deployed_at"`
+	ID               id.Deployment `db:"id"`
+	DeployedByUserID id.AuthUser   `db:"deployed_by"`
+	DeployedAt       time.Time     `db:"deployed_at"`
 
 	ReleaseID           uuid.UUID   `db:"release_id"`
 	ReleaseProjectID    uuid.UUID   `db:"release_project_id"`
