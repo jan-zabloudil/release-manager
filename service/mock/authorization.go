@@ -33,12 +33,12 @@ func (m *AuthorizationService) AuthorizeProjectRoleEditor(ctx context.Context, p
 	return args.Error(0)
 }
 
-func (m *AuthorizationService) AuthorizeReleaseViewer(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error {
+func (m *AuthorizationService) AuthorizeReleaseViewer(ctx context.Context, releaseID id.Release, userID id.AuthUser) error {
 	args := m.Called(ctx, releaseID, userID)
 	return args.Error(0)
 }
 
-func (m *AuthorizationService) AuthorizeReleaseEditor(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error {
+func (m *AuthorizationService) AuthorizeReleaseEditor(ctx context.Context, releaseID id.Release, userID id.AuthUser) error {
 	args := m.Called(ctx, releaseID, userID)
 	return args.Error(0)
 }

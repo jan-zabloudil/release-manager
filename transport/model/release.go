@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ type DeleteReleaseInput struct {
 }
 
 type Release struct {
-	ID           uuid.UUID           `json:"id"`
+	ID           id.Release          `json:"id"`
 	ProjectID    uuid.UUID           `json:"project_id"`
 	ReleaseTitle string              `json:"release_title"`
 	ReleaseNotes string              `json:"release_notes"`

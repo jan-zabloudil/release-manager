@@ -82,7 +82,6 @@ func (h *Handler) setupRoutes() {
 	})
 
 	h.Mux.Route("/releases/{release_id}", func(r chi.Router) {
-		r.Use(middleware.SetResourceUUIDToContext("release_id", util.ContextSetReleaseID))
 		r.Get("/", middleware.RequireAuthUser(h.getRelease))
 		r.Patch("/", middleware.RequireAuthUser(h.updateRelease))
 		r.Delete("/", middleware.RequireAuthUser(h.deleteRelease))

@@ -79,20 +79,20 @@ type settingsRepository interface {
 
 type releaseRepository interface {
 	CreateRelease(ctx context.Context, r model.Release) error
-	ReadRelease(ctx context.Context, releaseID uuid.UUID) (model.Release, error)
-	ReadReleaseForProject(ctx context.Context, projectID, releaseID uuid.UUID) (model.Release, error)
-	DeleteRelease(ctx context.Context, releaseID uuid.UUID) error
+	ReadRelease(ctx context.Context, releaseID id.Release) (model.Release, error)
+	ReadReleaseForProject(ctx context.Context, projectID uuid.UUID, releaseID id.Release) (model.Release, error)
+	DeleteRelease(ctx context.Context, releaseID id.Release) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
 	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
 	UpdateRelease(
 		ctx context.Context,
-		releaseID uuid.UUID,
+		releaseID id.Release,
 		updateFn func(r model.Release) (model.Release, error),
 	) error
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
 	ListDeploymentsForProject(ctx context.Context, params model.DeploymentFilterParams, projectID uuid.UUID) ([]model.Deployment, error)
-	ReadLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (model.Deployment, error)
+	ReadLastDeploymentForRelease(ctx context.Context, releaseID id.Release) (model.Deployment, error)
 }
 
 type authGuard interface {
@@ -100,8 +100,8 @@ type authGuard interface {
 	AuthorizeUserRoleUser(ctx context.Context, userID id.AuthUser) error
 	AuthorizeProjectRoleEditor(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error
 	AuthorizeProjectRoleViewer(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error
-	AuthorizeReleaseEditor(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error
-	AuthorizeReleaseViewer(ctx context.Context, releaseID uuid.UUID, userID id.AuthUser) error
+	AuthorizeReleaseEditor(ctx context.Context, releaseID id.Release, userID id.AuthUser) error
+	AuthorizeReleaseViewer(ctx context.Context, releaseID id.Release, userID id.AuthUser) error
 }
 
 type settingsGetter interface {

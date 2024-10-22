@@ -94,7 +94,7 @@ func (s *ReleaseService) CreateRelease(
 	return rls, nil
 }
 
-func (s *ReleaseService) GetRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) (model.Release, error) {
+func (s *ReleaseService) GetRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) (model.Release, error) {
 	if err := s.authGuard.AuthorizeReleaseViewer(ctx, releaseID, authUserID); err != nil {
 		return model.Release{}, fmt.Errorf("authorizing release viewer: %w", err)
 	}
@@ -109,7 +109,7 @@ func (s *ReleaseService) GetRelease(ctx context.Context, releaseID uuid.UUID, au
 
 // DeleteRelease deletes a release. If deleteGithubRelease is true, it will also delete associacted GitHub release (if exists).
 // Deleting GitHub release is idempotent, so if the release does not exist on GitHub, it will not return an error.
-func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteReleaseInput, releaseID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteReleaseInput, releaseID id.Release, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
 		return fmt.Errorf("authorizing release editor: %w", err)
 	}
@@ -144,7 +144,7 @@ func (s *ReleaseService) DeleteReleaseByGitTag(ctx context.Context, githubOwnerS
 func (s *ReleaseService) UpdateRelease(
 	ctx context.Context,
 	input model.UpdateReleaseInput,
-	releaseID uuid.UUID,
+	releaseID id.Release,
 	authUserID id.AuthUser,
 ) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
@@ -177,7 +177,7 @@ func (s *ReleaseService) ListReleasesForProject(ctx context.Context, projectID u
 	return rls, nil
 }
 
-func (s *ReleaseService) SendReleaseNotification(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ReleaseService) SendReleaseNotification(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
 		return fmt.Errorf("authorizing release viewer: %w", err)
 	}
@@ -213,7 +213,7 @@ func (s *ReleaseService) SendReleaseNotification(ctx context.Context, releaseID 
 	return nil
 }
 
-func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeReleaseEditor(ctx, releaseID, authUserID); err != nil {
 		return fmt.Errorf("authorizing release editor: %w", err)
 	}
@@ -346,7 +346,7 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	return dpls, nil
 }
 
-func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error {
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
 		return fmt.Errorf("getting github token: %w", err)
@@ -375,7 +375,7 @@ func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID uuid
 
 // getLastDeploymentForRelease returns pointer to the last deployment for the release,
 // or nil if no deployment exists for the release.
-func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, releaseID uuid.UUID) (*model.Deployment, error) {
+func (s *ReleaseService) getLastDeploymentForRelease(ctx context.Context, releaseID id.Release) (*model.Deployment, error) {
 	dpl, err := s.repo.ReadLastDeploymentForRelease(ctx, releaseID)
 	if err != nil {
 		switch {

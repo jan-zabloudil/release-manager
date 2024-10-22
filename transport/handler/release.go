@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
@@ -30,9 +31,15 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
+	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		return
+	}
+
 	rls, err := h.ReleaseSvc.GetRelease(
 		r.Context(),
-		util.ContextReleaseID(r),
+		rlsID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -44,6 +51,12 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
+	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		return
+	}
+
 	var input model.DeleteReleaseInput
 	if err := util.UnmarshalRequest(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -53,7 +66,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 	if err := h.ReleaseSvc.DeleteRelease(
 		r.Context(),
 		model.ToSvcDeleteReleaseInput(input),
-		util.ContextReleaseID(r),
+		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -78,6 +91,12 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
+	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		return
+	}
+
 	var input model.UpdateReleaseInput
 	if err := util.UnmarshalRequest(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -87,7 +106,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 	if err := h.ReleaseSvc.UpdateRelease(
 		r.Context(),
 		model.ToSvcUpdateReleaseInput(input),
-		util.ContextReleaseID(r),
+		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -98,9 +117,15 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request) {
+	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		return
+	}
+
 	if err := h.ReleaseSvc.SendReleaseNotification(
 		r.Context(),
-		util.ContextReleaseID(r),
+		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -111,9 +136,15 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
+	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		return
+	}
+
 	if err := h.ReleaseSvc.UpsertGithubRelease(
 		r.Context(),
-		util.ContextReleaseID(r),
+		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))

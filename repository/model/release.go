@@ -13,7 +13,7 @@ import (
 )
 
 type Release struct {
-	ID           uuid.UUID   `db:"id"`
+	ID           id.Release  `db:"id"`
 	ProjectID    uuid.UUID   `db:"project_id"`
 	ReleaseTitle string      `db:"release_title"`
 	ReleaseNotes string      `db:"release_notes"`
