@@ -5,8 +5,6 @@ import (
 	"net/url"
 	"time"
 
-	cryptox "release-manager/pkg/crypto"
-
 	"github.com/google/uuid"
 )
 
@@ -165,16 +163,4 @@ func (c *ReleaseNotificationConfig) Validate() error {
 	}
 
 	return nil
-}
-
-type ProjectInvitationEmailData struct {
-	ProjectName string
-	Token       string
-}
-
-func NewProjectInvitationEmailData(projectName string, token cryptox.Token) ProjectInvitationEmailData {
-	return ProjectInvitationEmailData{
-		ProjectName: projectName,
-		Token:       string(token),
-	}
 }

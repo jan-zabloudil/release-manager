@@ -35,7 +35,7 @@ type ProjectInvitation struct {
 	Email         string
 	ProjectRole   ProjectRole
 	Status        ProjectInvitationStatus
-	TokenHash     cryptox.Hash
+	TokenHash     ProjectInvitationTokenHash
 	InviterUserID id.AuthUser
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
@@ -48,8 +48,10 @@ type CreateProjectInvitationInput struct {
 }
 
 type ProjectInvitationStatus string
+type ProjectInvitationToken cryptox.Token
+type ProjectInvitationTokenHash cryptox.Hash
 
-func NewProjectInvitation(c CreateProjectInvitationInput, tkn cryptox.Token, inviterUserID id.AuthUser) (ProjectInvitation, error) {
+func NewProjectInvitation(c CreateProjectInvitationInput, tkn ProjectInvitationToken, inviterUserID id.AuthUser) (ProjectInvitation, error) {
 	now := time.Now()
 
 	i := ProjectInvitation{
@@ -108,4 +110,33 @@ func (i ProjectInvitationStatus) Validate() error {
 	}
 
 	return errProjectInvitationStatusInvalid
+}
+
+func NewProjectInvitationToken() (ProjectInvitationToken, error) {
+	tkn, err := cryptox.NewToken()
+	if err != nil {
+		return "", err
+	}
+
+	return ProjectInvitationToken(tkn), nil
+}
+
+func (i ProjectInvitationToken) ToHash() ProjectInvitationTokenHash {
+	return ProjectInvitationTokenHash(cryptox.Token(i).ToHash())
+}
+
+func (i ProjectInvitationTokenHash) ToBase64() string {
+	return cryptox.Hash(i).ToBase64()
+}
+
+type ProjectInvitationEmailData struct {
+	ProjectName string
+	Token       ProjectInvitationToken
+}
+
+func NewProjectInvitationEmailData(projectName string, tkn ProjectInvitationToken) ProjectInvitationEmailData {
+	return ProjectInvitationEmailData{
+		ProjectName: projectName,
+		Token:       tkn,
+	}
 }

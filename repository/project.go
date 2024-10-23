@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	"release-manager/repository/helper"
 	"release-manager/repository/model"
@@ -257,7 +256,7 @@ func (r *ProjectRepository) DeleteInvitation(ctx context.Context, projectID uuid
 
 func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
 	ctx context.Context,
-	hash crypto.Hash,
+	hash svcmodel.ProjectInvitationTokenHash,
 	status svcmodel.ProjectInvitationStatus,
 ) error {
 	return r.deleteInvitation(ctx, r.dbpool, query.DeleteInvitationByHashAndStatus, pgx.NamedArgs{
@@ -268,12 +267,12 @@ func (r *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
 
 func (r *ProjectRepository) UpdateInvitation(
 	ctx context.Context,
-	invitationHash crypto.Hash,
+	hash svcmodel.ProjectInvitationTokenHash,
 	updateFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectInvitation, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		i, err := r.readInvitation(ctx, tx, query.AppendForUpdate(query.ReadInvitationByHash), pgx.NamedArgs{
-			"hash": invitationHash.ToBase64(),
+			"hash": hash.ToBase64(),
 		})
 		if err != nil {
 			return fmt.Errorf("reading project invitation: %w", err)
@@ -299,12 +298,12 @@ func (r *ProjectRepository) UpdateInvitation(
 // CreateMember creates a project member and deletes the invitation
 func (r *ProjectRepository) CreateMember(
 	ctx context.Context,
-	tokenHash crypto.Hash,
+	hash svcmodel.ProjectInvitationTokenHash,
 	createMemberFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectMember, error),
 ) error {
 	return helper.RunTransaction(ctx, r.dbpool, func(tx pgx.Tx) error {
 		i, err := r.readInvitation(ctx, tx, query.ReadInvitationByHash, pgx.NamedArgs{
-			"hash": tokenHash.ToBase64(),
+			"hash": hash.ToBase64(),
 		})
 		if err != nil {
 			return fmt.Errorf("reading project invitation: %w", err)

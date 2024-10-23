@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"release-manager/auth"
-	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/util"
@@ -82,18 +81,4 @@ func SetResourceUUIDToContext(idKey string, f util.ContextSetUUIDFunc) func(http
 			next.ServeHTTP(w, r)
 		})
 	}
-}
-
-func HandleInvitationToken(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tkn, err := util.GetQueryParam[cryptox.Token](r, "token")
-		if err != nil {
-			util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
-			return
-		}
-
-		r = util.ContextSetProjectInvitationToken(r, tkn)
-
-		next.ServeHTTP(w, r)
-	})
 }

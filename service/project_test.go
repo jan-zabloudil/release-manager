@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	githubmock "release-manager/github/mock"
-	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	"release-manager/pkg/pointer"
 	repo "release-manager/repository/mock"
@@ -924,7 +923,7 @@ func TestProjectService_AcceptInvitation(t *testing.T) {
 
 			tc.mockSetup(userSvc, projectRepo)
 
-			tkn, err := cryptox.NewToken()
+			tkn, err := model.NewProjectInvitationToken()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -979,7 +978,7 @@ func TestProjectService_RejectInvitation(t *testing.T) {
 
 			tc.mockSetup(projectRepo)
 
-			tkn, err := cryptox.NewToken()
+			tkn, err := model.NewProjectInvitationToken()
 			if err != nil {
 				t.Fatal(err)
 			}
