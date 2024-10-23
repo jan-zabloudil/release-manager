@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 
-	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 	"release-manager/transport/middleware"
@@ -32,8 +31,8 @@ type projectService interface {
 	Invite(ctx context.Context, c svcmodel.CreateProjectInvitationInput, authUserID id.AuthUser) (svcmodel.ProjectInvitation, error)
 	ListInvitations(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]svcmodel.ProjectInvitation, error)
 	CancelInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation, authUserID id.AuthUser) error
-	AcceptInvitation(ctx context.Context, tkn cryptox.Token) error
-	RejectInvitation(ctx context.Context, tkn cryptox.Token) error
+	AcceptInvitation(ctx context.Context, tkn svcmodel.ProjectInvitationToken) error
+	RejectInvitation(ctx context.Context, tkn svcmodel.ProjectInvitationToken) error
 
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]svcmodel.ProjectMember, error)
 	ListMembersForUser(ctx context.Context, authUserID id.AuthUser) ([]svcmodel.ProjectMember, error)

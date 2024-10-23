@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/url"
 
-	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	"release-manager/service/model"
 
@@ -37,16 +36,20 @@ type projectRepository interface {
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
 	ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
 	DeleteInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation) error
-	DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash cryptox.Hash, status model.ProjectInvitationStatus) error
+	DeleteInvitationByTokenHashAndStatus(
+		ctx context.Context,
+		hash model.ProjectInvitationTokenHash,
+		status model.ProjectInvitationStatus,
+	) error
 	UpdateInvitation(
 		ctx context.Context,
-		invitationHash cryptox.Hash,
+		hash model.ProjectInvitationTokenHash,
 		updateFn func(i model.ProjectInvitation) (model.ProjectInvitation, error),
 	) error
 
 	CreateMember(
 		ctx context.Context,
-		invitationHash cryptox.Hash,
+		hash model.ProjectInvitationTokenHash,
 		createMemberFn func(i model.ProjectInvitation) (model.ProjectMember, error),
 	) error
 	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)

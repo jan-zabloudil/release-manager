@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
@@ -313,7 +312,7 @@ func (s *ProjectService) Invite(ctx context.Context, input model.CreateProjectIn
 		return model.ProjectInvitation{}, fmt.Errorf("reading project: %w", err)
 	}
 
-	tkn, err := cryptox.NewToken()
+	tkn, err := model.NewProjectInvitationToken()
 	if err != nil {
 		return model.ProjectInvitation{}, fmt.Errorf("creating token: %w", err)
 	}
@@ -377,7 +376,7 @@ func (s *ProjectService) CancelInvitation(ctx context.Context, projectID uuid.UU
 	return nil
 }
 
-func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token) error {
+func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn model.ProjectInvitationToken) error {
 	// When accepting an invitation, two possible scenarios can happen:
 	// 1. User does not exist yet, in which case invitation is only accepted.
 	//    When a user registers later, a project member will be created (PostgreSQL function handle_new_user() is triggered upon user creation).
@@ -432,7 +431,7 @@ func (s *ProjectService) AcceptInvitation(ctx context.Context, tkn cryptox.Token
 	return nil
 }
 
-func (s *ProjectService) RejectInvitation(ctx context.Context, tkn cryptox.Token) error {
+func (s *ProjectService) RejectInvitation(ctx context.Context, tkn model.ProjectInvitationToken) error {
 	// Only pending invitations can be rejected
 	if err := s.repo.DeleteInvitationByTokenHashAndStatus(ctx, tkn.ToHash(), model.InvitationStatusPending); err != nil {
 		return fmt.Errorf("deleting invitation: %w", err)

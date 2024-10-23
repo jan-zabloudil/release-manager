@@ -3,7 +3,6 @@ package model
 import (
 	"testing"
 
-	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 
 	"github.com/google/uuid"
@@ -65,7 +64,7 @@ func TestProjectInvitation_NewProjectInvitation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tkn, err := cryptox.NewToken()
+			tkn, err := NewProjectInvitationToken()
 			if err != nil {
 				t.Fatal(err)
 			}

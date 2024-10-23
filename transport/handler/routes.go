@@ -32,7 +32,6 @@ func (h *Handler) setupRoutes() {
 		r.Post("/", middleware.RequireAuthUser(h.createProject))
 		r.Get("/", middleware.RequireAuthUser(h.listProjects))
 		r.Route("/invitations", func(r chi.Router) {
-			r.Use(middleware.HandleInvitationToken)
 			r.Get("/accept", h.acceptInvitation)
 			r.Get("/reject", h.rejectInvitation)
 		})

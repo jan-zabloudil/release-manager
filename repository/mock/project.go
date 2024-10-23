@@ -3,7 +3,6 @@ package mock
 import (
 	"context"
 
-	"release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
@@ -86,10 +85,10 @@ func (m *ProjectRepository) CreateInvitation(ctx context.Context, i svcmodel.Pro
 
 func (m *ProjectRepository) UpdateInvitation(
 	ctx context.Context,
-	invitationHash crypto.Hash,
+	hash svcmodel.ProjectInvitationTokenHash,
 	updateFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectInvitation, error),
 ) error {
-	args := m.Called(ctx, invitationHash, updateFn)
+	args := m.Called(ctx, hash, updateFn)
 	return args.Error(0)
 }
 
@@ -103,17 +102,21 @@ func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID uuid
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) DeleteInvitationByTokenHashAndStatus(ctx context.Context, hash crypto.Hash, status svcmodel.ProjectInvitationStatus) error {
+func (m *ProjectRepository) DeleteInvitationByTokenHashAndStatus(
+	ctx context.Context,
+	hash svcmodel.ProjectInvitationTokenHash,
+	status svcmodel.ProjectInvitationStatus,
+) error {
 	args := m.Called(ctx, hash, status)
 	return args.Error(0)
 }
 
 func (m *ProjectRepository) CreateMember(
 	ctx context.Context,
-	tokenHash crypto.Hash,
+	hash svcmodel.ProjectInvitationTokenHash,
 	createMemberFn func(i svcmodel.ProjectInvitation) (svcmodel.ProjectMember, error),
 ) error {
-	args := m.Called(ctx, tokenHash, createMemberFn)
+	args := m.Called(ctx, hash, createMemberFn)
 	return args.Error(0)
 }
 

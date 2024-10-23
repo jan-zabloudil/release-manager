@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 
 	"github.com/google/uuid"
@@ -14,9 +13,8 @@ import (
 type contextKey string
 
 const (
-	authUserIDContextKey             contextKey = "auth_user_id"
-	projectIDContextKey              contextKey = "project_id"
-	projectInvitationTokenContextKey contextKey = "project_invitation_token"
+	authUserIDContextKey contextKey = "auth_user_id"
+	projectIDContextKey  contextKey = "project_id"
 )
 
 type ContextSetUUIDFunc func(r *http.Request, id uuid.UUID) *http.Request
@@ -27,19 +25,6 @@ func ContextProjectID(r *http.Request) uuid.UUID {
 
 func ContextSetProjectID(r *http.Request, id uuid.UUID) *http.Request {
 	return contextSetUUID(r, id, projectIDContextKey)
-}
-
-func ContextSetProjectInvitationToken(r *http.Request, tkn cryptox.Token) *http.Request {
-	ctx := context.WithValue(r.Context(), projectInvitationTokenContextKey, tkn)
-	return r.WithContext(ctx)
-}
-
-func ContextProjectInvitationToken(r *http.Request) cryptox.Token {
-	tkn, ok := r.Context().Value(projectInvitationTokenContextKey).(cryptox.Token)
-	if !ok {
-		panic(fmt.Sprintf("missing %s value in request context", projectInvitationTokenContextKey))
-	}
-	return tkn
 }
 
 func contextSetUUID(r *http.Request, id uuid.UUID, key contextKey) *http.Request {
