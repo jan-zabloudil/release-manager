@@ -91,7 +91,7 @@ type releaseRepository interface {
 	) error
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
-	ListDeploymentsForProject(ctx context.Context, params model.DeploymentFilterParams, projectID uuid.UUID) ([]model.Deployment, error)
+	ListDeploymentsForProject(ctx context.Context, params model.ListDeploymentsFilterParams, projectID uuid.UUID) ([]model.Deployment, error)
 	ReadLastDeploymentForRelease(ctx context.Context, releaseID id.Release) (model.Deployment, error)
 }
 

@@ -827,13 +827,13 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		params    model.DeploymentFilterParams
+		params    model.ListDeploymentsFilterParams
 		mockSetup func(*svc.AuthorizationService, *svc.ProjectService, *repo.ReleaseRepository)
 		wantErr   bool
 	}{
 		{
 			name:   "Deployments fetched successfully - without params",
-			params: model.DeploymentFilterParams{},
+			params: model.ListDeploymentsFilterParams{},
 			mockSetup: func(authSvc *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				authSvc.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				releaseRepo.On("ListDeploymentsForProject", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deployment{
@@ -849,7 +849,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 		},
 		{
 			name: "Deployments fetched successfully - with valid params",
-			params: model.DeploymentFilterParams{
+			params: model.ListDeploymentsFilterParams{
 				EnvironmentID: &envID,
 				ReleaseID:     &rlsID,
 			},
@@ -870,7 +870,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 		},
 		{
 			name: "Deployments fetched successfully - release provided in params not found",
-			params: model.DeploymentFilterParams{
+			params: model.ListDeploymentsFilterParams{
 				EnvironmentID: &envID,
 				ReleaseID:     &rlsID,
 			},
@@ -882,7 +882,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 		},
 		{
 			name: "Deployments fetched successfully - env provided in params not found",
-			params: model.DeploymentFilterParams{
+			params: model.ListDeploymentsFilterParams{
 				EnvironmentID: &envID,
 				ReleaseID:     &rlsID,
 			},

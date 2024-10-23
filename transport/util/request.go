@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	httpx "go.strv.io/net/http"
+	"go.strv.io/net/http/param"
 )
 
 const (
@@ -17,7 +18,8 @@ const (
 	GithubHookEvent = "X-GitHub-Event"
 )
 
-func UnmarshalRequest(r *http.Request, b any) error {
+// UnmarshalBody unmarshals the request body into the provided struct.
+func UnmarshalBody(r *http.Request, b any) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
@@ -45,14 +47,29 @@ func GetUUIDFromURL(r *http.Request, key string) (uuid.UUID, error) {
 	return id, nil
 }
 
-func GetQueryParam(r *http.Request, key string) string {
-	return r.URL.Query().Get(key)
+// UnmarshalURLParams parses URL path and query parameters into a struct with tagged fields.
+func UnmarshalURLParams[TParams any](r *http.Request) (TParams, error) {
+	var params TParams
+	if err := param.DefaultParser().Parse(r, &params); err != nil {
+		return params, err
+	}
+	return params, nil
 }
 
 type ParamUnmarshaller interface {
 	UnmarshalText(data []byte) error
 }
 
+// GetQueryParam retrieves a URL query parameter from the request and unmarshals it into the provided type.
+func GetQueryParam[TParam any, TPtrParam interface {
+	*TParam
+	ParamUnmarshaller
+}](r *http.Request, paramName string) (TParam, error) {
+	paramValue := r.URL.Query().Get(paramName)
+	return unmarshalParam[TParam, TPtrParam](paramValue)
+}
+
+// GetPathParam retrieves a URL path parameter from the request and unmarshals it into the provided type.
 func GetPathParam[TParam any, TPtrParam interface {
 	*TParam
 	ParamUnmarshaller

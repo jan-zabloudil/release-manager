@@ -11,7 +11,7 @@ import (
 
 func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateEnvironmentInput
-	if err := util.UnmarshalRequest(r, &req); err != nil {
+	if err := util.UnmarshalBody(r, &req); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
@@ -37,7 +37,7 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req model.UpdateEnvironmentInput
-	if err := util.UnmarshalRequest(r, &req); err != nil {
+	if err := util.UnmarshalBody(r, &req); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}

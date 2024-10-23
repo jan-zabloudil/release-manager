@@ -142,7 +142,7 @@ func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.D
 	return nil
 }
 
-func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
 	listQuery := query.ListDeploymentsForProject
 	if params.LatestOnly != nil && *params.LatestOnly {
 		listQuery = query.AppendLimit(listQuery, 1)
