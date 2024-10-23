@@ -86,7 +86,13 @@ func SetResourceUUIDToContext(idKey string, f util.ContextSetUUIDFunc) func(http
 
 func HandleInvitationToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r = util.ContextSetProjectInvitationToken(r, cryptox.Token(util.GetQueryParam(r, "token")))
+		tkn, err := util.GetQueryParam[cryptox.Token](r, "token")
+		if err != nil {
+			util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+			return
+		}
+
+		r = util.ContextSetProjectInvitationToken(r, tkn)
 
 		next.ServeHTTP(w, r)
 	})

@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	var req model.UpdateSettingsInput
-	if err := util.UnmarshalRequest(r, &req); err != nil {
+	if err := util.UnmarshalBody(r, &req); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}

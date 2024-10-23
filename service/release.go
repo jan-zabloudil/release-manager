@@ -316,7 +316,7 @@ func (s *ReleaseService) CreateDeployment(
 
 func (s *ReleaseService) ListDeploymentsForProject(
 	ctx context.Context,
-	params model.DeploymentFilterParams,
+	params model.ListDeploymentsFilterParams,
 	projectID uuid.UUID,
 	authUserID id.AuthUser,
 ) ([]model.Deployment, error) {

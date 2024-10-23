@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 	var input model.CreateDeploymentInput
-	if err := util.UnmarshalRequest(r, &input); err != nil {
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
@@ -30,11 +30,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Request) {
-	filterParams, err := model.ToSvcDeploymentFilterParams(
-		util.GetQueryParam(r, "release_id"),
-		util.GetQueryParam(r, "environment_id"),
-		util.GetQueryParam(r, "latest_only"),
-	)
+	params, err := util.UnmarshalURLParams[model.ListDeploymentsFilterParams](r)
 	if err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
@@ -42,7 +38,7 @@ func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Reque
 
 	dpls, err := h.ReleaseSvc.ListDeploymentsForProject(
 		r.Context(),
-		filterParams,
+		model.ToSvcListDeploymentsFilterParams(params),
 		util.ContextProjectID(r),
 		util.ContextAuthUserID(r),
 	)

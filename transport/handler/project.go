@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateProjectInput
-	if err := util.UnmarshalRequest(r, &req); err != nil {
+	if err := util.UnmarshalBody(r, &req); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
@@ -51,7 +51,7 @@ func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 	var req model.UpdateProjectInput
 
-	if err := util.UnmarshalRequest(r, &req); err != nil {
+	if err := util.UnmarshalBody(r, &req); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
@@ -94,7 +94,7 @@ func (h *Handler) listGithubRepoTags(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
 	var input model.SetProjectGithubRepoInput
-	if err := util.UnmarshalRequest(r, &input); err != nil {
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}

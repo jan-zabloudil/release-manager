@@ -32,3 +32,8 @@ func (t Token) ToHash() Hash {
 func (h Hash) ToBase64() string {
 	return base64.StdEncoding.EncodeToString(h)
 }
+
+func (t *Token) UnmarshalText(data []byte) error {
+	*t = Token(data)
+	return nil
+}

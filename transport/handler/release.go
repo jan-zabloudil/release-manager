@@ -11,7 +11,7 @@ import (
 
 func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 	var input model.CreateReleaseInput
-	if err := util.UnmarshalRequest(r, &input); err != nil {
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
@@ -58,7 +58,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input model.DeleteReleaseInput
-	if err := util.UnmarshalRequest(r, &input); err != nil {
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
@@ -98,7 +98,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input model.UpdateReleaseInput
-	if err := util.UnmarshalRequest(r, &input); err != nil {
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
@@ -156,7 +156,7 @@ func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Request) {
 	var input model.GithubGeneratedReleaseNotesInput
-	if err := util.UnmarshalRequest(r, &input); err != nil {
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}

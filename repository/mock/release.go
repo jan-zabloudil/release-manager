@@ -53,7 +53,7 @@ func (m *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.D
 	return args.Error(0)
 }
 
-func (m *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+func (m *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
 	args := m.Called(ctx, params, projectID)
 	return args.Get(0).([]svcmodel.Deployment), args.Error(1)
 }

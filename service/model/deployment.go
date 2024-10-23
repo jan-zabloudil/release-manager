@@ -45,7 +45,7 @@ func NewDeployment(rls Release, env Environment, deployedByUserID id.AuthUser) D
 	}
 }
 
-type DeploymentFilterParams struct {
+type ListDeploymentsFilterParams struct {
 	ReleaseID     *id.Release
 	EnvironmentID *id.Environment
 	LatestOnly    *bool

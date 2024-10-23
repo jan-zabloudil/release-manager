@@ -48,7 +48,7 @@ func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input model.UpdateProjectMemberRoleInput
-	if err := util.UnmarshalRequest(r, &input); err != nil {
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}

@@ -66,7 +66,7 @@ type releaseService interface {
 	GenerateGithubReleaseNotes(ctx context.Context, input svcmodel.GithubGeneratedReleaseNotesInput, projectID uuid.UUID, authUserID id.AuthUser) (svcmodel.GithubGeneratedReleaseNotes, error)
 
 	CreateDeployment(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID uuid.UUID, authUserID id.AuthUser) (svcmodel.Deployment, error)
-	ListDeploymentsForProject(ctx context.Context, params svcmodel.DeploymentFilterParams, projectID uuid.UUID, authUserID id.AuthUser) ([]svcmodel.Deployment, error)
+	ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID uuid.UUID, authUserID id.AuthUser) ([]svcmodel.Deployment, error)
 }
 
 type Handler struct {

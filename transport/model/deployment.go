@@ -1,8 +1,6 @@
 package model
 
 import (
-	"fmt"
-	"strconv"
 	"time"
 
 	"release-manager/pkg/id"
@@ -25,6 +23,12 @@ type Deployment struct {
 	DeployedAt            time.Time      `json:"deployed_at"`
 }
 
+type ListDeploymentsFilterParams struct {
+	ReleaseID     *id.Release     `param:"query=release_id"`
+	EnvironmentID *id.Environment `param:"query=environment_id"`
+	LatestOnly    *bool           `param:"query=latest_only"`
+}
+
 func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDeploymentInput {
 	return svcmodel.CreateDeploymentInput{
 		ReleaseID:     input.ReleaseID,
@@ -32,40 +36,12 @@ func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDepl
 	}
 }
 
-func ToSvcDeploymentFilterParams(releaseIDParam, environmentIDParam, latestOnlyParam string) (svcmodel.DeploymentFilterParams, error) {
-	var releaseID *id.Release
-	var environmentID *id.Environment
-	var latestOnly *bool
-
-	if releaseIDParam != "" {
-		var parsedID id.Release
-		if err := parsedID.FromString(releaseIDParam); err != nil {
-			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for release id: %w", err)
-		}
-		releaseID = &parsedID
+func ToSvcListDeploymentsFilterParams(p ListDeploymentsFilterParams) svcmodel.ListDeploymentsFilterParams {
+	return svcmodel.ListDeploymentsFilterParams{
+		ReleaseID:     p.ReleaseID,
+		EnvironmentID: p.EnvironmentID,
+		LatestOnly:    p.LatestOnly,
 	}
-
-	if environmentIDParam != "" {
-		var parsedID id.Environment
-		if err := parsedID.FromString(environmentIDParam); err != nil {
-			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid uuid provided for environment id: %w", err)
-		}
-		environmentID = &parsedID
-	}
-
-	if latestOnlyParam != "" {
-		latestOnlyValue, err := strconv.ParseBool(latestOnlyParam)
-		if err != nil {
-			return svcmodel.DeploymentFilterParams{}, fmt.Errorf("invalid boolean provided for latest only: %w", err)
-		}
-		latestOnly = &latestOnlyValue
-	}
-
-	return svcmodel.DeploymentFilterParams{
-		ReleaseID:     releaseID,
-		EnvironmentID: environmentID,
-		LatestOnly:    latestOnly,
-	}, nil
 }
 
 func ToDeployment(dpl svcmodel.Deployment) Deployment {

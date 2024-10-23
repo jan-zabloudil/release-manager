@@ -11,7 +11,7 @@ import (
 
 func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateProjectInvitationInput
-	if err := util.UnmarshalRequest(r, &req); err != nil {
+	if err := util.UnmarshalBody(r, &req); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
