@@ -5,7 +5,6 @@ import (
 
 	"release-manager/pkg/id"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +17,7 @@ func TestProjectInvitation_NewProjectInvitation(t *testing.T) {
 		{
 			name: "Valid Project Invitation",
 			creation: CreateProjectInvitationInput{
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@example.com",
 				ProjectRole: "editor",
 			},
@@ -27,7 +26,7 @@ func TestProjectInvitation_NewProjectInvitation(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - missing email",
 			creation: CreateProjectInvitationInput{
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@example.com",
 				ProjectRole: "owner",
 			},
@@ -36,7 +35,7 @@ func TestProjectInvitation_NewProjectInvitation(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - missing email",
 			creation: CreateProjectInvitationInput{
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "",
 				ProjectRole: "viewer",
 			},
@@ -45,7 +44,7 @@ func TestProjectInvitation_NewProjectInvitation(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - invalid email",
 			creation: CreateProjectInvitationInput{
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@test",
 				ProjectRole: "viewer",
 			},
@@ -54,7 +53,7 @@ func TestProjectInvitation_NewProjectInvitation(t *testing.T) {
 		{
 			name: "Invalid Project Invitation - invalid role",
 			creation: CreateProjectInvitationInput{
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@test.tt",
 				ProjectRole: "admin",
 			},
@@ -89,7 +88,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 			name: "Valid Project Invitation",
 			invitation: ProjectInvitation{
 				ID:          id.NewProjectInvitation(),
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@example.com",
 				ProjectRole: "editor",
 				Status:      "pending",
@@ -100,7 +99,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 			name: "Invalid Project Invitation - missing email",
 			invitation: ProjectInvitation{
 				ID:          id.NewProjectInvitation(),
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "",
 				ProjectRole: "editor",
 				Status:      "pending",
@@ -111,7 +110,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 			name: "Invalid Project Invitation - invalid email",
 			invitation: ProjectInvitation{
 				ID:          id.NewProjectInvitation(),
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@test",
 				ProjectRole: "editor",
 				Status:      "pending",
@@ -122,7 +121,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 			name: "Invalid Project Invitation - invalid role",
 			invitation: ProjectInvitation{
 				ID:          id.NewProjectInvitation(),
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@test",
 				ProjectRole: "admin",
 				Status:      "pending",
@@ -133,7 +132,7 @@ func TestProjectInvitation_Validate(t *testing.T) {
 			name: "Invalid Project Invitation - invalid status",
 			invitation: ProjectInvitation{
 				ID:          id.NewProjectInvitation(),
-				ProjectID:   uuid.New(),
+				ProjectID:   id.NewProject(),
 				Email:       "test@test",
 				ProjectRole: "owner",
 				Status:      "new",

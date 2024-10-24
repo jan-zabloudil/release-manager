@@ -162,7 +162,7 @@ func TestReleaseService_CreateRelease(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			_, err := service.CreateRelease(context.TODO(), tc.release, uuid.New(), id.AuthUser{})
+			_, err := service.CreateRelease(context.TODO(), tc.release, id.NewProject(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -344,13 +344,11 @@ func TestReleaseService_DeleteRelease(t *testing.T) {
 func TestReleaseService_ListReleasesForProject(t *testing.T) {
 	testCases := []struct {
 		name      string
-		projectID uuid.UUID
 		mockSetup func(*svc.AuthorizationService, *svc.ProjectService, *repo.ReleaseRepository)
 		wantErr   bool
 	}{
 		{
-			name:      "Success",
-			projectID: uuid.New(),
+			name: "Success",
 			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				releaseRepo.On("ListReleasesForProject", mock.Anything, mock.Anything).Return([]model.Release{
@@ -361,8 +359,7 @@ func TestReleaseService_ListReleasesForProject(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "no releases",
-			projectID: uuid.New(),
+			name: "no releases",
 			mockSetup: func(auth *svc.AuthorizationService, projectSvc *svc.ProjectService, releaseRepo *repo.ReleaseRepository) {
 				auth.On("AuthorizeProjectRoleViewer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				releaseRepo.On("ListReleasesForProject", mock.Anything, mock.Anything).Return([]model.Release{}, nil)
@@ -383,7 +380,7 @@ func TestReleaseService_ListReleasesForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.ListReleasesForProject(context.Background(), tc.projectID, id.AuthUser{})
+			_, err := service.ListReleasesForProject(context.Background(), id.NewProject(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -719,7 +716,7 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 
 			tc.mockSetup(authSvc, settingsSvc, projectSvc, githubClient, releaseRepo)
 
-			_, err := service.GenerateGithubReleaseNotes(context.TODO(), tc.input, uuid.New(), id.AuthUser{})
+			_, err := service.GenerateGithubReleaseNotes(context.TODO(), tc.input, id.NewProject(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -807,7 +804,7 @@ func TestReleaseService_CreateDeployment(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.CreateDeployment(context.TODO(), tc.input, uuid.Nil, id.AuthUser{})
+			_, err := service.CreateDeployment(context.TODO(), tc.input, id.NewProject(), id.AuthUser{})
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -907,7 +904,7 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 
 			tc.mockSetup(authSvc, projectSvc, releaseRepo)
 
-			_, err := service.ListDeploymentsForProject(context.TODO(), tc.params, uuid.Nil, id.AuthUser{})
+			_, err := service.ListDeploymentsForProject(context.TODO(), tc.params, id.NewProject(), id.AuthUser{})
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {

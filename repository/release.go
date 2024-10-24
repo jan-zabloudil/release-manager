@@ -11,7 +11,6 @@ import (
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -65,7 +64,7 @@ func (r *ReleaseRepository) ReadRelease(ctx context.Context, releaseID id.Releas
 	})
 }
 
-func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID uuid.UUID, releaseID id.Release) (svcmodel.Release, error) {
+func (r *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID id.Project, releaseID id.Release) (svcmodel.Release, error) {
 	return r.readRelease(ctx, r.dbpool, query.ReadReleaseForProject, pgx.NamedArgs{
 		"projectID": projectID,
 		"releaseID": releaseID,
@@ -117,7 +116,7 @@ func (r *ReleaseRepository) DeleteRelease(ctx context.Context, releaseID id.Rele
 	})
 }
 
-func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
+func (r *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID id.Project) ([]svcmodel.Release, error) {
 	releases, err := helper.ListValues[model.Release](ctx, r.dbpool, query.ListReleasesForProject, pgx.NamedArgs{
 		"projectID": projectID,
 	})
@@ -142,7 +141,7 @@ func (r *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.D
 	return nil
 }
 
-func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+func (r *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID id.Project) ([]svcmodel.Deployment, error) {
 	listQuery := query.ListDeploymentsForProject
 	if params.LatestOnly != nil && *params.LatestOnly {
 		listQuery = query.AppendLimit(listQuery, 1)

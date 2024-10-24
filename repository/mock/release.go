@@ -6,7 +6,6 @@ import (
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -24,7 +23,7 @@ func (m *ReleaseRepository) ReadRelease(ctx context.Context, releaseID id.Releas
 	return args.Get(0).(svcmodel.Release), args.Error(1)
 }
 
-func (m *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID uuid.UUID, releaseID id.Release) (svcmodel.Release, error) {
+func (m *ReleaseRepository) ReadReleaseForProject(ctx context.Context, projectID id.Project, releaseID id.Release) (svcmodel.Release, error) {
 	args := m.Called(ctx, projectID, releaseID)
 	return args.Get(0).(svcmodel.Release), args.Error(1)
 }
@@ -34,7 +33,7 @@ func (m *ReleaseRepository) DeleteRelease(ctx context.Context, releaseID id.Rele
 	return args.Error(0)
 }
 
-func (m *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Release, error) {
+func (m *ReleaseRepository) ListReleasesForProject(ctx context.Context, projectID id.Project) ([]svcmodel.Release, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.Release), args.Error(1)
 }
@@ -53,7 +52,7 @@ func (m *ReleaseRepository) CreateDeployment(ctx context.Context, dpl svcmodel.D
 	return args.Error(0)
 }
 
-func (m *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID uuid.UUID) ([]svcmodel.Deployment, error) {
+func (m *ReleaseRepository) ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID id.Project) ([]svcmodel.Deployment, error) {
 	args := m.Called(ctx, params, projectID)
 	return args.Get(0).([]svcmodel.Deployment), args.Error(1)
 }

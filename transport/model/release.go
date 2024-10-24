@@ -26,7 +26,7 @@ type DeleteReleaseInput struct {
 
 type Release struct {
 	ID           id.Release          `json:"id"`
-	ProjectID    uuid.UUID           `json:"project_id"`
+	ProjectID    id.Project          `json:"project_id"`
 	ReleaseTitle string              `json:"release_title"`
 	ReleaseNotes string              `json:"release_notes"`
 	GitTagName   string              `json:"git_tag_name"`

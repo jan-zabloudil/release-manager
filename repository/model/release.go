@@ -14,7 +14,7 @@ import (
 
 type Release struct {
 	ID           id.Release  `db:"id"`
-	ProjectID    uuid.UUID   `db:"project_id"`
+	ProjectID    id.Project  `db:"project_id"`
 	ReleaseTitle string      `db:"release_title"`
 	ReleaseNotes string      `db:"release_notes"`
 	AuthorUserID id.AuthUser `db:"created_by"`

@@ -9,15 +9,15 @@ import (
 )
 
 func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
-	var req model.UpdateSettingsInput
-	if err := util.UnmarshalBody(r, &req); err != nil {
+	var input model.UpdateSettingsInput
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	if err := h.SettingsSvc.Update(
 		r.Context(),
-		model.ToSvcUpdateSettingsInput(req),
+		model.ToSvcUpdateSettingsInput(input),
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))

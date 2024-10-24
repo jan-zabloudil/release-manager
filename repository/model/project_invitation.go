@@ -5,13 +5,11 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type ProjectInvitation struct {
 	ID            id.ProjectInvitation `db:"id"`
-	ProjectID     uuid.UUID            `db:"project_id"`
+	ProjectID     id.Project           `db:"project_id"`
 	Email         string               `db:"email"`
 	ProjectRole   string               `db:"project_role"`
 	Status        string               `db:"status"`

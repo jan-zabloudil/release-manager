@@ -23,7 +23,8 @@ type Deployment struct {
 	DeployedAt            time.Time      `json:"deployed_at"`
 }
 
-type ListDeploymentsFilterParams struct {
+type ListDeploymentsParams struct {
+	ProjectID     id.Project      `param:"path=project_id"`
 	ReleaseID     *id.Release     `param:"query=release_id"`
 	EnvironmentID *id.Environment `param:"query=environment_id"`
 	LatestOnly    *bool           `param:"query=latest_only"`
@@ -36,7 +37,7 @@ func ToSvcCreateDeploymentInput(input CreateDeploymentInput) svcmodel.CreateDepl
 	}
 }
 
-func ToSvcListDeploymentsFilterParams(p ListDeploymentsFilterParams) svcmodel.ListDeploymentsFilterParams {
+func ToSvcListDeploymentsFilterParams(p ListDeploymentsParams) svcmodel.ListDeploymentsFilterParams {
 	return svcmodel.ListDeploymentsFilterParams{
 		ReleaseID:     p.ReleaseID,
 		EnvironmentID: p.EnvironmentID,

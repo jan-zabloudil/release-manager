@@ -10,15 +10,21 @@ import (
 )
 
 func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
-	var req model.CreateEnvironmentInput
-	if err := util.UnmarshalBody(r, &req); err != nil {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	var input model.CreateEnvironmentInput
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	env, err := h.ProjectSvc.CreateEnvironment(
 		r.Context(),
-		model.ToSvcCreateEnvironmentInput(req, util.ContextProjectID(r)),
+		model.ToSvcCreateEnvironmentInput(input, projectID),
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -30,23 +36,23 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
-	envID, err := util.GetPathParam[id.Environment](r, "environment_id")
+	params, err := util.UnmarshalURLParams[model.EnvironmentURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid environment ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
-	var req model.UpdateEnvironmentInput
-	if err := util.UnmarshalBody(r, &req); err != nil {
+	var input model.UpdateEnvironmentInput
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	if err := h.ProjectSvc.UpdateEnvironment(
 		r.Context(),
-		model.ToSvcUpdateEnvironmentInput(req),
-		util.ContextProjectID(r),
-		envID,
+		model.ToSvcUpdateEnvironmentInput(input),
+		params.ProjectID,
+		params.EnvironmentID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -57,16 +63,16 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
-	envID, err := util.GetPathParam[id.Environment](r, "environment_id")
+	params, err := util.UnmarshalURLParams[model.EnvironmentURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid environment ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	env, err := h.ProjectSvc.GetEnvironment(
 		r.Context(),
-		util.ContextProjectID(r),
-		envID,
+		params.ProjectID,
+		params.EnvironmentID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -78,9 +84,15 @@ func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	envs, err := h.ProjectSvc.ListEnvironments(
 		r.Context(),
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -92,16 +104,16 @@ func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteEnvironment(w http.ResponseWriter, r *http.Request) {
-	envID, err := util.GetPathParam[id.Environment](r, "environment_id")
+	params, err := util.UnmarshalURLParams[model.EnvironmentURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("invalid environment ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	if err := h.ProjectSvc.DeleteEnvironment(
 		r.Context(),
-		util.ContextProjectID(r),
-		envID,
+		params.ProjectID,
+		params.EnvironmentID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))

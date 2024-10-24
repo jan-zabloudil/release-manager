@@ -3,9 +3,8 @@ package model
 import (
 	"time"
 
+	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type CreateProjectInput struct {
@@ -25,7 +24,7 @@ type SetProjectGithubRepoInput struct {
 }
 
 type Project struct {
-	ID                        uuid.UUID                 `json:"id"`
+	ID                        id.Project                `json:"id"`
 	Name                      string                    `json:"name"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`

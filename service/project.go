@@ -8,8 +8,6 @@ import (
 	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type ProjectService struct {
@@ -76,7 +74,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, input model.CreatePr
 	return p, nil
 }
 
-func (s *ProjectService) GetProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) (model.Project, error) {
+func (s *ProjectService) GetProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) (model.Project, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return model.Project{}, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -113,7 +111,7 @@ func (s *ProjectService) ListProjects(ctx context.Context, authUserID id.AuthUse
 	return p, nil
 }
 
-func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ProjectService) DeleteProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -126,7 +124,7 @@ func (s *ProjectService) DeleteProject(ctx context.Context, projectID uuid.UUID,
 	return nil
 }
 
-func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdateProjectInput, projectID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdateProjectInput, projectID id.Project, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -144,7 +142,7 @@ func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdatePr
 	return nil
 }
 
-func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID uuid.UUID, authUserID id.AuthUser) error {
+func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL string, projectID id.Project, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -169,7 +167,7 @@ func (s *ProjectService) SetGithubRepoForProject(ctx context.Context, rawRepoURL
 	return nil
 }
 
-func (s *ProjectService) GetGithubRepoForProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) (model.GithubRepo, error) {
+func (s *ProjectService) GetGithubRepoForProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) (model.GithubRepo, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
 		return model.GithubRepo{}, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -212,7 +210,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, input model.Crea
 	return env, nil
 }
 
-func (s *ProjectService) GetEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment, authUserID id.AuthUser) (model.Environment, error) {
+func (s *ProjectService) GetEnvironment(ctx context.Context, projectID id.Project, envID id.Environment, authUserID id.AuthUser) (model.Environment, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return model.Environment{}, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -228,7 +226,7 @@ func (s *ProjectService) GetEnvironment(ctx context.Context, projectID uuid.UUID
 func (s *ProjectService) UpdateEnvironment(
 	ctx context.Context,
 	input model.UpdateEnvironmentInput,
-	projectID uuid.UUID,
+	projectID id.Project,
 	envID id.Environment,
 	authUserID id.AuthUser,
 ) error {
@@ -249,7 +247,7 @@ func (s *ProjectService) UpdateEnvironment(
 	return nil
 }
 
-func (s *ProjectService) ListEnvironments(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]model.Environment, error) {
+func (s *ProjectService) ListEnvironments(ctx context.Context, projectID id.Project, authUserID id.AuthUser) ([]model.Environment, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -262,7 +260,7 @@ func (s *ProjectService) ListEnvironments(ctx context.Context, projectID uuid.UU
 	return envs, nil
 }
 
-func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment, authUserID id.AuthUser) error {
+func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID id.Project, envID id.Environment, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -275,7 +273,7 @@ func (s *ProjectService) DeleteEnvironment(ctx context.Context, projectID uuid.U
 	return nil
 }
 
-func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]model.GitTag, error) {
+func (s *ProjectService) ListGithubRepoTags(ctx context.Context, projectID id.Project, authUserID id.AuthUser) ([]model.GitTag, error) {
 	if err := s.authGuard.AuthorizeProjectRoleViewer(ctx, projectID, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing project member: %w", err)
 	}
@@ -339,7 +337,7 @@ func (s *ProjectService) Invite(ctx context.Context, input model.CreateProjectIn
 	return i, nil
 }
 
-func (s *ProjectService) ListInvitations(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]model.ProjectInvitation, error) {
+func (s *ProjectService) ListInvitations(ctx context.Context, projectID id.Project, authUserID id.AuthUser) ([]model.ProjectInvitation, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -363,7 +361,7 @@ func (s *ProjectService) ListInvitations(ctx context.Context, projectID uuid.UUI
 	return invitations, nil
 }
 
-func (s *ProjectService) CancelInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation, authUserID id.AuthUser) error {
+func (s *ProjectService) CancelInvitation(ctx context.Context, projectID id.Project, invitationID id.ProjectInvitation, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return err
 	}
@@ -440,7 +438,7 @@ func (s *ProjectService) RejectInvitation(ctx context.Context, tkn model.Project
 	return nil
 }
 
-func (s *ProjectService) ListMembersForProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) ([]model.ProjectMember, error) {
+func (s *ProjectService) ListMembersForProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) ([]model.ProjectMember, error) {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return nil, fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -477,7 +475,7 @@ func (s *ProjectService) ListMembersForUser(ctx context.Context, authUserID id.A
 	return m, nil
 }
 
-func (s *ProjectService) DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User, authUserID id.AuthUser) error {
+func (s *ProjectService) DeleteMember(ctx context.Context, projectID id.Project, userID id.User, authUserID id.AuthUser) error {
 	if err := s.authGuard.AuthorizeUserRoleAdmin(ctx, authUserID); err != nil {
 		return fmt.Errorf("authorizing user role: %w", err)
 	}
@@ -492,7 +490,7 @@ func (s *ProjectService) DeleteMember(ctx context.Context, projectID uuid.UUID, 
 func (s *ProjectService) UpdateMemberRole(
 	ctx context.Context,
 	newRole model.ProjectRole,
-	projectID uuid.UUID,
+	projectID id.Project,
 	userID id.User,
 	authUserID id.AuthUser,
 ) error {
@@ -529,7 +527,7 @@ func (s *ProjectService) getDefaultReleaseNotificationConfig(ctx context.Context
 	}, nil
 }
 
-func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID) (bool, error) {
+func (s *ProjectService) projectExists(ctx context.Context, projectID id.Project) (bool, error) {
 	if _, err := s.repo.ReadProject(ctx, projectID); err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectNotFound):
@@ -542,7 +540,7 @@ func (s *ProjectService) projectExists(ctx context.Context, projectID uuid.UUID)
 	return true, nil
 }
 
-func (s *ProjectService) memberExists(ctx context.Context, projectID uuid.UUID, email string) (bool, error) {
+func (s *ProjectService) memberExists(ctx context.Context, projectID id.Project, email string) (bool, error) {
 	if _, err := s.repo.ReadMemberByEmail(ctx, projectID, email); err != nil {
 		switch {
 		case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound):

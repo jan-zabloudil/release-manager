@@ -20,6 +20,11 @@ type UpdateProjectMemberRoleInput struct {
 	ProjectRole string `json:"project_role"`
 }
 
+type ProjectMemberURLParams struct {
+	ProjectID id.Project `param:"path=project_id"`
+	UserID    id.User    `param:"path=user_id"`
+}
+
 func ToProjectMember(p svcmodel.ProjectMember) ProjectMember {
 	return ProjectMember{
 		UserID:      p.User.ID,

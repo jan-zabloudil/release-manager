@@ -6,7 +6,6 @@ import (
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -19,7 +18,7 @@ func (m *ProjectRepository) CreateProjectWithOwner(ctx context.Context, p svcmod
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ReadProject(ctx context.Context, id uuid.UUID) (svcmodel.Project, error) {
+func (m *ProjectRepository) ReadProject(ctx context.Context, id id.Project) (svcmodel.Project, error) {
 	args := m.Called(ctx, id)
 	return args.Get(0).(svcmodel.Project), args.Error(1)
 }
@@ -34,14 +33,14 @@ func (m *ProjectRepository) ListProjectsForUser(ctx context.Context, userID id.A
 	return args.Get(0).([]svcmodel.Project), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteProject(ctx context.Context, id uuid.UUID) error {
+func (m *ProjectRepository) DeleteProject(ctx context.Context, id id.Project) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
 func (m *ProjectRepository) UpdateProject(
 	ctx context.Context,
-	projectID uuid.UUID,
+	projectID id.Project,
 	updateFn func(p svcmodel.Project) (svcmodel.Project, error),
 ) error {
 	args := m.Called(ctx, projectID, updateFn)
@@ -53,24 +52,24 @@ func (m *ProjectRepository) CreateEnvironment(ctx context.Context, e svcmodel.En
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ReadEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) (svcmodel.Environment, error) {
+func (m *ProjectRepository) ReadEnvironment(ctx context.Context, projectID id.Project, envID id.Environment) (svcmodel.Environment, error) {
 	args := m.Called(ctx, projectID, envID)
 	return args.Get(0).(svcmodel.Environment), args.Error(1)
 }
 
-func (m *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.Environment, error) {
+func (m *ProjectRepository) ListEnvironmentsForProject(ctx context.Context, projectID id.Project) ([]svcmodel.Environment, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.Environment), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) error {
+func (m *ProjectRepository) DeleteEnvironment(ctx context.Context, projectID id.Project, envID id.Environment) error {
 	args := m.Called(ctx, projectID, envID)
 	return args.Error(0)
 }
 
 func (m *ProjectRepository) UpdateEnvironment(
 	ctx context.Context,
-	projectID uuid.UUID,
+	projectID id.Project,
 	envID id.Environment,
 	updateFn func(e svcmodel.Environment) (svcmodel.Environment, error),
 ) error {
@@ -92,12 +91,12 @@ func (m *ProjectRepository) UpdateInvitation(
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectInvitation, error) {
+func (m *ProjectRepository) ListInvitationsForProject(ctx context.Context, projectID id.Project) ([]svcmodel.ProjectInvitation, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.ProjectInvitation), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation) error {
+func (m *ProjectRepository) DeleteInvitation(ctx context.Context, projectID id.Project, invitationID id.ProjectInvitation) error {
 	args := m.Called(ctx, projectID, invitationID)
 	return args.Error(0)
 }
@@ -120,7 +119,7 @@ func (m *ProjectRepository) CreateMember(
 	return args.Error(0)
 }
 
-func (m *ProjectRepository) ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) ListMembersForProject(ctx context.Context, projectID id.Project) ([]svcmodel.ProjectMember, error) {
 	args := m.Called(ctx, projectID)
 	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
 }
@@ -130,24 +129,24 @@ func (m *ProjectRepository) ListMembersForUser(ctx context.Context, userID id.Au
 	return args.Get(0).([]svcmodel.ProjectMember), args.Error(1)
 }
 
-func (m *ProjectRepository) ReadMember(ctx context.Context, projectID uuid.UUID, userID id.User) (svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) ReadMember(ctx context.Context, projectID id.Project, userID id.User) (svcmodel.ProjectMember, error) {
 	args := m.Called(ctx, projectID, userID)
 	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
 }
 
-func (m *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (svcmodel.ProjectMember, error) {
+func (m *ProjectRepository) ReadMemberByEmail(ctx context.Context, projectID id.Project, email string) (svcmodel.ProjectMember, error) {
 	args := m.Called(ctx, projectID, email)
 	return args.Get(0).(svcmodel.ProjectMember), args.Error(1)
 }
 
-func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User) error {
+func (m *ProjectRepository) DeleteMember(ctx context.Context, projectID id.Project, userID id.User) error {
 	args := m.Called(ctx, projectID, userID)
 	return args.Error(0)
 }
 
 func (m *ProjectRepository) UpdateMember(
 	ctx context.Context,
-	projectID uuid.UUID,
+	projectID id.Project,
 	userID id.User,
 	updateFn func(m svcmodel.ProjectMember) (svcmodel.ProjectMember, error),
 ) error {

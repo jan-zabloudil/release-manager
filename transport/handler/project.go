@@ -3,21 +3,22 @@ package handler
 import (
 	"net/http"
 
+	"release-manager/pkg/id"
 	resperrors "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
 
 func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
-	var req model.CreateProjectInput
-	if err := util.UnmarshalBody(r, &req); err != nil {
+	var input model.CreateProjectInput
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	p, err := h.ProjectSvc.CreateProject(
 		r.Context(),
-		model.ToSvcCreateProjectInput(req),
+		model.ToSvcCreateProjectInput(input),
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -29,7 +30,13 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getProject(w http.ResponseWriter, r *http.Request) {
-	p, err := h.ProjectSvc.GetProject(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r))
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	p, err := h.ProjectSvc.GetProject(r.Context(), projectID, util.ContextAuthUserID(r))
 	if err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
@@ -49,17 +56,22 @@ func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
-	var req model.UpdateProjectInput
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
 
-	if err := util.UnmarshalBody(r, &req); err != nil {
+	var input model.UpdateProjectInput
+	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	if err := h.ProjectSvc.UpdateProject(
 		r.Context(),
-		model.ToSvcUpdateProjectInput(req),
-		util.ContextProjectID(r),
+		model.ToSvcUpdateProjectInput(input),
+		projectID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -70,7 +82,13 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
-	if err := h.ProjectSvc.DeleteProject(r.Context(), util.ContextProjectID(r), util.ContextAuthUserID(r)); err != nil {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
+	if err := h.ProjectSvc.DeleteProject(r.Context(), projectID, util.ContextAuthUserID(r)); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
 		return
 	}
@@ -79,9 +97,15 @@ func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listGithubRepoTags(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	t, err := h.ProjectSvc.ListGithubRepoTags(
 		r.Context(),
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -93,6 +117,12 @@ func (h *Handler) listGithubRepoTags(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	var input model.SetProjectGithubRepoInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -102,7 +132,7 @@ func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request
 	if err := h.ProjectSvc.SetGithubRepoForProject(
 		r.Context(),
 		input.RawRepoURL,
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	); err != nil {
 		util.WriteResponseError(w, resperrors.ToError(err))
@@ -113,9 +143,15 @@ func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) getGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	repo, err := h.ProjectSvc.GetGithubRepoForProject(
 		r.Context(),
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {

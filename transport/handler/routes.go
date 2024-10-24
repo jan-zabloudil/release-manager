@@ -35,8 +35,7 @@ func (h *Handler) setupRoutes() {
 			r.Get("/accept", h.acceptInvitation)
 			r.Get("/reject", h.rejectInvitation)
 		})
-		r.Route("/{id}", func(r chi.Router) {
-			r.Use(middleware.SetResourceUUIDToContext("id", util.ContextSetProjectID))
+		r.Route("/{project_id}", func(r chi.Router) {
 			r.Get("/", middleware.RequireAuthUser(h.getProject))
 			r.Patch("/", middleware.RequireAuthUser(h.updateProject))
 			r.Delete("/", middleware.RequireAuthUser(h.deleteProject))

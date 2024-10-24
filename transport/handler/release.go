@@ -10,6 +10,12 @@ import (
 )
 
 func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	var input model.CreateReleaseInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -19,7 +25,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 	rls, err := h.ReleaseSvc.CreateRelease(
 		r.Context(),
 		model.ToSvcCreateReleaseInput(input),
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -33,7 +39,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -53,7 +59,7 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -77,9 +83,15 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	rls, err := h.ReleaseSvc.ListReleasesForProject(
 		r.Context(),
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
@@ -93,7 +105,7 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -119,7 +131,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -138,7 +150,7 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewInvalidResourceIDError().Wrap(err).WithMessage("Invalid release ID"))
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -155,6 +167,12 @@ func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Request) {
+	projectID, err := util.GetPathParam[id.Project](r, "project_id")
+	if err != nil {
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		return
+	}
+
 	var input model.GithubGeneratedReleaseNotesInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
@@ -164,7 +182,7 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 	notes, err := h.ReleaseSvc.GenerateGithubReleaseNotes(
 		r.Context(),
 		model.ToSvcGithubGeneratedReleaseNotesInput(input),
-		util.ContextProjectID(r),
+		projectID,
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {

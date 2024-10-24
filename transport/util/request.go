@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 	httpx "go.strv.io/net/http"
 	"go.strv.io/net/http/param"
 )
@@ -17,6 +16,10 @@ const (
 	// Docs: https://docs.github.com/en/webhooks/webhook-events-and-payloads
 	GithubHookEvent = "X-GitHub-Event"
 )
+
+func RequestID(h http.Header) string {
+	return h.Get(httpx.Header.XRequestID)
+}
 
 // UnmarshalBody unmarshals the request body into the provided struct.
 func UnmarshalBody(r *http.Request, b any) error {
@@ -32,25 +35,10 @@ func UnmarshalBody(r *http.Request, b any) error {
 	return nil
 }
 
-func RequestID(h http.Header) string {
-	return h.Get(httpx.Header.XRequestID)
-}
-
-func GetUUIDFromURL(r *http.Request, key string) (uuid.UUID, error) {
-	idFromURL := chi.URLParam(r, key)
-
-	id, err := uuid.Parse(idFromURL)
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-
-	return id, nil
-}
-
 // UnmarshalURLParams parses URL path and query parameters into a struct with tagged fields.
 func UnmarshalURLParams[TParams any](r *http.Request) (TParams, error) {
 	var params TParams
-	if err := param.DefaultParser().Parse(r, &params); err != nil {
+	if err := param.DefaultParser().WithPathParamFunc(chi.URLParam).Parse(r, &params); err != nil {
 		return params, err
 	}
 	return params, nil

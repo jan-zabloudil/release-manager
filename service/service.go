@@ -6,36 +6,34 @@ import (
 
 	"release-manager/pkg/id"
 	"release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type projectRepository interface {
 	CreateProjectWithOwner(ctx context.Context, p model.Project, owner model.ProjectMember) error
-	ReadProject(ctx context.Context, id uuid.UUID) (model.Project, error)
+	ReadProject(ctx context.Context, id id.Project) (model.Project, error)
 	ListProjects(ctx context.Context) ([]model.Project, error)
 	ListProjectsForUser(ctx context.Context, userID id.AuthUser) ([]model.Project, error)
-	DeleteProject(ctx context.Context, id uuid.UUID) error
+	DeleteProject(ctx context.Context, id id.Project) error
 	UpdateProject(
 		ctx context.Context,
-		projectID uuid.UUID,
+		projectID id.Project,
 		updateFn func(p model.Project) (model.Project, error),
 	) error
 
 	CreateEnvironment(ctx context.Context, env model.Environment) error
-	ReadEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) (model.Environment, error)
+	ReadEnvironment(ctx context.Context, projectID id.Project, envID id.Environment) (model.Environment, error)
 	UpdateEnvironment(
 		ctx context.Context,
-		projectID uuid.UUID,
+		projectID id.Project,
 		envID id.Environment,
 		updateFn func(e model.Environment) (model.Environment, error),
 	) error
-	DeleteEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment) error
-	ListEnvironmentsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Environment, error)
+	DeleteEnvironment(ctx context.Context, projectID id.Project, envID id.Environment) error
+	ListEnvironmentsForProject(ctx context.Context, projectID id.Project) ([]model.Environment, error)
 
 	CreateInvitation(ctx context.Context, i model.ProjectInvitation) error
-	ListInvitationsForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectInvitation, error)
-	DeleteInvitation(ctx context.Context, projectID uuid.UUID, invitationID id.ProjectInvitation) error
+	ListInvitationsForProject(ctx context.Context, projectID id.Project) ([]model.ProjectInvitation, error)
+	DeleteInvitation(ctx context.Context, projectID id.Project, invitationID id.ProjectInvitation) error
 	DeleteInvitationByTokenHashAndStatus(
 		ctx context.Context,
 		hash model.ProjectInvitationTokenHash,
@@ -52,14 +50,14 @@ type projectRepository interface {
 		hash model.ProjectInvitationTokenHash,
 		createMemberFn func(i model.ProjectInvitation) (model.ProjectMember, error),
 	) error
-	ListMembersForProject(ctx context.Context, projectID uuid.UUID) ([]model.ProjectMember, error)
+	ListMembersForProject(ctx context.Context, projectID id.Project) ([]model.ProjectMember, error)
 	ListMembersForUser(ctx context.Context, userID id.AuthUser) ([]model.ProjectMember, error)
-	ReadMember(ctx context.Context, projectID uuid.UUID, userID id.User) (model.ProjectMember, error)
-	ReadMemberByEmail(ctx context.Context, projectID uuid.UUID, email string) (model.ProjectMember, error)
-	DeleteMember(ctx context.Context, projectID uuid.UUID, userID id.User) error
+	ReadMember(ctx context.Context, projectID id.Project, userID id.User) (model.ProjectMember, error)
+	ReadMemberByEmail(ctx context.Context, projectID id.Project, email string) (model.ProjectMember, error)
+	DeleteMember(ctx context.Context, projectID id.Project, userID id.User) error
 	UpdateMember(
 		ctx context.Context,
-		projectID uuid.UUID,
+		projectID id.Project,
 		userID id.User,
 		updateFn func(m model.ProjectMember) (model.ProjectMember, error),
 	) error
@@ -83,10 +81,10 @@ type settingsRepository interface {
 type releaseRepository interface {
 	CreateRelease(ctx context.Context, r model.Release) error
 	ReadRelease(ctx context.Context, releaseID id.Release) (model.Release, error)
-	ReadReleaseForProject(ctx context.Context, projectID uuid.UUID, releaseID id.Release) (model.Release, error)
+	ReadReleaseForProject(ctx context.Context, projectID id.Project, releaseID id.Release) (model.Release, error)
 	DeleteRelease(ctx context.Context, releaseID id.Release) error
 	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
-	ListReleasesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Release, error)
+	ListReleasesForProject(ctx context.Context, projectID id.Project) ([]model.Release, error)
 	UpdateRelease(
 		ctx context.Context,
 		releaseID id.Release,
@@ -94,15 +92,15 @@ type releaseRepository interface {
 	) error
 
 	CreateDeployment(ctx context.Context, d model.Deployment) error
-	ListDeploymentsForProject(ctx context.Context, params model.ListDeploymentsFilterParams, projectID uuid.UUID) ([]model.Deployment, error)
+	ListDeploymentsForProject(ctx context.Context, params model.ListDeploymentsFilterParams, projectID id.Project) ([]model.Deployment, error)
 	ReadLastDeploymentForRelease(ctx context.Context, releaseID id.Release) (model.Deployment, error)
 }
 
 type authGuard interface {
 	AuthorizeUserRoleAdmin(ctx context.Context, userID id.AuthUser) error
 	AuthorizeUserRoleUser(ctx context.Context, userID id.AuthUser) error
-	AuthorizeProjectRoleEditor(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error
-	AuthorizeProjectRoleViewer(ctx context.Context, projectID uuid.UUID, userID id.AuthUser) error
+	AuthorizeProjectRoleEditor(ctx context.Context, projectID id.Project, userID id.AuthUser) error
+	AuthorizeProjectRoleViewer(ctx context.Context, projectID id.Project, userID id.AuthUser) error
 	AuthorizeReleaseEditor(ctx context.Context, releaseID id.Release, userID id.AuthUser) error
 	AuthorizeReleaseViewer(ctx context.Context, releaseID id.Release, userID id.AuthUser) error
 }
@@ -119,11 +117,11 @@ type userGetter interface {
 }
 
 type projectGetter interface {
-	GetProject(ctx context.Context, projectID uuid.UUID, authUserID id.AuthUser) (model.Project, error)
+	GetProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) (model.Project, error)
 }
 
 type environmentGetter interface {
-	GetEnvironment(ctx context.Context, projectID uuid.UUID, envID id.Environment, authUserID id.AuthUser) (model.Environment, error)
+	GetEnvironment(ctx context.Context, projectID id.Project, envID id.Environment, authUserID id.AuthUser) (model.Environment, error)
 }
 
 type githubManager interface {

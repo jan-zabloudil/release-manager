@@ -9,7 +9,6 @@ import (
 	svcerrors "release-manager/service/errors"
 	"release-manager/service/model"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -199,7 +198,7 @@ func TestAuth_AuthorizeProjectRoleEditor(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo)
 
-			err := service.AuthorizeProjectRoleEditor(context.Background(), uuid.New(), id.AuthUser{})
+			err := service.AuthorizeProjectRoleEditor(context.Background(), id.NewProject(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -290,7 +289,7 @@ func TestAuth_AuthorizeProjectRoleViewer(t *testing.T) {
 
 			tc.mockSetup(userRepo, projectRepo)
 
-			err := service.AuthorizeProjectRoleViewer(context.Background(), uuid.New(), id.AuthUser{})
+			err := service.AuthorizeProjectRoleViewer(context.Background(), id.NewProject(), id.AuthUser{})
 
 			if tc.wantErr {
 				assert.Error(t, err)

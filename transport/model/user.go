@@ -5,8 +5,6 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
@@ -46,8 +44,8 @@ type AuthUser struct {
 }
 
 type ProjectMembership struct {
-	ProjectID   uuid.UUID `json:"project_id"`
-	ProjectRole string    `json:"project_role"`
+	ProjectID   id.Project `json:"project_id"`
+	ProjectRole string     `json:"project_role"`
 }
 
 func ToProjectMemberships(pm []svcmodel.ProjectMember) []ProjectMembership {

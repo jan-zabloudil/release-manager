@@ -5,22 +5,20 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-
-	"github.com/google/uuid"
 )
 
 type ProjectMember struct {
-	UserID        id.User   `db:"user_id"`
-	UserEmail     string    `db:"user_email"`
-	UserName      string    `db:"user_name"`
-	UserAvatarURL string    `db:"user_avatar_url"`
-	UserRole      string    `db:"user_role"`
-	UserCreatedAt time.Time `db:"user_created_at"`
-	UserUpdatedAt time.Time `db:"user_updated_at"`
-	ProjectID     uuid.UUID `db:"project_id"`
-	ProjectRole   string    `db:"project_role"`
-	CreatedAt     time.Time `db:"member_created_at"`
-	UpdatedAt     time.Time `db:"member_updated_at"`
+	UserID        id.User    `db:"user_id"`
+	UserEmail     string     `db:"user_email"`
+	UserName      string     `db:"user_name"`
+	UserAvatarURL string     `db:"user_avatar_url"`
+	UserRole      string     `db:"user_role"`
+	UserCreatedAt time.Time  `db:"user_created_at"`
+	UserUpdatedAt time.Time  `db:"user_updated_at"`
+	ProjectID     id.Project `db:"project_id"`
+	ProjectRole   string     `db:"project_role"`
+	CreatedAt     time.Time  `db:"member_created_at"`
+	UpdatedAt     time.Time  `db:"member_updated_at"`
 }
 
 func ToSvcProjectMember(m ProjectMember) svcmodel.ProjectMember {
