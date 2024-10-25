@@ -21,14 +21,14 @@ type SettingsValue struct {
 }
 
 type SlackSettings struct {
-	Enabled bool   `json:"enabled"`
-	Token   string `json:"token"`
+	Enabled bool                `json:"enabled"`
+	Token   svcmodel.SlackToken `json:"token"`
 }
 
 type GithubSettings struct {
-	Enabled       bool   `json:"enabled"`
-	Token         string `json:"token"`
-	WebhookSecret string `json:"webhook_secret"`
+	Enabled       bool                 `json:"enabled"`
+	Token         svcmodel.GithubToken `json:"token"`
+	WebhookSecret string               `json:"webhook_secret"`
 }
 
 func ToSettingsValues(s svcmodel.Settings) ([]SettingsValue, error) {

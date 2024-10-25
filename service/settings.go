@@ -52,7 +52,7 @@ func (s *SettingsService) Update(ctx context.Context, input model.UpdateSettings
 	return nil
 }
 
-func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
+func (s *SettingsService) GetGithubToken(ctx context.Context) (model.GithubToken, error) {
 	settings, err := s.repository.Read(ctx)
 	if err != nil {
 		return "", fmt.Errorf("reading settings: %w", err)
@@ -65,7 +65,7 @@ func (s *SettingsService) GetGithubToken(ctx context.Context) (string, error) {
 	return settings.Github.Token, nil
 }
 
-func (s *SettingsService) GetSlackToken(ctx context.Context) (string, error) {
+func (s *SettingsService) GetSlackToken(ctx context.Context) (model.SlackToken, error) {
 	settings, err := s.repository.Read(ctx)
 	if err != nil {
 		return "", fmt.Errorf("reading settings: %w", err)

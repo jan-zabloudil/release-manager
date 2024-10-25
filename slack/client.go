@@ -21,7 +21,7 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) SendReleaseNotification(ctx context.Context, token, channelID string, n model.ReleaseNotification) error {
+func (c *Client) SendReleaseNotification(ctx context.Context, tkn model.SlackToken, channelID string, n model.ReleaseNotification) error {
 	msgOptions := NewMsgOptionsBuilder().
 		SetMessage(n.Message)
 
@@ -48,11 +48,11 @@ func (c *Client) SendReleaseNotification(ctx context.Context, token, channelID s
 		msgOptions.AddAttachmentField("Deployed at", n.DeployedAt.Format("2006-01-02 15:04:05"))
 	}
 
-	return c.sendMessage(ctx, token, channelID, msgOptions.Build())
+	return c.sendMessage(ctx, tkn, channelID, msgOptions.Build())
 }
 
-func (c *Client) sendMessage(ctx context.Context, token, channelID string, msgOptions []slack.MsgOption) error {
-	client := slack.New(token)
+func (c *Client) sendMessage(ctx context.Context, tkn model.SlackToken, channelID string, msgOptions []slack.MsgOption) error {
+	client := slack.New(tkn.String())
 
 	if _, _, err := client.PostMessageContext(ctx, channelID, msgOptions...); err != nil {
 		switch err.Error() {

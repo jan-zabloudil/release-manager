@@ -12,14 +12,14 @@ type UpdateSettingsInput struct {
 }
 
 type UpdateSlackSettingsInput struct {
-	Enabled *bool   `json:"enabled"`
-	Token   *string `json:"token"`
+	Enabled *bool                `json:"enabled"`
+	Token   *svcmodel.SlackToken `json:"token"`
 }
 
 type UpdateGithubSettingsInput struct {
-	Enabled       *bool   `json:"enabled"`
-	Token         *string `json:"token"`
-	WebhookSecret *string `json:"webhook_secret"`
+	Enabled       *bool                 `json:"enabled"`
+	Token         *svcmodel.GithubToken `json:"token"`
+	WebhookSecret *string               `json:"webhook_secret"`
 }
 
 type Settings struct {
@@ -30,14 +30,14 @@ type Settings struct {
 }
 
 type SlackSettings struct {
-	Enabled bool   `json:"enabled"`
-	Token   string `json:"token"`
+	Enabled bool                `json:"enabled"`
+	Token   svcmodel.SlackToken `json:"token"`
 }
 
 type GithubSettings struct {
-	Enabled       bool   `json:"enabled"`
-	Token         string `json:"token"`
-	WebhookSecret string `json:"webhook_secret"`
+	Enabled       bool                 `json:"enabled"`
+	Token         svcmodel.GithubToken `json:"token"`
+	WebhookSecret string               `json:"webhook_secret"`
 }
 
 func ToSvcUpdateSettingsInput(u UpdateSettingsInput) svcmodel.UpdateSettingsInput {
