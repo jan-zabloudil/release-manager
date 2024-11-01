@@ -25,6 +25,40 @@ type UpdateSettingsInput struct {
 	Github            UpdateGithubSettingsInput
 }
 
+type SlackToken string
+
+func (t SlackToken) String() string {
+	return string(t)
+}
+
+type SlackSettings struct {
+	Enabled bool
+	Token   SlackToken
+}
+
+type UpdateSlackSettingsInput struct {
+	Enabled *bool
+	Token   *SlackToken
+}
+
+type GithubToken string
+
+func (t GithubToken) String() string {
+	return string(t)
+}
+
+type GithubSettings struct {
+	Enabled       bool
+	Token         GithubToken
+	WebhookSecret string
+}
+
+type UpdateGithubSettingsInput struct {
+	Enabled       *bool
+	Token         *GithubToken
+	WebhookSecret *string
+}
+
 func (s *Settings) Update(u UpdateSettingsInput) error {
 	if u.OrganizationName != nil {
 		s.OrganizationName = *u.OrganizationName
@@ -63,16 +97,6 @@ func (s *Settings) Validate() error {
 	return nil
 }
 
-type SlackSettings struct {
-	Enabled bool
-	Token   string
-}
-
-type UpdateSlackSettingsInput struct {
-	Enabled *bool
-	Token   *string
-}
-
 func (s *SlackSettings) Update(u UpdateSlackSettingsInput) error {
 	if u.Enabled != nil {
 		s.Enabled = *u.Enabled
@@ -90,18 +114,6 @@ func (s *SlackSettings) Validate() error {
 	}
 
 	return nil
-}
-
-type GithubSettings struct {
-	Enabled       bool
-	Token         string
-	WebhookSecret string
-}
-
-type UpdateGithubSettingsInput struct {
-	Enabled       *bool
-	Token         *string
-	WebhookSecret *string
 }
 
 func (s *GithubSettings) Update(u UpdateGithubSettingsInput) error {

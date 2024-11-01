@@ -12,7 +12,7 @@ type Client struct {
 	mock.Mock
 }
 
-func (m *Client) SendReleaseNotification(ctx context.Context, token, channelID string, n model.ReleaseNotification) error {
-	args := m.Called(ctx, token, channelID, n)
+func (m *Client) SendReleaseNotification(ctx context.Context, tkn model.SlackToken, channelID string, n model.ReleaseNotification) error {
+	args := m.Called(ctx, tkn, channelID, n)
 	return args.Error(0)
 }

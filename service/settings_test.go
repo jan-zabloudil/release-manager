@@ -17,6 +17,9 @@ import (
 )
 
 func TestSettingsService_Update(t *testing.T) {
+	slackTkn := model.SlackToken("slackToken")
+	emptySlackTkn := model.SlackToken("")
+
 	testCases := []struct {
 		name      string
 		userID    uuid.UUID
@@ -31,7 +34,7 @@ func TestSettingsService_Update(t *testing.T) {
 				OrganizationName: pointer.StringPtr("New Organization"),
 				Slack: model.UpdateSlackSettingsInput{
 					Enabled: pointer.BoolPtr(true),
-					Token:   pointer.StringPtr("newToken"),
+					Token:   &slackTkn,
 				},
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {
@@ -47,7 +50,7 @@ func TestSettingsService_Update(t *testing.T) {
 				OrganizationName: pointer.StringPtr("New Organization"),
 				Slack: model.UpdateSlackSettingsInput{
 					Enabled: pointer.BoolPtr(true),
-					Token:   pointer.StringPtr(""),
+					Token:   &emptySlackTkn,
 				},
 			},
 			mockSetup: func(authSvc *svc.AuthorizationService, settingsRepo *repo.SettingsRepository) {

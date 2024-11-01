@@ -9,6 +9,9 @@ import (
 )
 
 func TestSettings_Update(t *testing.T) {
+	slackTkn := SlackToken("slackToken")
+	githubTkn := GithubToken("githubToken")
+
 	tests := []struct {
 		name     string
 		settings Settings
@@ -26,8 +29,8 @@ func TestSettings_Update(t *testing.T) {
 			update: UpdateSettingsInput{
 				OrganizationName:  pointer.StringPtr("New Organization"),
 				DefaultReleaseMsg: pointer.StringPtr("New Message"),
-				Slack:             UpdateSlackSettingsInput{Enabled: pointer.BoolPtr(true), Token: pointer.StringPtr("newToken")},
-				Github:            UpdateGithubSettingsInput{Enabled: pointer.BoolPtr(true), Token: pointer.StringPtr("newToken")},
+				Slack:             UpdateSlackSettingsInput{Enabled: pointer.BoolPtr(true), Token: &slackTkn},
+				Github:            UpdateGithubSettingsInput{Enabled: pointer.BoolPtr(true), Token: &githubTkn},
 			},
 			wantErr: false,
 		},

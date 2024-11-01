@@ -106,8 +106,8 @@ type authGuard interface {
 }
 
 type settingsGetter interface {
-	GetGithubToken(ctx context.Context) (string, error)
-	GetSlackToken(ctx context.Context) (string, error)
+	GetGithubToken(ctx context.Context) (model.GithubToken, error)
+	GetSlackToken(ctx context.Context) (model.SlackToken, error)
 	GetDefaultReleaseMessage(ctx context.Context) (string, error)
 }
 
@@ -125,13 +125,13 @@ type environmentGetter interface {
 }
 
 type githubManager interface {
-	ReadRepo(ctx context.Context, token, rawRepoURL string) (model.GithubRepo, error)
-	ReadTagsForRepo(ctx context.Context, token string, repo model.GithubRepo) ([]model.GitTag, error)
-	DeleteReleaseByTag(ctx context.Context, token string, repo model.GithubRepo, tagName string) error
+	ReadRepo(ctx context.Context, tkn model.GithubToken, rawRepoURL string) (model.GithubRepo, error)
+	ReadTagsForRepo(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo) ([]model.GitTag, error)
+	DeleteReleaseByTag(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tagName string) error
 	GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error)
-	TagExists(ctx context.Context, token string, repo model.GithubRepo, tagName string) (bool, error)
-	UpsertRelease(ctx context.Context, token string, repo model.GithubRepo, rls model.Release) error
-	GenerateReleaseNotes(ctx context.Context, token string, repo model.GithubRepo, input model.GithubGeneratedReleaseNotesInput) (model.GithubGeneratedReleaseNotes, error)
+	TagExists(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tagName string) (bool, error)
+	UpsertRelease(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, rls model.Release) error
+	GenerateReleaseNotes(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, input model.GithubGeneratedReleaseNotesInput) (model.GithubGeneratedReleaseNotes, error)
 }
 
 type emailSender interface {
@@ -139,7 +139,7 @@ type emailSender interface {
 }
 
 type slackNotifier interface {
-	SendReleaseNotification(ctx context.Context, token, channel string, notification model.ReleaseNotification) error
+	SendReleaseNotification(ctx context.Context, tkn model.SlackToken, channel string, notification model.ReleaseNotification) error
 }
 
 type Service struct {
