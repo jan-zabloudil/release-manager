@@ -187,26 +187,26 @@ func TestCreateReleaseInput_Validate(t *testing.T) {
 func TestGithubGeneratedReleaseNotesInput_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   GithubGeneratedReleaseNotesInput
+		input   GithubReleaseNotesInput
 		wantErr bool
 	}{
 		{
 			name: "Valid GitTagName",
-			input: GithubGeneratedReleaseNotesInput{
+			input: GithubReleaseNotesInput{
 				GitTagName: pointer.StringPtr("v1.0.0"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "Nil GitTagName",
-			input: GithubGeneratedReleaseNotesInput{
+			input: GithubReleaseNotesInput{
 				GitTagName: nil,
 			},
 			wantErr: true,
 		},
 		{
 			name: "Empty GitTagName",
-			input: GithubGeneratedReleaseNotesInput{
+			input: GithubReleaseNotesInput{
 				GitTagName: pointer.StringPtr(""),
 			},
 			wantErr: true,

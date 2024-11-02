@@ -173,7 +173,7 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var input model.GithubGeneratedReleaseNotesInput
+	var input model.GithubReleaseNotesInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
 		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
@@ -181,7 +181,7 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 
 	notes, err := h.ReleaseSvc.GenerateGithubReleaseNotes(
 		r.Context(),
-		model.ToSvcGithubGeneratedReleaseNotesInput(input),
+		model.ToSvcGithubReleaseNotesInput(input),
 		projectID,
 		util.ContextAuthUserID(r),
 	)
@@ -190,5 +190,5 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	util.WriteJSONResponse(w, http.StatusOK, model.ToGithubGeneratedReleaseNotes(notes))
+	util.WriteJSONResponse(w, http.StatusOK, model.ToGithubReleaseNotes(notes))
 }

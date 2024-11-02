@@ -244,35 +244,35 @@ func (s *ReleaseService) UpsertGithubRelease(ctx context.Context, releaseID id.R
 
 func (s *ReleaseService) GenerateGithubReleaseNotes(
 	ctx context.Context,
-	input model.GithubGeneratedReleaseNotesInput,
+	input model.GithubReleaseNotesInput,
 	projectID id.Project,
 	authUserID id.AuthUser,
-) (model.GithubGeneratedReleaseNotes, error) {
+) (model.GithubReleaseNotes, error) {
 	if err := s.authGuard.AuthorizeProjectRoleEditor(ctx, projectID, authUserID); err != nil {
-		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("authorizing project member: %w", err)
+		return model.GithubReleaseNotes{}, fmt.Errorf("authorizing project member: %w", err)
 	}
 
 	tkn, err := s.settingsGetter.GetGithubToken(ctx)
 	if err != nil {
-		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("getting Github token: %w", err)
+		return model.GithubReleaseNotes{}, fmt.Errorf("getting Github token: %w", err)
 	}
 
 	project, err := s.projectGetter.GetProject(ctx, projectID, authUserID)
 	if err != nil {
-		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("reading project: %w", err)
+		return model.GithubReleaseNotes{}, fmt.Errorf("reading project: %w", err)
 	}
 
 	if !project.IsGithubRepoSet() {
-		return model.GithubGeneratedReleaseNotes{}, svcerrors.NewGithubRepoNotSetForProjectError()
+		return model.GithubReleaseNotes{}, svcerrors.NewGithubRepoNotSetForProjectError()
 	}
 
 	if err := input.Validate(); err != nil {
-		return model.GithubGeneratedReleaseNotes{}, svcerrors.NewGithubGeneratedNotesInvalidInputError().WithMessage(err.Error())
+		return model.GithubReleaseNotes{}, svcerrors.NewGithubNotesInvalidInputError().WithMessage(err.Error())
 	}
 
 	notes, err := s.githubManager.GenerateReleaseNotes(ctx, tkn, *project.GithubRepo, input)
 	if err != nil {
-		return model.GithubGeneratedReleaseNotes{}, fmt.Errorf("generating release notes: %w", err)
+		return model.GithubReleaseNotes{}, fmt.Errorf("generating release notes: %w", err)
 	}
 
 	return notes, nil

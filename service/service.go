@@ -131,7 +131,7 @@ type githubManager interface {
 	GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error)
 	TagExists(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tagName string) (bool, error)
 	UpsertRelease(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, rls model.Release) error
-	GenerateReleaseNotes(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, input model.GithubGeneratedReleaseNotesInput) (model.GithubGeneratedReleaseNotes, error)
+	GenerateReleaseNotes(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, input model.GithubReleaseNotesInput) (model.GithubReleaseNotes, error)
 }
 
 type emailSender interface {

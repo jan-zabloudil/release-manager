@@ -2,7 +2,10 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 
 	svcerrors "release-manager/service/errors"
 
@@ -18,7 +21,37 @@ const (
 
 	// GitHub API error fields
 	gitTagNameField = "tag_name"
+
+	// expectedGithubRepositoryURLSlugCount is the expected number of slugs in a GitHub repository URL
+	// Example URL: https://github.com/owner/repo -> owner and repo are the slugs
+	expectedGithubRepositoryURLSlugCount = 2
 )
+
+var (
+	errInvalidGithubRepoURLPath = errors.New("invalid GitHub repository URL path, not in the format /owner/repo")
+)
+
+func ParseGithubRepoURL(rawURL string) (ownerSlug, repoSlug string, err error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", "", err
+	}
+
+	// GitHub repo URL format: https://github.com/owner/repo,
+	// OwnerSlug: owner, RepoSlug: repo.
+	path := strings.Trim(u.Path, "/")
+	slugs := strings.Split(path, "/")
+
+	if len(slugs) != expectedGithubRepositoryURLSlugCount {
+		return "", "", errInvalidGithubRepoURLPath
+	}
+
+	if slugs[0] == "" || slugs[1] == "" {
+		return "", "", errInvalidGithubRepoURLPath
+	}
+
+	return slugs[0], slugs[1], nil
+}
 
 // TranslateGithubAuthError translates GitHub auth errors to service errors
 func TranslateGithubAuthError(err error) error {
@@ -35,7 +68,7 @@ func TranslateGithubAuthError(err error) error {
 	return err
 }
 
-func IsGithubNotFoundError(err error) bool {
+func IsNotFoundError(err error) bool {
 	var githubErr *github.ErrorResponse
 	if errors.As(err, &githubErr) {
 		return githubErr.Response.StatusCode == http.StatusNotFound
@@ -44,7 +77,7 @@ func IsGithubNotFoundError(err error) bool {
 	return false
 }
 
-func IsGithubReleaseAlreadyExistsError(err error) bool {
+func IsReleaseAlreadyExistsError(err error) bool {
 	var githubErr *github.ErrorResponse
 	if errors.As(err, &githubErr) && githubErr.Errors != nil {
 		// GitHub returns error response as an array of errors
@@ -59,11 +92,41 @@ func IsGithubReleaseAlreadyExistsError(err error) bool {
 	return false
 }
 
-func IsGithubInvalidPreviousTagError(err error) bool {
+func IsInvalidPreviousTagError(err error) bool {
 	var githubErr *github.ErrorResponse
 	if errors.As(err, &githubErr) {
 		return githubErr.Message == errMessageInvalidPreviousTag
 	}
 
 	return false
+}
+
+func GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
+	if ownerSlug == "" || repoSlug == "" {
+		return url.URL{}, errors.New("empty owner or repo slug")
+	}
+
+	rawURL := fmt.Sprintf("https://github.com/%s/%s", ownerSlug, repoSlug)
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	return *u, nil
+}
+
+func GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
+	if tagName == "" || ownerSlug == "" || repoSlug == "" {
+		return url.URL{}, errors.New("empty tag name, owner or repo slug")
+	}
+
+	// For ReleaseManager's users it is the most beneficial to see GitHub tag page (that is also a release page)
+	// This page is available even if GitHub release is not created yet
+	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", ownerSlug, repoSlug, tagName)
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	return *u, nil
 }

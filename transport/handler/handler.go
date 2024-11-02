@@ -61,7 +61,7 @@ type releaseService interface {
 	ListReleasesForProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) ([]svcmodel.Release, error)
 	SendReleaseNotification(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error
 	UpsertGithubRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error
-	GenerateGithubReleaseNotes(ctx context.Context, input svcmodel.GithubGeneratedReleaseNotesInput, projectID id.Project, authUserID id.AuthUser) (svcmodel.GithubGeneratedReleaseNotes, error)
+	GenerateGithubReleaseNotes(ctx context.Context, input svcmodel.GithubReleaseNotesInput, projectID id.Project, authUserID id.AuthUser) (svcmodel.GithubReleaseNotes, error)
 
 	CreateDeployment(ctx context.Context, input svcmodel.CreateDeploymentInput, projectID id.Project, authUserID id.AuthUser) (svcmodel.Deployment, error)
 	ListDeploymentsForProject(ctx context.Context, params svcmodel.ListDeploymentsFilterParams, projectID id.Project, authUserID id.AuthUser) ([]svcmodel.Deployment, error)
