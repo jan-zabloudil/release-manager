@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 
@@ -18,11 +17,6 @@ const (
 	tagsToFetch = 100
 )
 
-var (
-	errGithubReleaseNotFound      = errors.New("github release not found")
-	errGithubReleaseAlreadyExists = errors.New("github release already exists")
-)
-
 type Client struct{}
 
 func NewClient() *Client {
@@ -30,52 +24,47 @@ func NewClient() *Client {
 }
 
 func (c *Client) ReadRepo(ctx context.Context, tkn svcmodel.GithubToken, rawRepoURL string) (svcmodel.GithubRepo, error) {
-	ownerSlug, repoSlug, err := model.ParseGithubRepoURL(rawRepoURL)
+	ownerSlug, repoSlug, err := util.ParseGithubRepoURL(rawRepoURL)
 	if err != nil {
 		return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoInvalidURL().Wrap(err).WithMessage(err.Error())
 	}
 
-	// Docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
-	repo, _, err := c.getGithubClient(tkn).Repositories.Get(ctx, ownerSlug, repoSlug)
-	if err != nil {
-		if util.IsGithubNotFoundError(err) {
-			return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
+	return withGithubClientResult[svcmodel.GithubRepo](tkn, func(client *github.Client) (svcmodel.GithubRepo, error) {
+		// Docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
+		repo, _, err := client.Repositories.Get(ctx, ownerSlug, repoSlug)
+		if err != nil {
+			if util.IsNotFoundError(err) {
+				return svcmodel.GithubRepo{}, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
+			}
+
+			return svcmodel.GithubRepo{}, err
 		}
 
-		return svcmodel.GithubRepo{}, util.TranslateGithubAuthError(err)
-	}
-
-	u, err := url.Parse(repo.GetHTMLURL())
-	if err != nil {
-		return svcmodel.GithubRepo{}, fmt.Errorf("parsing GitHub repo URL: %w", err)
-	}
-
-	return svcmodel.GithubRepo{
-		OwnerSlug: ownerSlug,
-		RepoSlug:  repoSlug,
-		URL:       *u,
-	}, nil
+		return model.ToSvcGithubRepo(repo, ownerSlug, repoSlug)
+	})
 }
 
 func (c *Client) ReadTagsForRepo(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo) ([]svcmodel.GitTag, error) {
-	// Up to 100 tags can be fetched per page
-	// If the number of pages is not specified in the list options, only one page will be fetched
-	// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-	t, _, err := c.getGithubClient(tkn).Repositories.ListTags(
-		ctx,
-		repo.OwnerSlug,
-		repo.RepoSlug,
-		&github.ListOptions{PerPage: tagsToFetch},
-	)
-	if err != nil {
-		if util.IsGithubNotFoundError(err) {
-			return nil, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
+	return withGithubClientResult[[]svcmodel.GitTag](tkn, func(client *github.Client) ([]svcmodel.GitTag, error) {
+		// Up to 100 tags can be fetched per page
+		// If the number of pages is not specified in the list options, only one page will be fetched
+		// Docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
+		t, _, err := client.Repositories.ListTags(
+			ctx,
+			repo.OwnerSlug,
+			repo.RepoSlug,
+			&github.ListOptions{PerPage: tagsToFetch},
+		)
+		if err != nil {
+			if util.IsNotFoundError(err) {
+				return nil, svcerrors.NewGithubRepoNotFoundError().Wrap(err)
+			}
+
+			return nil, err
 		}
 
-		return nil, util.TranslateGithubAuthError(err)
-	}
-
-	return model.ToSvcGitTags(t), nil
+		return model.ToSvcGitTags(t), nil
+	})
 }
 
 func (c *Client) TagExists(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) (bool, error) {
@@ -86,18 +75,21 @@ func (c *Client) TagExists(ctx context.Context, tkn svcmodel.GithubToken, repo s
 	//
 	// So in order to check if a tag exists by name (both lightweights and annotated tags), GET /repos/{owner}/{repo}/git/ref/{ref} is used
 	// Docs https://docs.github.com/rest/git/refs#get-a-reference
-	_, _, err := c.getGithubClient(tkn).Git.GetRef(
-		ctx,
-		repo.OwnerSlug,
-		repo.RepoSlug,
-		fmt.Sprintf("tags/%s", tagName),
-	)
+	err := withGithubClient(tkn, func(client *github.Client) error {
+		_, _, err := client.Git.GetRef(
+			ctx,
+			repo.OwnerSlug,
+			repo.RepoSlug,
+			fmt.Sprintf("tags/%s", tagName),
+		)
+		return err
+	})
 	if err != nil {
-		if util.IsGithubNotFoundError(err) {
+		if util.IsNotFoundError(err) {
 			return false, nil
 		}
 
-		return false, util.TranslateGithubAuthError(err)
+		return false, err
 	}
 
 	return true, nil
@@ -105,7 +97,7 @@ func (c *Client) TagExists(ctx context.Context, tkn svcmodel.GithubToken, repo s
 
 func (c *Client) UpsertRelease(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
 	if err := c.createRelease(ctx, tkn, repo, rls); err != nil {
-		if errors.Is(err, errGithubReleaseAlreadyExists) {
+		if util.IsReleaseAlreadyExistsError(err) {
 			if err := c.updateRelease(ctx, tkn, repo, rls); err != nil {
 				return fmt.Errorf("updating release: %w", err)
 			}
@@ -120,175 +112,148 @@ func (c *Client) UpsertRelease(ctx context.Context, tkn svcmodel.GithubToken, re
 }
 
 func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) error {
-	// Release can be deleted only by release ID
-	// Therefore I need to get release ID first
-	id, err := c.getReleaseIDByTag(ctx, tkn, repo, tagName)
-	if err != nil {
-		if errors.Is(err, errGithubReleaseNotFound) {
-			return svcerrors.NewGithubReleaseNotFoundError().Wrap(err)
+	return withGithubClient(tkn, func(client *github.Client) error {
+		// Release can be deleted only by release ID
+		// Therefore I need to get release object first
+		rls, _, err := client.Repositories.GetReleaseByTag(
+			ctx,
+			repo.OwnerSlug,
+			repo.RepoSlug,
+			tagName,
+		)
+		if err != nil {
+			if util.IsNotFoundError(err) {
+				return svcerrors.NewGithubReleaseNotFoundError().Wrap(err)
+			}
+
+			return fmt.Errorf("getting release by tag: %w", err)
 		}
 
-		return fmt.Errorf("getting release by ID: %w", err)
-	}
+		if _, err := client.Repositories.DeleteRelease(
+			ctx,
+			repo.OwnerSlug,
+			repo.RepoSlug,
+			rls.GetID(),
+		); err != nil {
+			return fmt.Errorf("deleting release: %w", err)
+		}
 
-	_, err = c.getGithubClient(tkn).Repositories.DeleteRelease(
-		ctx,
-		repo.OwnerSlug,
-		repo.RepoSlug,
-		id,
-	)
-	if err != nil {
-		return fmt.Errorf("deleting release: %w", util.TranslateGithubAuthError(err))
-	}
-
-	return nil
+		return nil
+	})
 }
 
 func (c *Client) GenerateReleaseNotes(
 	ctx context.Context,
 	tkn svcmodel.GithubToken,
 	repo svcmodel.GithubRepo,
-	input svcmodel.GithubGeneratedReleaseNotesInput,
-) (svcmodel.GithubGeneratedReleaseNotes, error) {
-	// Generates release notes based on git tag and previous git tag
-	// Git tag must be present, and it can be either existing tag or new tag that will be created
-	// Previous git tag name is optional field
-	//
-	// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#generate-release-notes-content-for-a-release
-	notes, _, err := c.getGithubClient(tkn).Repositories.GenerateReleaseNotes(
-		ctx,
-		repo.OwnerSlug,
-		repo.RepoSlug,
-		&github.GenerateNotesOptions{
-			TagName:         input.GetGitTagName(),
-			PreviousTagName: input.PreviousGitTagName,
-		},
-	)
+	input svcmodel.GithubReleaseNotesInput,
+) (svcmodel.GithubReleaseNotes, error) {
+	return withGithubClientResult[svcmodel.GithubReleaseNotes](tkn, func(client *github.Client) (svcmodel.GithubReleaseNotes, error) {
+		// Generates release notes based on git tag and previous git tag
+		// Git tag must be present, and it can be either existing tag or new tag that will be created
+		// Previous git tag name is optional field
+		//
+		// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#generate-release-notes-content-for-a-release
+		notes, _, err := client.Repositories.GenerateReleaseNotes(
+			ctx,
+			repo.OwnerSlug,
+			repo.RepoSlug,
+			&github.GenerateNotesOptions{
+				TagName:         input.GetGitTagName(),
+				PreviousTagName: input.PreviousGitTagName,
+			},
+		)
+		if err != nil {
+			if util.IsInvalidPreviousTagError(err) {
+				return svcmodel.GithubReleaseNotes{},
+					svcerrors.NewGithubNotesInvalidInputError().Wrap(err).WithMessage("Invalid previous git tag")
+			}
 
-	if err != nil {
-		if util.IsGithubInvalidPreviousTagError(err) {
-			return svcmodel.GithubGeneratedReleaseNotes{},
-				svcerrors.NewGithubGeneratedNotesInvalidInputError().Wrap(err).WithMessage("Invalid previous git tag")
+			return svcmodel.GithubReleaseNotes{}, fmt.Errorf("generating release notes: %w", err)
 		}
 
-		return svcmodel.GithubGeneratedReleaseNotes{},
-			fmt.Errorf("generating release notes: %w", util.TranslateGithubAuthError(err))
-	}
-
-	return svcmodel.GithubGeneratedReleaseNotes{
-		Title: notes.Name,
-		Notes: notes.Body,
-	}, nil
+		return model.ToGithubReleaseNotes(notes), nil
+	})
 }
 
 func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
-	if ownerSlug == "" || repoSlug == "" {
-		return url.URL{}, errors.New("empty owner or repo slug")
-	}
-
-	rawURL := fmt.Sprintf("https://github.com/%s/%s", ownerSlug, repoSlug)
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return url.URL{}, err
-	}
-
-	return *u, nil
+	return util.GenerateRepoURL(ownerSlug, repoSlug)
 }
 
 func (c *Client) GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
-	if tagName == "" || ownerSlug == "" || repoSlug == "" {
-		return url.URL{}, errors.New("empty tag name, owner or repo slug")
-	}
-
-	// For ReleaseManager users it is the most beneficial to see GitHub tag page (that is also a release page)
-	// This page is available even if GitHub release is not created yet
-	rawURL := fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", ownerSlug, repoSlug, tagName)
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return url.URL{}, err
-	}
-
-	return *u, nil
+	return util.GenerateGitTagURL(ownerSlug, repoSlug, tagName)
 }
 
-// createRelease is an internal method for creating a release.
-// returns internal errGithubReleaseAlreadyExists if the release already exists
 func (c *Client) createRelease(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
-	// Creates a new release
-	// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#create-a-release
-	//
-	// TagName is the name of the tag to link the release to
-	// Name is the name of the release
-	// Body is the description of the release
-	_, _, err := c.getGithubClient(tkn).Repositories.CreateRelease(ctx, repo.OwnerSlug, repo.RepoSlug, &github.RepositoryRelease{
-		TagName: &rls.GitTagName,
-		Name:    &rls.ReleaseTitle,
-		Body:    &rls.ReleaseNotes,
-	})
-	if err != nil {
-		if util.IsGithubReleaseAlreadyExistsError(err) {
-			return errGithubReleaseAlreadyExists
+	return withGithubClient(tkn, func(client *github.Client) error {
+		// Creates a new release
+		// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#create-a-release
+		//
+		// TagName is the name of the tag to link the release to
+		// Name is the name of the release
+		// Body is the description of the release
+		if _, _, err := client.Repositories.CreateRelease(ctx, repo.OwnerSlug, repo.RepoSlug, &github.RepositoryRelease{
+			TagName: &rls.GitTagName,
+			Name:    &rls.ReleaseTitle,
+			Body:    &rls.ReleaseNotes,
+		}); err != nil {
+			return err
 		}
 
-		return util.TranslateGithubAuthError(err)
-	}
-
-	return nil
+		return nil
+	})
 }
 
 func (c *Client) updateRelease(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
-	// Release can be updated only by release ID
-	// Therefore I need to get release ID first
-	id, err := c.getReleaseIDByTag(ctx, tkn, repo, rls.GitTagName)
-	if err != nil {
-		return fmt.Errorf("getting release by id: %w", err)
-	}
-
-	// Updates a release
-	// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#update-a-release
-	//
-	// Name is the name of the release
-	// Body is the description of the release
-	_, _, err = c.getGithubClient(tkn).Repositories.EditRelease(
-		ctx,
-		repo.OwnerSlug,
-		repo.RepoSlug,
-		id,
-		&github.RepositoryRelease{
-			Name: &rls.ReleaseTitle,
-			Body: &rls.ReleaseNotes,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("updating release: %w", util.TranslateGithubAuthError(err))
-	}
-
-	return nil
-}
-
-// getReleaseByTag is an internal method for fetching a release ID.
-// This method simplifies the logic in other functions that need to get a release,
-// as it also returns the private error errGithubReleaseNotFound if the release is not found.
-// Other functions can then check if the error is equal to errGithubReleaseNotFound
-// and handle the error based on their use case.
-func (c *Client) getReleaseIDByTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) (int64, error) {
-	rls, _, err := c.getGithubClient(tkn).Repositories.GetReleaseByTag(
-		ctx,
-		repo.OwnerSlug,
-		repo.RepoSlug,
-		tagName,
-	)
-	if err != nil {
-		if util.IsGithubNotFoundError(err) {
-			return 0, errGithubReleaseNotFound
+	return withGithubClient(tkn, func(client *github.Client) error {
+		// Release can be updated only by release ID
+		// Therefore I need to get release ID first
+		githubRls, _, err := client.Repositories.GetReleaseByTag(
+			ctx,
+			repo.OwnerSlug,
+			repo.RepoSlug,
+			rls.GitTagName,
+		)
+		if err != nil {
+			return fmt.Errorf("getting release by tag: %w", err)
 		}
 
-		return 0, util.TranslateGithubAuthError(err)
-	}
+		// Updates a release
+		// Docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#update-a-release
+		//
+		// Name is the name of the release
+		// Body is the description of the release
+		if _, _, err = client.Repositories.EditRelease(
+			ctx,
+			repo.OwnerSlug,
+			repo.RepoSlug,
+			githubRls.GetID(),
+			&github.RepositoryRelease{
+				Name: &rls.ReleaseTitle,
+				Body: &rls.ReleaseNotes,
+			},
+		); err != nil {
+			return fmt.Errorf("updating release: %w", err)
+		}
 
-	return rls.GetID(), nil
+		return nil
+	})
 }
 
-func (c *Client) getGithubClient(tkn svcmodel.GithubToken) *github.Client {
-	return github.NewClient(nil).WithAuthToken(tkn.String())
+func withGithubClientResult[T any](tkn svcmodel.GithubToken, fn func(client *github.Client) (T, error)) (T, error) {
+	client := github.NewClient(nil).WithAuthToken(tkn.String())
+	var zeroValue T
+	result, err := fn(client)
+	if err != nil {
+		return zeroValue, util.TranslateGithubAuthError(err)
+	}
+	return result, nil
+}
+
+func withGithubClient(tkn svcmodel.GithubToken, fn func(client *github.Client) error) error {
+	client := github.NewClient(nil).WithAuthToken(tkn.String())
+	if err := fn(client); err != nil {
+		return util.TranslateGithubAuthError(err)
+	}
+	return nil
 }

@@ -75,5 +75,5 @@ func IsConflictError(err error) bool {
 func IsBadRequestError(err error) bool {
 	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotSetForProject) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubGeneratedNotesInvalidInput)
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubNotesInvalidInput)
 }

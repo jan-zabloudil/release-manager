@@ -48,7 +48,7 @@ func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
 	return args.Get(0).(url.URL), args.Error(1)
 }
 
-func (c *Client) GenerateReleaseNotes(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, input svcmodel.GithubGeneratedReleaseNotesInput) (svcmodel.GithubGeneratedReleaseNotes, error) {
+func (c *Client) GenerateReleaseNotes(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, input svcmodel.GithubReleaseNotesInput) (svcmodel.GithubReleaseNotes, error) {
 	args := c.Called(ctx, tkn, repo, input)
-	return args.Get(0).(svcmodel.GithubGeneratedReleaseNotes), args.Error(1)
+	return args.Get(0).(svcmodel.GithubReleaseNotes), args.Error(1)
 }

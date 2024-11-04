@@ -624,7 +624,7 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 	testCases := []struct {
 		name      string
 		mockSetup func(*svc.AuthorizationService, *svc.SettingsService, *svc.ProjectService, *github.Client, *repo.ReleaseRepository)
-		input     model.GithubGeneratedReleaseNotesInput
+		input     model.GithubReleaseNotesInput
 		wantErr   bool
 	}{
 		{
@@ -638,9 +638,9 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 						RepoSlug:  "repo",
 					},
 				}, nil)
-				github.On("GenerateReleaseNotes", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubGeneratedReleaseNotes{}, nil)
+				github.On("GenerateReleaseNotes", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubReleaseNotes{}, nil)
 			},
-			input: model.GithubGeneratedReleaseNotesInput{
+			input: model.GithubReleaseNotesInput{
 				GitTagName:         pointer.StringPtr("v2.0.0"),
 				PreviousGitTagName: pointer.StringPtr("v1.0.0"),
 			},
@@ -658,7 +658,7 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 					},
 				}, nil)
 			},
-			input: model.GithubGeneratedReleaseNotesInput{
+			input: model.GithubReleaseNotesInput{
 				GitTagName:         nil,
 				PreviousGitTagName: pointer.StringPtr("v1.0.0"),
 			},
@@ -670,7 +670,7 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				settingsSvc.On("GetGithubToken", mock.Anything).Return(model.GithubToken(""), svcerrors.NewGithubIntegrationNotEnabledError())
 			},
-			input: model.GithubGeneratedReleaseNotesInput{
+			input: model.GithubReleaseNotesInput{
 				GitTagName:         pointer.StringPtr("v2.0.0"),
 				PreviousGitTagName: pointer.StringPtr("v1.0.0"),
 			},
@@ -683,7 +683,7 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 				settingsSvc.On("GetGithubToken", mock.Anything).Return(model.GithubToken("token"), nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, svcerrors.NewProjectNotFoundError())
 			},
-			input: model.GithubGeneratedReleaseNotesInput{
+			input: model.GithubReleaseNotesInput{
 				GitTagName:         pointer.StringPtr("v2.0.0"),
 				PreviousGitTagName: pointer.StringPtr("v1.0.0"),
 			},
@@ -696,7 +696,7 @@ func TestReleaseService_GenerateGithubReleaseNotes(t *testing.T) {
 				settingsSvc.On("GetGithubToken", mock.Anything).Return(model.GithubToken("token"), nil)
 				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{}, nil)
 			},
-			input: model.GithubGeneratedReleaseNotesInput{
+			input: model.GithubReleaseNotesInput{
 				GitTagName:         pointer.StringPtr("v2.0.0"),
 				PreviousGitTagName: pointer.StringPtr("v1.0.0"),
 			},

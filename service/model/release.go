@@ -157,12 +157,12 @@ type DeleteReleaseInput struct {
 	DeleteGithubRelease bool
 }
 
-type GithubGeneratedReleaseNotesInput struct {
+type GithubReleaseNotesInput struct {
 	GitTagName         *string
 	PreviousGitTagName *string
 }
 
-func (i GithubGeneratedReleaseNotesInput) Validate() error {
+func (i GithubReleaseNotesInput) Validate() error {
 	if i.GitTagName == nil {
 		return errGithubGeneratedNotesGitTagRequired
 	}
@@ -173,7 +173,7 @@ func (i GithubGeneratedReleaseNotesInput) Validate() error {
 	return nil
 }
 
-func (i GithubGeneratedReleaseNotesInput) GetGitTagName() string {
+func (i GithubReleaseNotesInput) GetGitTagName() string {
 	if i.GitTagName != nil {
 		return *i.GitTagName
 	}
@@ -181,7 +181,7 @@ func (i GithubGeneratedReleaseNotesInput) GetGitTagName() string {
 	return ""
 }
 
-type GithubGeneratedReleaseNotes struct {
+type GithubReleaseNotes struct {
 	Title string
 	Notes string
 }
