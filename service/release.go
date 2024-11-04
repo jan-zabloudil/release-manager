@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"release-manager/pkg/id"
 	svcerrors "release-manager/service/errors"
@@ -117,6 +118,7 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 			switch {
 			case svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound):
 				// If the release does not exist on GitHub, it is not an error.
+				slog.Debug("skipping deleting GitHub release: release not found on GitHub")
 			default:
 				return fmt.Errorf("deleting github release: %w", err)
 			}
