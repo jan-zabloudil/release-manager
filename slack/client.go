@@ -21,7 +21,7 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) SendReleaseNotification(ctx context.Context, tkn model.SlackToken, channelID string, n model.ReleaseNotification) error {
+func (c *Client) SendReleaseNotification(ctx context.Context, tkn model.SlackToken, channelID model.SlackChannelID, n model.ReleaseNotification) error {
 	msgOptions := NewMsgOptionsBuilder().
 		SetMessage(n.Message)
 
@@ -51,10 +51,10 @@ func (c *Client) SendReleaseNotification(ctx context.Context, tkn model.SlackTok
 	return c.sendMessage(ctx, tkn, channelID, msgOptions.Build())
 }
 
-func (c *Client) sendMessage(ctx context.Context, tkn model.SlackToken, channelID string, msgOptions []slack.MsgOption) error {
+func (c *Client) sendMessage(ctx context.Context, tkn model.SlackToken, channelID model.SlackChannelID, msgOptions []slack.MsgOption) error {
 	client := slack.New(tkn.String())
 
-	if _, _, err := client.PostMessageContext(ctx, channelID, msgOptions...); err != nil {
+	if _, _, err := client.PostMessageContext(ctx, string(channelID), msgOptions...); err != nil {
 		switch err.Error() {
 		case errInvalidAuth:
 			return svcerrors.NewSlackClientUnauthorizedError().Wrap(err)

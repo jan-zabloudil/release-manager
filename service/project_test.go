@@ -272,6 +272,8 @@ func TestProjectService_DeleteProject(t *testing.T) {
 }
 
 func TestProjectService_UpdateProject(t *testing.T) {
+	slackChannelID := model.SlackChannelID("newChannelID")
+
 	testCases := []struct {
 		name      string
 		update    model.UpdateProjectInput
@@ -282,7 +284,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 			name: "Valid project update",
 			update: model.UpdateProjectInput{
 				Name:           pointer.StringPtr("new name"),
-				SlackChannelID: pointer.StringPtr("new channelID"),
+				SlackChannelID: &slackChannelID,
 				ReleaseNotificationConfigUpdate: model.UpdateReleaseNotificationConfigInput{
 					Message:            new(string),
 					ShowProjectName:    new(bool),

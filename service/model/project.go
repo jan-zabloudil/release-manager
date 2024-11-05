@@ -16,12 +16,14 @@ var (
 type Project struct {
 	ID                        id.Project
 	Name                      string
-	SlackChannelID            string
+	SlackChannelID            SlackChannelID
 	ReleaseNotificationConfig ReleaseNotificationConfig
 	GithubRepo                *GithubRepo
 	CreatedAt                 time.Time
 	UpdatedAt                 time.Time
 }
+
+type SlackChannelID string
 
 type GithubRepo struct {
 	URL       url.URL
@@ -31,13 +33,13 @@ type GithubRepo struct {
 
 type CreateProjectInput struct {
 	Name                      string
-	SlackChannelID            string
+	SlackChannelID            SlackChannelID
 	ReleaseNotificationConfig ReleaseNotificationConfig
 }
 
 type UpdateProjectInput struct {
 	Name                            *string
-	SlackChannelID                  *string
+	SlackChannelID                  *SlackChannelID
 	ReleaseNotificationConfigUpdate UpdateReleaseNotificationConfigInput
 }
 

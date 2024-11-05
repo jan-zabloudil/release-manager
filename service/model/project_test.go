@@ -57,6 +57,8 @@ func TestProject_NewProject(t *testing.T) {
 }
 
 func TestProject_Update(t *testing.T) {
+	slackChannelID := SlackChannelID("newChannelID")
+
 	tests := []struct {
 		name    string
 		project Project
@@ -75,7 +77,7 @@ func TestProject_Update(t *testing.T) {
 			},
 			update: UpdateProjectInput{
 				Name:           pointer.StringPtr("New name"),
-				SlackChannelID: pointer.StringPtr("newChannelID"),
+				SlackChannelID: &slackChannelID,
 			},
 			wantErr: false,
 		},
@@ -91,7 +93,7 @@ func TestProject_Update(t *testing.T) {
 			},
 			update: UpdateProjectInput{
 				Name:           pointer.StringPtr(""),
-				SlackChannelID: pointer.StringPtr("newChannelID"),
+				SlackChannelID: &slackChannelID,
 			},
 			wantErr: true,
 		},
@@ -107,7 +109,7 @@ func TestProject_Update(t *testing.T) {
 			},
 			update: UpdateProjectInput{
 				Name:           pointer.StringPtr("New name"),
-				SlackChannelID: pointer.StringPtr("newChannelID"),
+				SlackChannelID: &slackChannelID,
 				ReleaseNotificationConfigUpdate: UpdateReleaseNotificationConfigInput{
 					Message: pointer.StringPtr(""),
 				},

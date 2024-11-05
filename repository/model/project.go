@@ -50,7 +50,7 @@ func ToSvcProject(p Project, urlGenerator githubRepoURLGeneratorFunc) (svcmodel.
 	return svcmodel.Project{
 		ID:                        p.ID,
 		Name:                      p.Name,
-		SlackChannelID:            p.SlackChannelID,
+		SlackChannelID:            svcmodel.SlackChannelID(p.SlackChannelID),
 		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(p.ReleaseNotificationConfig),
 		GithubRepo:                repo,
 		CreatedAt:                 p.CreatedAt,

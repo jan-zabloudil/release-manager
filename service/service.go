@@ -137,7 +137,7 @@ type emailSender interface {
 }
 
 type slackNotifier interface {
-	SendReleaseNotification(ctx context.Context, tkn model.SlackToken, channel string, notification model.ReleaseNotification) error
+	SendReleaseNotification(ctx context.Context, tkn model.SlackToken, channel model.SlackChannelID, notification model.ReleaseNotification) error
 }
 
 type Service struct {

@@ -53,15 +53,21 @@ type UpdateReleaseNotificationConfigInput struct {
 func ToSvcCreateProjectInput(c CreateProjectInput) svcmodel.CreateProjectInput {
 	return svcmodel.CreateProjectInput{
 		Name:                      c.Name,
-		SlackChannelID:            c.SlackChannelID,
+		SlackChannelID:            svcmodel.SlackChannelID(c.SlackChannelID),
 		ReleaseNotificationConfig: svcmodel.ReleaseNotificationConfig(c.ReleaseNotificationConfig),
 	}
 }
 
 func ToSvcUpdateProjectInput(u UpdateProjectInput) svcmodel.UpdateProjectInput {
+	var slackChannelID *svcmodel.SlackChannelID
+	if u.SlackChannelID != nil {
+		s := svcmodel.SlackChannelID(*u.SlackChannelID)
+		slackChannelID = &s
+	}
+
 	return svcmodel.UpdateProjectInput{
 		Name:                            u.Name,
-		SlackChannelID:                  u.SlackChannelID,
+		SlackChannelID:                  slackChannelID,
 		ReleaseNotificationConfigUpdate: svcmodel.UpdateReleaseNotificationConfigInput(u.ReleaseNotificationConfig),
 	}
 }
@@ -70,7 +76,7 @@ func ToProject(p svcmodel.Project) Project {
 	return Project{
 		ID:                        p.ID,
 		Name:                      p.Name,
-		SlackChannelID:            p.SlackChannelID,
+		SlackChannelID:            string(p.SlackChannelID),
 		ReleaseNotificationConfig: ReleaseNotificationConfig(p.ReleaseNotificationConfig),
 		CreatedAt:                 p.CreatedAt,
 		UpdatedAt:                 p.UpdatedAt,
