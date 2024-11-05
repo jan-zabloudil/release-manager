@@ -29,11 +29,15 @@ type Release struct {
 	ProjectID    id.Project          `json:"project_id"`
 	ReleaseTitle string              `json:"release_title"`
 	ReleaseNotes string              `json:"release_notes"`
-	GitTagName   string              `json:"git_tag_name"`
-	GitTagURL    string              `json:"git_tag_url"`
+	Tag          GitTag              `json:"git_tag"`
 	Attachments  []ReleaseAttachment `json:"attachments"`
 	CreatedAt    time.Time           `json:"created_at"`
 	UpdatedAt    time.Time           `json:"updated_at"`
+}
+
+type GitTag struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 type ReleaseAttachment struct {
@@ -69,12 +73,26 @@ func ToRelease(r svcmodel.Release) Release {
 		ProjectID:    r.ProjectID,
 		ReleaseTitle: r.ReleaseTitle,
 		ReleaseNotes: r.ReleaseNotes,
-		GitTagName:   r.GitTagName,
-		GitTagURL:    r.GitTagURL.String(),
+		Tag:          ToGitTag(r.Tag),
 		Attachments:  ToReleaseAttachments(r.Attachments),
 		CreatedAt:    r.CreatedAt,
 		UpdatedAt:    r.UpdatedAt,
 	}
+}
+
+func ToGitTag(t svcmodel.GitTag) GitTag {
+	return GitTag{
+		Name: t.Name,
+		URL:  t.URL.String(),
+	}
+}
+
+func ToGitTags(tags []svcmodel.GitTag) []GitTag {
+	t := make([]GitTag, 0, len(tags))
+	for _, tag := range tags {
+		t = append(t, ToGitTag(tag))
+	}
+	return t
 }
 
 func ToReleaseAttachments(attachments []svcmodel.ReleaseAttachment) []ReleaseAttachment {

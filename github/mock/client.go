@@ -28,14 +28,14 @@ func (c *Client) GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL
 	return args.Get(0).(url.URL), args.Error(1)
 }
 
-func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) error {
-	args := c.Called(ctx, tkn, repo, tagName)
+func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tag svcmodel.GitTag) error {
+	args := c.Called(ctx, tkn, repo, tag)
 	return args.Error(0)
 }
 
-func (c *Client) TagExists(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) (bool, error) {
+func (c *Client) ReadTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) (svcmodel.GitTag, error) {
 	args := c.Called(ctx, tkn, repo, tagName)
-	return args.Bool(0), args.Error(1)
+	return args.Get(0).(svcmodel.GitTag), args.Error(1)
 }
 
 func (c *Client) UpsertRelease(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, rls svcmodel.Release) error {

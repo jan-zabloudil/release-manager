@@ -50,8 +50,10 @@ func ToSvcRelease(
 		ProjectID:    rls.ProjectID,
 		ReleaseTitle: rls.ReleaseTitle,
 		ReleaseNotes: rls.ReleaseNotes,
-		GitTagName:   rls.GitTagName,
-		GitTagURL:    tagURL,
+		Tag: svcmodel.GitTag{
+			Name: rls.GitTagName,
+			URL:  tagURL,
+		},
 		AuthorUserID: rls.AuthorUserID,
 		Attachments:  attachments,
 		CreatedAt:    rls.CreatedAt,

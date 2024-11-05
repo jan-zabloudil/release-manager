@@ -63,36 +63,36 @@ func (c *Client) ReadTagsForRepo(ctx context.Context, tkn svcmodel.GithubToken, 
 			return nil, err
 		}
 
-		return model.ToSvcGitTags(t), nil
+		return model.ToSvcGitTags(t, repo)
 	})
 }
 
-func (c *Client) TagExists(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) (bool, error) {
-	// Git tag can be fetched only by its SHA, using GET /repos/{owner}/{repo}/git/tags/{tag_sha}
-	// Another limitation is that only annotated tags can be fetched by /repos/{owner}/{repo}/git/tags/{tag_sha}
-	// Because lightweight tags do not have their own SHA, they only reference a commit
-	// Docs https://docs.github.com/rest/git/tags#get-a-tag
-	//
-	// So in order to check if a tag exists by name (both lightweights and annotated tags), GET /repos/{owner}/{repo}/git/ref/{ref} is used
-	// Docs https://docs.github.com/rest/git/refs#get-a-reference
-	err := withGithubClient(tkn, func(client *github.Client) error {
-		_, _, err := client.Git.GetRef(
+func (c *Client) ReadTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) (svcmodel.GitTag, error) {
+	return withGithubClientResult[svcmodel.GitTag](tkn, func(client *github.Client) (svcmodel.GitTag, error) {
+		// Git tag can be fetched only by its SHA, using GET /repos/{owner}/{repo}/git/tags/{tag_sha}
+		// Another limitation is that only annotated tags can be fetched by /repos/{owner}/{repo}/git/tags/{tag_sha}
+		// Because lightweight tags do not have their own SHA, they only reference a commit
+		// Docs https://docs.github.com/rest/git/tags#get-a-tag
+		//
+		// We only need to check if a tag exists by name (both lightweights and annotated tags), GET /repos/{owner}/{repo}/git/ref/{ref} is used
+		// Docs https://docs.github.com/rest/git/refs#get-a-reference
+		//
+		// Once we know that a tag exists, we can create a GitTag object using the tag name
+		if _, _, err := client.Git.GetRef(
 			ctx,
 			repo.OwnerSlug,
 			repo.RepoSlug,
 			fmt.Sprintf("tags/%s", tagName),
-		)
-		return err
-	})
-	if err != nil {
-		if util.IsNotFoundError(err) {
-			return false, nil
+		); err != nil {
+			if util.IsNotFoundError(err) {
+				return svcmodel.GitTag{}, svcerrors.NewGitTagNotFoundError().Wrap(err)
+			}
+
+			return svcmodel.GitTag{}, err
 		}
 
-		return false, err
-	}
-
-	return true, nil
+		return model.ToSvcGitTag(tagName, repo)
+	})
 }
 
 func (c *Client) UpsertRelease(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, rls svcmodel.Release) error {
@@ -111,7 +111,7 @@ func (c *Client) UpsertRelease(ctx context.Context, tkn svcmodel.GithubToken, re
 	return nil
 }
 
-func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tagName string) error {
+func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn svcmodel.GithubToken, repo svcmodel.GithubRepo, tag svcmodel.GitTag) error {
 	return withGithubClient(tkn, func(client *github.Client) error {
 		// Release can be deleted only by release ID
 		// Therefore I need to get release object first
@@ -119,7 +119,7 @@ func (c *Client) DeleteReleaseByTag(ctx context.Context, tkn svcmodel.GithubToke
 			ctx,
 			repo.OwnerSlug,
 			repo.RepoSlug,
-			tagName,
+			tag.Name,
 		)
 		if err != nil {
 			if util.IsNotFoundError(err) {
@@ -193,7 +193,7 @@ func (c *Client) createRelease(ctx context.Context, tkn svcmodel.GithubToken, re
 		// Name is the name of the release
 		// Body is the description of the release
 		if _, _, err := client.Repositories.CreateRelease(ctx, repo.OwnerSlug, repo.RepoSlug, &github.RepositoryRelease{
-			TagName: &rls.GitTagName,
+			TagName: &rls.Tag.Name,
 			Name:    &rls.ReleaseTitle,
 			Body:    &rls.ReleaseNotes,
 		}); err != nil {
@@ -212,7 +212,7 @@ func (c *Client) updateRelease(ctx context.Context, tkn svcmodel.GithubToken, re
 			ctx,
 			repo.OwnerSlug,
 			repo.RepoSlug,
-			rls.GitTagName,
+			rls.Tag.Name,
 		)
 		if err != nil {
 			return fmt.Errorf("getting release by tag: %w", err)

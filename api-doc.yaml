@@ -1310,13 +1310,8 @@ components:
         release_notes:
           type: string
           example: "Improved logging"
-        git_tag_name:
-          type: string
-          example: "v0.0.1"
-        git_tag_url:
-          type: string
-          format: url
-          example: "https://github.com/owner/repo/releases/tag/v0.0.1"
+        git_tag:
+          $ref: '#/components/schemas/GitTagResponse'
         attachments:
           type: array
           items:
@@ -1341,8 +1336,12 @@ components:
         name:
           type: string
           example: "v0.0.1"
+        url:
+          type: string
+          example: "github.com/owner/repo/releases/tag/v0.0.1"
       required:
         - name
+        - url
     Settings:
       type: object
       properties:
