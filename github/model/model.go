@@ -4,18 +4,36 @@ import (
 	"fmt"
 	"net/url"
 
+	"release-manager/github/util"
 	svcmodel "release-manager/service/model"
 
 	"github.com/google/go-github/v60/github"
 )
 
-func ToSvcGitTags(tags []*github.RepositoryTag) []svcmodel.GitTag {
-	t := make([]svcmodel.GitTag, 0, len(tags))
-	for _, tag := range tags {
-		t = append(t, svcmodel.GitTag{Name: *tag.Name})
+func ToSvcGitTag(tagName string, repo svcmodel.GithubRepo) (svcmodel.GitTag, error) {
+	tagURL, err := util.GenerateGitTagURL(repo.OwnerSlug, repo.RepoSlug, tagName)
+	if err != nil {
+		return svcmodel.GitTag{}, err
 	}
 
-	return t
+	return svcmodel.GitTag{
+		Name: tagName,
+		URL:  tagURL,
+	}, nil
+}
+
+func ToSvcGitTags(tags []*github.RepositoryTag, repo svcmodel.GithubRepo) ([]svcmodel.GitTag, error) {
+	t := make([]svcmodel.GitTag, 0, len(tags))
+	for _, tag := range tags {
+		svcTag, err := ToSvcGitTag(*tag.Name, repo)
+		if err != nil {
+			return nil, err
+		}
+
+		t = append(t, svcTag)
+	}
+
+	return t, nil
 }
 
 func ToSvcGithubRepo(repo *github.Repository, ownerSlug, repoSlug string) (svcmodel.GithubRepo, error) {

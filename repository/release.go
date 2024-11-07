@@ -43,7 +43,7 @@ func (r *ReleaseRepository) CreateRelease(ctx context.Context, rls svcmodel.Rele
 		"projectID":    rls.ProjectID,
 		"releaseTitle": rls.ReleaseTitle,
 		"releaseNotes": rls.ReleaseNotes,
-		"gitTagName":   rls.GitTagName,
+		"gitTagName":   rls.Tag.Name,
 		"createdBy":    rls.AuthorUserID,
 		"createdAt":    rls.CreatedAt,
 		"updatedAt":    rls.UpdatedAt,

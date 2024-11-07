@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net/url"
 
 	"release-manager/pkg/id"
 	"release-manager/service/model"
@@ -127,9 +126,8 @@ type environmentGetter interface {
 type githubManager interface {
 	ReadRepo(ctx context.Context, tkn model.GithubToken, rawRepoURL string) (model.GithubRepo, error)
 	ReadTagsForRepo(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo) ([]model.GitTag, error)
-	DeleteReleaseByTag(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tagName string) error
-	GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error)
-	TagExists(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tagName string) (bool, error)
+	DeleteReleaseByTag(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tag model.GitTag) error
+	ReadTag(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tagName string) (model.GitTag, error)
 	UpsertRelease(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, rls model.Release) error
 	GenerateReleaseNotes(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, input model.GithubReleaseNotesInput) (model.GithubReleaseNotes, error)
 }

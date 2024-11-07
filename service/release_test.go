@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net/url"
 	"testing"
 
 	github "release-manager/github/mock"
@@ -42,33 +41,10 @@ func TestReleaseService_CreateRelease(t *testing.T) {
 						RepoSlug:  "repo",
 					},
 				}, nil)
-				github.On("GenerateGitTagURL", mock.Anything, mock.Anything, mock.Anything).Return(url.URL{
-					Scheme: "https",
-					Host:   "github.com",
-					Path:   "/owner/repo/releases/tag/v1.0.0",
-				}, nil)
-				github.On("TagExists", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+				github.On("ReadTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GitTag{}, nil)
 				releaseRepo.On("CreateRelease", mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
-		},
-		{
-			name: "Missing git tag",
-			release: model.CreateReleaseInput{
-				ReleaseTitle: "Test release",
-				ReleaseNotes: "Test release notes",
-			},
-			mockSetup: func(auth *svc.AuthorizationService, settingsSvc *svc.SettingsService, projectSvc *svc.ProjectService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
-				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				settingsSvc.On("GetGithubToken", mock.Anything).Return(model.GithubToken("token"), nil)
-				projectSvc.On("GetProject", mock.Anything, mock.Anything, mock.Anything).Return(model.Project{
-					GithubRepo: &model.GithubRepo{
-						OwnerSlug: "owner",
-						RepoSlug:  "repo",
-					},
-				}, nil)
-			},
-			wantErr: true,
 		},
 		{
 			name: "Github integration not enabled",
@@ -125,12 +101,7 @@ func TestReleaseService_CreateRelease(t *testing.T) {
 						RepoSlug:  "repo",
 					},
 				}, nil)
-				github.On("GenerateGitTagURL", mock.Anything, mock.Anything).Return(url.URL{
-					Scheme: "https",
-					Host:   "github.com",
-					Path:   "/owner/repo/releases/tag/v1.0.0",
-				}, nil)
-				github.On("TagExists", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
+				github.On("ReadTag", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GitTag{}, svcerrors.NewGitTagNotFoundError())
 			},
 			wantErr: true,
 		},

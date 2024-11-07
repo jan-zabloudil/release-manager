@@ -64,24 +64,12 @@ func (s *ReleaseService) CreateRelease(
 		return model.Release{}, svcerrors.NewGithubRepoNotSetForProjectError()
 	}
 
-	if err := input.Validate(); err != nil {
-		return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
-	}
-
-	tagExists, err := s.githubManager.TagExists(ctx, tkn, *p.GithubRepo, input.GitTagName)
+	tag, err := s.githubManager.ReadTag(ctx, tkn, *p.GithubRepo, input.GitTagName)
 	if err != nil {
-		return model.Release{}, fmt.Errorf("checking if tag exists: %w", err)
-	}
-	if !tagExists {
-		return model.Release{}, svcerrors.NewGitTagNotFoundError()
+		return model.Release{}, fmt.Errorf("reading tag: %w", err)
 	}
 
-	gitTagURL, err := s.githubManager.GenerateGitTagURL(p.GithubRepo.OwnerSlug, p.GithubRepo.RepoSlug, input.GitTagName)
-	if err != nil {
-		return model.Release{}, fmt.Errorf("generating git tag URL: %w", err)
-	}
-
-	rls, err := model.NewRelease(input, gitTagURL, projectID, authUserID)
+	rls, err := model.NewRelease(input, tag, projectID, authUserID)
 	if err != nil {
 		return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
 	}
@@ -366,7 +354,7 @@ func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID id.R
 		return svcerrors.NewGithubRepoNotSetForProjectError()
 	}
 
-	if err := s.githubManager.DeleteReleaseByTag(ctx, tkn, *p.GithubRepo, rls.GitTagName); err != nil {
+	if err := s.githubManager.DeleteReleaseByTag(ctx, tkn, *p.GithubRepo, rls.Tag); err != nil {
 		return fmt.Errorf("deleting github release: %w", err)
 	}
 

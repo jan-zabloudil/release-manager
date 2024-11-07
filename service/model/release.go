@@ -12,8 +12,6 @@ import (
 
 var (
 	errReleaseTitleRequired               = errors.New("release title is required")
-	errReleaseGitTagRequired              = errors.New("git tag name is required")
-	errReleaseGitTagURLRequired           = errors.New("git tag URL is required")
 	errGithubGeneratedNotesGitTagRequired = errors.New("git tag name is required")
 )
 
@@ -22,17 +20,6 @@ type CreateReleaseInput struct {
 	ReleaseNotes string
 	// Used for linking the release with a specific point in a git repository.
 	GitTagName string
-}
-
-func (i *CreateReleaseInput) Validate() error {
-	if i.ReleaseTitle == "" {
-		return errReleaseTitleRequired
-	}
-	if i.GitTagName == "" {
-		return errReleaseGitTagRequired
-	}
-
-	return nil
 }
 
 type UpdateReleaseInput struct {
@@ -48,9 +35,13 @@ type Release struct {
 	AuthorUserID id.AuthUser
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	GitTagName   string
-	GitTagURL    url.URL
+	Tag          GitTag
 	Attachments  []ReleaseAttachment
+}
+
+type GitTag struct {
+	Name string
+	URL  url.URL
 }
 
 type ReleaseAttachment struct {
@@ -61,15 +52,14 @@ type ReleaseAttachment struct {
 	CreatedAt time.Time
 }
 
-func NewRelease(input CreateReleaseInput, tagURL url.URL, projectID id.Project, authorUserID id.AuthUser) (Release, error) {
+func NewRelease(input CreateReleaseInput, tag GitTag, projectID id.Project, authorUserID id.AuthUser) (Release, error) {
 	now := time.Now()
 	r := Release{
 		ID:           id.NewRelease(),
 		ProjectID:    projectID,
 		ReleaseTitle: input.ReleaseTitle,
 		ReleaseNotes: input.ReleaseNotes,
-		GitTagName:   input.GitTagName,
-		GitTagURL:    tagURL,
+		Tag:          tag,
 		AuthorUserID: authorUserID,
 		CreatedAt:    now,
 		UpdatedAt:    now,
@@ -98,12 +88,6 @@ func (r *Release) Update(input UpdateReleaseInput) error {
 func (r *Release) Validate() error {
 	if r.ReleaseTitle == "" {
 		return errReleaseTitleRequired
-	}
-	if r.GitTagName == "" {
-		return errReleaseGitTagRequired
-	}
-	if r.GitTagURL == (url.URL{}) {
-		return errReleaseGitTagURLRequired
 	}
 
 	return nil
@@ -136,8 +120,8 @@ func NewReleaseNotification(p Project, r Release, dpl *Deployment) ReleaseNotifi
 		n.ReleaseNotes = &r.ReleaseNotes
 	}
 	if p.ReleaseNotificationConfig.ShowSourceCode {
-		n.GitTagName = &r.GitTagName
-		n.GitTagURL = &r.GitTagURL
+		n.GitTagName = &r.Tag.Name
+		n.GitTagURL = &r.Tag.URL
 	}
 	if p.ReleaseNotificationConfig.ShowLastDeployment && dpl != nil {
 		n.DeployedToEnvironment = &dpl.Environment.Name
