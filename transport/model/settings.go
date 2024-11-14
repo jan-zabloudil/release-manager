@@ -17,9 +17,9 @@ type UpdateSlackSettingsInput struct {
 }
 
 type UpdateGithubSettingsInput struct {
-	Enabled       *bool                 `json:"enabled"`
-	Token         *svcmodel.GithubToken `json:"token"`
-	WebhookSecret *string               `json:"webhook_secret"`
+	Enabled       *bool                         `json:"enabled"`
+	Token         *svcmodel.GithubToken         `json:"token"`
+	WebhookSecret *svcmodel.GithubWebhookSecret `json:"webhook_secret"`
 }
 
 type Settings struct {
@@ -35,9 +35,9 @@ type SlackSettings struct {
 }
 
 type GithubSettings struct {
-	Enabled       bool                 `json:"enabled"`
-	Token         svcmodel.GithubToken `json:"token"`
-	WebhookSecret string               `json:"webhook_secret"`
+	Enabled       bool                         `json:"enabled"`
+	Token         svcmodel.GithubToken         `json:"token"`
+	WebhookSecret svcmodel.GithubWebhookSecret `json:"webhook_secret"`
 }
 
 func ToSvcUpdateSettingsInput(u UpdateSettingsInput) svcmodel.UpdateSettingsInput {

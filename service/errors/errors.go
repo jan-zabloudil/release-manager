@@ -6,43 +6,44 @@ import (
 )
 
 var (
-	ErrCodeUnauthenticatedUser            = "ERR_UNAUTHENTICATED_USER"
-	ErrCodeInsufficientUserRole           = "ERR_INSUFFICIENT_USER_ROLE"
-	ErrCodeInsufficientProjectRole        = "ERR_INSUFFICIENT_PROJECT_ROLE"
-	ErrCodeUserNotProjectMember           = "ERR_USER_NOT_PROJECT_MEMBER"
-	ErrCodeUserNotFound                   = "ERR_USER_NOT_FOUND"
-	ErrCodeProjectNotFound                = "ERR_PROJECT_NOT_FOUND"
-	ErrCodeEnvironmentNotFound            = "ERR_ENVIRONMENT_NOT_FOUND"
-	ErrCodeProjectUnprocessable           = "ERR_PROJECT_UNPROCESSABLE"
-	ErrCodeEnvironmentUnprocessable       = "ERR_ENVIRONMENT_UNPROCESSABLE"
-	ErrCodeEnvironmentDuplicateName       = "ERR_ENVIRONMENT_DUPLICATE_NAME"
-	ErrCodeSettingsUnprocessable          = "ERR_SETTINGS_UNPROCESSABLE"
-	ErrCodeProjectInvitationUnprocessable = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
-	ErrCodeProjectInvitationAlreadyExists = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
-	ErrCodeProjectInvitationNotFound      = "ERR_PROJECT_INVITATION_NOT_FOUND"
-	ErrCodeProjectMemberAlreadyExists     = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
-	ErrCodeGithubIntegrationNotEnabled    = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
-	ErrCodeGithubClientUnauthorized       = "ERR_GITHUB_CLIENT_UNAUTHORIZED"
-	ErrCodeGithubClientForbidden          = "ERR_GITHUB_CLIENT_FORBIDDEN"
-	ErrCodeGithubRepoNotSetForProject     = "ERR_GITHUB_REPO_NOT_SET_FOR_PROJECT"
-	ErrCodeGithubRepoNotFound             = "ERR_GITHUB_REPO_NOT_FOUND"
-	ErrCodeGithubRepoInvalidURL           = "ERR_GITHUB_REPO_INVALID_URL"
-	ErrCodeProjectMemberNotFound          = "ERR_PROJECT_MEMBER_NOT_FOUND"
-	ErrCodeProjectMemberUnprocessable     = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
-	ErrCodeReleaseUnprocessable           = "ERR_RELEASE_UNPROCESSABLE"
-	ErrCodeReleaseNotFound                = "ERR_RELEASE_NOT_FOUND"
-	ErrCodeSlackIntegrationNotEnabled     = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
-	ErrCodeSlackClientUnauthorized        = "ERR_SLACK_CLIENT_UNAUTHORIZED"
-	ErrCodeSlackChannelNotFound           = "ERR_SLACK_CHANNEL_NOT_FOUND"
-	ErrCodeSlackChannelNotSetForProject   = "ERR_SLACK_CHANNEL_NOT_SET_FOR_PROJECT"
-	ErrCodeGitTagNotFound                 = "ERR_GIT_TAG_NOT_FOUND"
-	ErrCodeGithubReleaseNotFound          = "ERR_GITHUB_RELEASE_NOT_FOUND"
-	ErrCodeReleaseGitTagAlreadyUsed       = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
-	ErrCodeDeploymentUnprocessable        = "ERR_DEPLOYMENT_UNPROCESSABLE"
-	ErrCodeDeploymentNotFound             = "ERR_DEPLOYMENT_NOT_FOUND"
-	ErrCodeProjectGithubRepoAlreadyUsed   = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
-	ErrCodeGithubNotesInvalidInput        = "ERR_GITHUB_NOTES_INVALID_INPUT"
-	ErrCodeAdminUserCannotBeDeleted       = "ERR_ADMIN_USER_CANNOT_BE_DELETED"
+	ErrCodeUnauthenticatedUser             = "ERR_UNAUTHENTICATED_USER"
+	ErrCodeInsufficientUserRole            = "ERR_INSUFFICIENT_USER_ROLE"
+	ErrCodeInsufficientProjectRole         = "ERR_INSUFFICIENT_PROJECT_ROLE"
+	ErrCodeUserNotProjectMember            = "ERR_USER_NOT_PROJECT_MEMBER"
+	ErrCodeUserNotFound                    = "ERR_USER_NOT_FOUND"
+	ErrCodeProjectNotFound                 = "ERR_PROJECT_NOT_FOUND"
+	ErrCodeEnvironmentNotFound             = "ERR_ENVIRONMENT_NOT_FOUND"
+	ErrCodeProjectUnprocessable            = "ERR_PROJECT_UNPROCESSABLE"
+	ErrCodeEnvironmentUnprocessable        = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	ErrCodeEnvironmentDuplicateName        = "ERR_ENVIRONMENT_DUPLICATE_NAME"
+	ErrCodeSettingsUnprocessable           = "ERR_SETTINGS_UNPROCESSABLE"
+	ErrCodeProjectInvitationUnprocessable  = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
+	ErrCodeProjectInvitationAlreadyExists  = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
+	ErrCodeProjectInvitationNotFound       = "ERR_PROJECT_INVITATION_NOT_FOUND"
+	ErrCodeProjectMemberAlreadyExists      = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
+	ErrCodeGithubIntegrationNotEnabled     = "ERR_GITHUB_INTEGRATION_NOT_ENABLED"
+	ErrCodeGithubClientUnauthorized        = "ERR_GITHUB_CLIENT_UNAUTHORIZED"
+	ErrCodeGithubClientForbidden           = "ERR_GITHUB_CLIENT_FORBIDDEN"
+	ErrCodeGithubRepoNotSetForProject      = "ERR_GITHUB_REPO_NOT_SET_FOR_PROJECT"
+	ErrCodeGithubRepoNotFound              = "ERR_GITHUB_REPO_NOT_FOUND"
+	ErrCodeGithubRepoInvalidURL            = "ERR_GITHUB_REPO_INVALID_URL"
+	ErrCodeProjectMemberNotFound           = "ERR_PROJECT_MEMBER_NOT_FOUND"
+	ErrCodeProjectMemberUnprocessable      = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
+	ErrCodeReleaseUnprocessable            = "ERR_RELEASE_UNPROCESSABLE"
+	ErrCodeReleaseNotFound                 = "ERR_RELEASE_NOT_FOUND"
+	ErrCodeSlackIntegrationNotEnabled      = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
+	ErrCodeSlackClientUnauthorized         = "ERR_SLACK_CLIENT_UNAUTHORIZED"
+	ErrCodeSlackChannelNotFound            = "ERR_SLACK_CHANNEL_NOT_FOUND"
+	ErrCodeSlackChannelNotSetForProject    = "ERR_SLACK_CHANNEL_NOT_SET_FOR_PROJECT"
+	ErrCodeGitTagNotFound                  = "ERR_GIT_TAG_NOT_FOUND"
+	ErrCodeGithubReleaseNotFound           = "ERR_GITHUB_RELEASE_NOT_FOUND"
+	ErrCodeReleaseGitTagAlreadyUsed        = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
+	ErrCodeDeploymentUnprocessable         = "ERR_DEPLOYMENT_UNPROCESSABLE"
+	ErrCodeDeploymentNotFound              = "ERR_DEPLOYMENT_NOT_FOUND"
+	ErrCodeProjectGithubRepoAlreadyUsed    = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
+	ErrCodeGithubNotesInvalidInput         = "ERR_GITHUB_NOTES_INVALID_INPUT"
+	ErrCodeAdminUserCannotBeDeleted        = "ERR_ADMIN_USER_CANNOT_BE_DELETED"
+	ErrCodeInvalidGithubTagDeletionWebhook = "ERR_INVALID_GITHUB_TAG_DELETION_WEBHOOK"
 )
 
 type Error struct {
@@ -324,6 +325,13 @@ func NewAdminUserCannotBeDeletedError() *Error {
 	return &Error{
 		Code:    ErrCodeAdminUserCannotBeDeleted,
 		Message: "Admin user cannot be deleted",
+	}
+}
+
+func NewInvalidGithubTagDeletionWebhookError() *Error {
+	return &Error{
+		Code:    ErrCodeInvalidGithubTagDeletionWebhook,
+		Message: "Invalid Github webhook for tag deleted event",
 	}
 }
 

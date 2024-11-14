@@ -888,3 +888,87 @@ func TestReleaseService_ListDeploymentsForProject(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseService_DeleteReleaseOnGitTagRemoval(t *testing.T) {
+	testCases := []struct {
+		name            string
+		mockSetup       func(*svc.SettingsService, *github.Client, *repo.ReleaseRepository)
+		deletedTagInput model.GithubTagDeletionWebhookInput
+		wantErr         bool
+	}{
+		{
+			name: "Success",
+			deletedTagInput: model.GithubTagDeletionWebhookInput{
+				RawPayload: make([]byte, 0),
+				Signature:  "signature",
+			},
+			mockSetup: func(settingsSvc *svc.SettingsService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				settingsSvc.On("GetGithubSettings", mock.Anything).Return(model.GithubSettings{
+					Enabled:       true,
+					Token:         "token",
+					WebhookSecret: "secret",
+				}, nil)
+				github.On("ParseTagDeletionWebhook", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubRepo{}, model.GitTag{}, nil)
+				releaseRepo.On("DeleteReleaseByGitTag", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "Github settings not enabled",
+			deletedTagInput: model.GithubTagDeletionWebhookInput{
+				RawPayload: make([]byte, 0),
+				Signature:  "signature",
+			},
+			mockSetup: func(settingsSvc *svc.SettingsService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				settingsSvc.On("GetGithubSettings", mock.Anything).Return(model.GithubSettings{
+					Enabled:       false,
+					Token:         "token",
+					WebhookSecret: "secret",
+				}, nil)
+			},
+			wantErr: true,
+		},
+		{
+			name: "Error parsing delete tag event",
+			deletedTagInput: model.GithubTagDeletionWebhookInput{
+				RawPayload: make([]byte, 0),
+				Signature:  "signature",
+			},
+			mockSetup: func(settingsSvc *svc.SettingsService, github *github.Client, releaseRepo *repo.ReleaseRepository) {
+				settingsSvc.On("GetGithubSettings", mock.Anything).Return(model.GithubSettings{
+					Enabled:       true,
+					Token:         "token",
+					WebhookSecret: "secret",
+				}, nil)
+				github.On("ParseTagDeletionWebhook", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubRepo{}, model.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError())
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			authSvc := new(svc.AuthorizationService)
+			projectSvc := new(svc.ProjectService)
+			settingsSvc := new(svc.SettingsService)
+			releaseRepo := new(repo.ReleaseRepository)
+			slackClient := new(slack.Client)
+			githubClient := new(github.Client)
+			service := NewReleaseService(authSvc, projectSvc, settingsSvc, projectSvc, slackClient, githubClient, releaseRepo)
+
+			tc.mockSetup(settingsSvc, githubClient, releaseRepo)
+
+			err := service.DeleteReleaseOnGitTagRemoval(context.TODO(), tc.deletedTagInput)
+
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			settingsSvc.AssertExpectations(t)
+			githubClient.AssertExpectations(t)
+			releaseRepo.AssertExpectations(t)
+		})
+	}
+}

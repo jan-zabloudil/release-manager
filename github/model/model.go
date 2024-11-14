@@ -10,6 +10,18 @@ import (
 	"github.com/google/go-github/v60/github"
 )
 
+type TagDeletionWebhookInput struct {
+	Tag string `json:"ref" validate:"required"`
+	// RefType is the type of the reference (e.g. "branch" or "tag")
+	// We only care about tags
+	RefType string `json:"ref_type" validate:"required,eq=tag"`
+	Repo    struct {
+		// Owner and repo slug of the GitHub repo separated by a slash
+		// (e.g. "owner/repo")
+		Slugs string `json:"full_name" validate:"required"`
+	} `json:"repository"`
+}
+
 func ToSvcGitTag(tagName string, repo svcmodel.GithubRepo) (svcmodel.GitTag, error) {
 	tagURL, err := util.GenerateGitTagURL(repo.OwnerSlug, repo.RepoSlug, tagName)
 	if err != nil {

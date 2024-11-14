@@ -78,17 +78,13 @@ func (s *SettingsService) GetSlackToken(ctx context.Context) (model.SlackToken, 
 	return settings.Slack.Token, nil
 }
 
-func (s *SettingsService) GetGithubWebhookSecret(ctx context.Context) (string, error) {
+func (s *SettingsService) GetGithubSettings(ctx context.Context) (model.GithubSettings, error) {
 	settings, err := s.repository.Read(ctx)
 	if err != nil {
-		return "", fmt.Errorf("reading settings: %w", err)
+		return model.GithubSettings{}, fmt.Errorf("reading settings: %w", err)
 	}
 
-	if !settings.Github.Enabled {
-		return "", svcerrors.NewGithubIntegrationNotEnabledError()
-	}
-
-	return settings.Github.WebhookSecret, nil
+	return settings.Github, nil
 }
 
 func (s *SettingsService) GetDefaultReleaseMessage(ctx context.Context) (string, error) {

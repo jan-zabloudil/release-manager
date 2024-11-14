@@ -1,6 +1,9 @@
 package util
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -8,6 +11,7 @@ import (
 	"strings"
 
 	svcerrors "release-manager/service/errors"
+	svcmodel "release-manager/service/model"
 
 	"github.com/google/go-github/v60/github"
 )
@@ -22,9 +26,9 @@ const (
 	// GitHub API error fields
 	gitTagNameField = "tag_name"
 
-	// expectedGithubRepositoryURLSlugCount is the expected number of slugs in a GitHub repository URL
+	// expectedRepoURLSlugCount is the expected number of slugs in a GitHub repository URL
 	// Example URL: https://github.com/owner/repo -> owner and repo are the slugs
-	expectedGithubRepositoryURLSlugCount = 2
+	expectedRepoURLSlugCount = 2
 )
 
 var (
@@ -42,7 +46,7 @@ func ParseGithubRepoURL(rawURL string) (ownerSlug, repoSlug string, err error) {
 	path := strings.Trim(u.Path, "/")
 	slugs := strings.Split(path, "/")
 
-	if len(slugs) != expectedGithubRepositoryURLSlugCount {
+	if len(slugs) != expectedRepoURLSlugCount {
 		return "", "", errInvalidGithubRepoURLPath
 	}
 
@@ -129,4 +133,27 @@ func GenerateGitTagURL(ownerSlug, repoSlug, tagName string) (url.URL, error) {
 	}
 
 	return *u, nil
+}
+
+// IsValidWebhookPayload validates the payload of a GitHub webhook
+// using the secret and the signature provided in X-Hub-Signature-256 header
+// Docs: https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries
+func IsValidWebhookPayload(rawPayload []byte, signature string, secret svcmodel.GithubWebhookSecret) bool {
+	// if secret is not set, we do not verify the payload
+	if secret == "" {
+		return true
+	}
+
+	// if secret is set, the service requires a webhook that provides a signature to verify the payload
+	if signature == "" {
+		return false
+	}
+
+	mac := hmac.New(sha256.New, []byte(secret))
+	// always returns nil error
+	_, _ = mac.Write(rawPayload)
+	expectedMAC := mac.Sum(nil)
+	expectedSignature := "sha256=" + hex.EncodeToString(expectedMAC)
+
+	return hmac.Equal([]byte(expectedSignature), []byte(signature))
 }

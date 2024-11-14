@@ -52,3 +52,8 @@ func (c *Client) GenerateReleaseNotes(ctx context.Context, tkn svcmodel.GithubTo
 	args := c.Called(ctx, tkn, repo, input)
 	return args.Get(0).(svcmodel.GithubReleaseNotes), args.Error(1)
 }
+
+func (c *Client) ParseTagDeletionWebhook(ctx context.Context, webhook svcmodel.GithubTagDeletionWebhookInput, tkn svcmodel.GithubToken, secret svcmodel.GithubWebhookSecret) (svcmodel.GithubRepo, svcmodel.GitTag, error) {
+	args := c.Called(ctx, webhook, tkn, secret)
+	return args.Get(0).(svcmodel.GithubRepo), args.Get(1).(svcmodel.GitTag), args.Error(2) //nolint:gomnd
+}

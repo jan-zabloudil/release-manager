@@ -49,14 +49,13 @@ type userService interface {
 type settingsService interface {
 	Update(ctx context.Context, u svcmodel.UpdateSettingsInput, authUserID id.AuthUser) error
 	Get(ctx context.Context, authUserID id.AuthUser) (svcmodel.Settings, error)
-	GetGithubWebhookSecret(ctx context.Context) (string, error)
 }
 
 type releaseService interface {
 	CreateRelease(ctx context.Context, input svcmodel.CreateReleaseInput, projectID id.Project, authUserID id.AuthUser) (svcmodel.Release, error)
 	GetRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) (svcmodel.Release, error)
 	DeleteRelease(ctx context.Context, input svcmodel.DeleteReleaseInput, releaseID id.Release, authUserID id.AuthUser) error
-	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
+	DeleteReleaseOnGitTagRemoval(ctx context.Context, input svcmodel.GithubTagDeletionWebhookInput) error
 	UpdateRelease(ctx context.Context, input svcmodel.UpdateReleaseInput, releaseID id.Release, authUserID id.AuthUser) error
 	ListReleasesForProject(ctx context.Context, projectID id.Project, authUserID id.AuthUser) ([]svcmodel.Release, error)
 	SendReleaseNotification(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error
