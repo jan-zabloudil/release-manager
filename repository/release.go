@@ -102,11 +102,11 @@ func (r *ReleaseRepository) UpdateRelease(
 	})
 }
 
-func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {
+func (r *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, repo svcmodel.GithubRepo, tag svcmodel.GitTag) error {
 	return r.deleteRelease(ctx, r.dbpool, query.DeleteReleaseByGitTag, pgx.NamedArgs{
-		"ownerSlug":  githubOwnerSlug,
-		"repoSlug":   githubRepoSlug,
-		"gitTagName": gitTag,
+		"ownerSlug":  repo.OwnerSlug,
+		"repoSlug":   repo.RepoSlug,
+		"gitTagName": tag.Name,
 	})
 }
 

@@ -26,3 +26,8 @@ func (m *SettingsService) GetDefaultReleaseMessage(ctx context.Context) (string,
 	args := m.Called(ctx)
 	return args.String(0), args.Error(1)
 }
+
+func (m *SettingsService) GetGithubSettings(ctx context.Context) (model.GithubSettings, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.GithubSettings), args.Error(1)
+}

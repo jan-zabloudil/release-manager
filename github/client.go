@@ -2,11 +2,13 @@ package github
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 
 	"release-manager/github/model"
 	"release-manager/github/util"
+	"release-manager/pkg/validator"
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
@@ -174,6 +176,38 @@ func (c *Client) GenerateReleaseNotes(
 
 		return model.ToGithubReleaseNotes(notes), nil
 	})
+}
+
+func (c *Client) ParseTagDeletionWebhook(
+	ctx context.Context,
+	webhook svcmodel.GithubTagDeletionWebhookInput,
+	tkn svcmodel.GithubToken,
+	secret svcmodel.GithubWebhookSecret,
+) (svcmodel.GithubRepo, svcmodel.GitTag, error) {
+	if !util.IsValidWebhookPayload(webhook.RawPayload, webhook.Signature, secret) {
+		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().WithMessage("invalid webhook payload")
+	}
+
+	var input model.TagDeletionWebhookInput
+	if err := json.Unmarshal(webhook.RawPayload, &input); err != nil {
+		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
+	}
+
+	if err := validator.Validate.Struct(input); err != nil {
+		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
+	}
+
+	repo, err := c.ReadRepo(ctx, tkn, input.Repo.Slugs)
+	if err != nil {
+		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, fmt.Errorf("reading repo: %w", err)
+	}
+
+	tag, err := c.ReadTag(ctx, tkn, repo, input.Tag)
+	if err != nil {
+		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, fmt.Errorf("reading tag: %w", err)
+	}
+
+	return repo, tag, nil
 }
 
 func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {

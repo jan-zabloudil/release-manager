@@ -169,3 +169,8 @@ type GithubReleaseNotes struct {
 	Title string
 	Notes string
 }
+
+type GithubTagDeletionWebhookInput struct {
+	RawPayload []byte
+	Signature  string
+}

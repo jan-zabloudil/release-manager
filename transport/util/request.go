@@ -10,13 +10,6 @@ import (
 	"go.strv.io/net/http/param"
 )
 
-const (
-	SignatureHeader = "X-Hub-Signature-256"
-	// GithubHookEvent is the header key for the GitHub webhook event type.
-	// Docs: https://docs.github.com/en/webhooks/webhook-events-and-payloads
-	GithubHookEvent = "X-GitHub-Event"
-)
-
 func RequestID(h http.Header) string {
 	return h.Get(httpx.Header.XRequestID)
 }

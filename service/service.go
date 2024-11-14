@@ -82,7 +82,7 @@ type releaseRepository interface {
 	ReadRelease(ctx context.Context, releaseID id.Release) (model.Release, error)
 	ReadReleaseForProject(ctx context.Context, projectID id.Project, releaseID id.Release) (model.Release, error)
 	DeleteRelease(ctx context.Context, releaseID id.Release) error
-	DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error
+	DeleteReleaseByGitTag(ctx context.Context, repo model.GithubRepo, tag model.GitTag) error
 	ListReleasesForProject(ctx context.Context, projectID id.Project) ([]model.Release, error)
 	UpdateRelease(
 		ctx context.Context,
@@ -108,6 +108,7 @@ type settingsGetter interface {
 	GetGithubToken(ctx context.Context) (model.GithubToken, error)
 	GetSlackToken(ctx context.Context) (model.SlackToken, error)
 	GetDefaultReleaseMessage(ctx context.Context) (string, error)
+	GetGithubSettings(ctx context.Context) (model.GithubSettings, error)
 }
 
 type userGetter interface {
@@ -129,7 +130,18 @@ type githubManager interface {
 	DeleteReleaseByTag(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tag model.GitTag) error
 	ReadTag(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, tagName string) (model.GitTag, error)
 	UpsertRelease(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, rls model.Release) error
-	GenerateReleaseNotes(ctx context.Context, tkn model.GithubToken, repo model.GithubRepo, input model.GithubReleaseNotesInput) (model.GithubReleaseNotes, error)
+	GenerateReleaseNotes(
+		ctx context.Context,
+		tkn model.GithubToken,
+		repo model.GithubRepo,
+		input model.GithubReleaseNotesInput,
+	) (model.GithubReleaseNotes, error)
+	ParseTagDeletionWebhook(
+		ctx context.Context,
+		input model.GithubTagDeletionWebhookInput,
+		tkn model.GithubToken,
+		secret model.GithubWebhookSecret,
+	) (model.GithubRepo, model.GitTag, error)
 }
 
 type emailSender interface {

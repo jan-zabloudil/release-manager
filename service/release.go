@@ -120,15 +120,6 @@ func (s *ReleaseService) DeleteRelease(ctx context.Context, input model.DeleteRe
 	return nil
 }
 
-// DeleteReleaseByGitTag is used when the release is deleted on GitHub and webhook is triggered to delete the release in the database.
-func (s *ReleaseService) DeleteReleaseByGitTag(ctx context.Context, githubOwnerSlug, githubRepoSlug, gitTag string) error {
-	if err := s.repo.DeleteReleaseByGitTag(ctx, githubOwnerSlug, githubRepoSlug, gitTag); err != nil {
-		return fmt.Errorf("deleting release by git tag: %w", err)
-	}
-
-	return nil
-}
-
 func (s *ReleaseService) UpdateRelease(
 	ctx context.Context,
 	input model.UpdateReleaseInput,
@@ -332,6 +323,29 @@ func (s *ReleaseService) ListDeploymentsForProject(
 	}
 
 	return dpls, nil
+}
+
+// DeleteReleaseOnGitTagRemoval is used when the git tag is deleted on GitHub and webhook is triggered to delete the release associated with the tag.
+func (s *ReleaseService) DeleteReleaseOnGitTagRemoval(ctx context.Context, input model.GithubTagDeletionWebhookInput) error {
+	github, err := s.settingsGetter.GetGithubSettings(ctx)
+	if err != nil {
+		return fmt.Errorf("getting github settings: %w", err)
+	}
+
+	if !github.Enabled {
+		return svcerrors.NewGithubIntegrationNotEnabledError()
+	}
+
+	repo, tag, err := s.githubManager.ParseTagDeletionWebhook(ctx, input, github.Token, github.WebhookSecret)
+	if err != nil {
+		return fmt.Errorf("processing webhook delete tag event: %w", err)
+	}
+
+	if err := s.repo.DeleteReleaseByGitTag(ctx, repo, tag); err != nil {
+		return fmt.Errorf("deleting release by git tag: %w", err)
+	}
+
+	return nil
 }
 
 func (s *ReleaseService) deleteGithubRelease(ctx context.Context, releaseID id.Release, authUserID id.AuthUser) error {

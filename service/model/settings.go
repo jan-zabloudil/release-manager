@@ -42,6 +42,7 @@ type UpdateSlackSettingsInput struct {
 }
 
 type GithubToken string
+type GithubWebhookSecret string
 
 func (t GithubToken) String() string {
 	return string(t)
@@ -50,13 +51,13 @@ func (t GithubToken) String() string {
 type GithubSettings struct {
 	Enabled       bool
 	Token         GithubToken
-	WebhookSecret string
+	WebhookSecret GithubWebhookSecret
 }
 
 type UpdateGithubSettingsInput struct {
 	Enabled       *bool
 	Token         *GithubToken
-	WebhookSecret *string
+	WebhookSecret *GithubWebhookSecret
 }
 
 func (s *Settings) Update(u UpdateSettingsInput) error {
