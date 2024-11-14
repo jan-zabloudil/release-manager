@@ -336,12 +336,12 @@ func (s *ReleaseService) DeleteReleaseOnGitTagRemoval(ctx context.Context, input
 		return svcerrors.NewGithubIntegrationNotEnabledError()
 	}
 
-	repo, tag, err := s.githubManager.ParseTagDeletionWebhook(ctx, input, github.Token, github.WebhookSecret)
+	output, err := s.githubManager.ParseTagDeletionWebhook(ctx, input, github.Token, github.WebhookSecret)
 	if err != nil {
-		return fmt.Errorf("processing webhook delete tag event: %w", err)
+		return fmt.Errorf("parsing webhook delete tag event: %w", err)
 	}
 
-	if err := s.repo.DeleteReleaseByGitTag(ctx, repo, tag); err != nil {
+	if err := s.repo.DeleteReleaseByGitTag(ctx, output.Repo, output.TagName); err != nil {
 		return fmt.Errorf("deleting release by git tag: %w", err)
 	}
 

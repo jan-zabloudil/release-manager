@@ -61,9 +61,16 @@ func ToSvcGithubRepo(repo *github.Repository, ownerSlug, repoSlug string) (svcmo
 	}, nil
 }
 
-func ToGithubReleaseNotes(notes *github.RepositoryReleaseNotes) svcmodel.GithubReleaseNotes {
+func ToSvcGithubReleaseNotes(notes *github.RepositoryReleaseNotes) svcmodel.GithubReleaseNotes {
 	return svcmodel.GithubReleaseNotes{
 		Title: notes.Name,
 		Notes: notes.Body,
+	}
+}
+
+func ToSvcGithubTagDeletionWebhookOutput(repo svcmodel.GithubRepo, tagName string) svcmodel.GithubTagDeletionWebhookOutput {
+	return svcmodel.GithubTagDeletionWebhookOutput{
+		Repo:    repo,
+		TagName: tagName,
 	}
 }

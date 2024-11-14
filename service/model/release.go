@@ -174,3 +174,8 @@ type GithubTagDeletionWebhookInput struct {
 	RawPayload []byte
 	Signature  string
 }
+
+type GithubTagDeletionWebhookOutput struct {
+	Repo    GithubRepo
+	TagName string
+}
