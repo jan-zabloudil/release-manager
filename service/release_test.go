@@ -908,7 +908,7 @@ func TestReleaseService_DeleteReleaseOnGitTagRemoval(t *testing.T) {
 					Token:         "token",
 					WebhookSecret: "secret",
 				}, nil)
-				github.On("ParseTagDeletionWebhook", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubRepo{}, model.GitTag{}, nil)
+				github.On("ParseTagDeletionWebhook", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubTagDeletionWebhookOutput{}, nil)
 				releaseRepo.On("DeleteReleaseByGitTag", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			wantErr: false,
@@ -940,7 +940,7 @@ func TestReleaseService_DeleteReleaseOnGitTagRemoval(t *testing.T) {
 					Token:         "token",
 					WebhookSecret: "secret",
 				}, nil)
-				github.On("ParseTagDeletionWebhook", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubRepo{}, model.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError())
+				github.On("ParseTagDeletionWebhook", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.GithubTagDeletionWebhookOutput{}, svcerrors.NewInvalidGithubTagDeletionWebhookError())
 			},
 			wantErr: true,
 		},

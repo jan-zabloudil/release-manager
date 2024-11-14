@@ -82,7 +82,7 @@ type releaseRepository interface {
 	ReadRelease(ctx context.Context, releaseID id.Release) (model.Release, error)
 	ReadReleaseForProject(ctx context.Context, projectID id.Project, releaseID id.Release) (model.Release, error)
 	DeleteRelease(ctx context.Context, releaseID id.Release) error
-	DeleteReleaseByGitTag(ctx context.Context, repo model.GithubRepo, tag model.GitTag) error
+	DeleteReleaseByGitTag(ctx context.Context, repo model.GithubRepo, tagName string) error
 	ListReleasesForProject(ctx context.Context, projectID id.Project) ([]model.Release, error)
 	UpdateRelease(
 		ctx context.Context,
@@ -141,7 +141,7 @@ type githubManager interface {
 		input model.GithubTagDeletionWebhookInput,
 		tkn model.GithubToken,
 		secret model.GithubWebhookSecret,
-	) (model.GithubRepo, model.GitTag, error)
+	) (model.GithubTagDeletionWebhookOutput, error)
 }
 
 type emailSender interface {

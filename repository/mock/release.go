@@ -62,7 +62,7 @@ func (m *ReleaseRepository) ReadLastDeploymentForRelease(ctx context.Context, re
 	return args.Get(0).(svcmodel.Deployment), args.Error(1)
 }
 
-func (m *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, repo svcmodel.GithubRepo, tag svcmodel.GitTag) error {
-	args := m.Called(ctx, repo, tag)
+func (m *ReleaseRepository) DeleteReleaseByGitTag(ctx context.Context, repo svcmodel.GithubRepo, tagName string) error {
+	args := m.Called(ctx, repo, tagName)
 	return args.Error(0)
 }

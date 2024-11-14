@@ -174,7 +174,7 @@ func (c *Client) GenerateReleaseNotes(
 			return svcmodel.GithubReleaseNotes{}, fmt.Errorf("generating release notes: %w", err)
 		}
 
-		return model.ToGithubReleaseNotes(notes), nil
+		return model.ToSvcGithubReleaseNotes(notes), nil
 	})
 }
 
@@ -183,31 +183,28 @@ func (c *Client) ParseTagDeletionWebhook(
 	webhook svcmodel.GithubTagDeletionWebhookInput,
 	tkn svcmodel.GithubToken,
 	secret svcmodel.GithubWebhookSecret,
-) (svcmodel.GithubRepo, svcmodel.GitTag, error) {
+) (svcmodel.GithubTagDeletionWebhookOutput, error) {
 	if !util.IsValidWebhookPayload(webhook.RawPayload, webhook.Signature, secret) {
-		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().WithMessage("invalid webhook payload")
+		return svcmodel.GithubTagDeletionWebhookOutput{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().WithMessage("invalid webhook payload")
 	}
 
 	var input model.TagDeletionWebhookInput
 	if err := json.Unmarshal(webhook.RawPayload, &input); err != nil {
-		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
+		return svcmodel.GithubTagDeletionWebhookOutput{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
 	}
 
 	if err := validator.Validate.Struct(input); err != nil {
-		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
+		return svcmodel.GithubTagDeletionWebhookOutput{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
 	}
 
 	repo, err := c.ReadRepo(ctx, tkn, input.Repo.Slugs)
 	if err != nil {
-		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, fmt.Errorf("reading repo: %w", err)
+		return svcmodel.GithubTagDeletionWebhookOutput{}, fmt.Errorf("reading repo: %w", err)
 	}
 
-	tag, err := c.ReadTag(ctx, tkn, repo, input.Tag)
-	if err != nil {
-		return svcmodel.GithubRepo{}, svcmodel.GitTag{}, fmt.Errorf("reading tag: %w", err)
-	}
-
-	return repo, tag, nil
+	// GitTag does not exist anymore
+	// Therefore we only return tag name (instead of reading tag object)
+	return model.ToSvcGithubTagDeletionWebhookOutput(repo, input.Tag), nil
 }
 
 func (c *Client) GenerateRepoURL(ownerSlug, repoSlug string) (url.URL, error) {
