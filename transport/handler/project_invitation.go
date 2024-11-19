@@ -30,7 +30,7 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
 
 	i, err := h.ProjectSvc.ListInvitations(r.Context(), projectID, util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 		params.InvitationID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		svcmodel.ProjectInvitationToken(tkn),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -102,7 +102,7 @@ func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		svcmodel.ProjectInvitationToken(tkn),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 

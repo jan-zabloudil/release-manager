@@ -20,6 +20,7 @@ var (
 	errCodeDefaultBadRequest          = "ERR_BAD_REQUEST"
 	errCodeDefaultUnprocessableEntity = "ERR_UNPROCESSABLE_ENTITY"
 	errCodeDefaultConflict            = "ERR_CONFLICT"
+	errCodeInvalidRequestPayload      = "ERR_INVALID_REQUEST_PAYLOAD"
 	errCodeUnknown                    = "ERR_UNKNOWN"
 )
 
@@ -28,6 +29,7 @@ type Error struct {
 	Message    string
 	Code       string
 	Err        error
+	Data       any
 }
 
 func (r *Error) Wrap(err error) *Error {
@@ -51,6 +53,11 @@ func (r *Error) Wrap(err error) *Error {
 
 func (r *Error) WithMessage(msg string) *Error {
 	r.Message = msg
+	return r
+}
+
+func (r *Error) WithData(data any) *Error {
+	r.Data = data
 	return r
 }
 
@@ -114,6 +121,13 @@ func NewBadRequestError() *Error {
 	return &Error{
 		StatusCode: http.StatusBadRequest,
 		Code:       errCodeDefaultBadRequest,
+	}
+}
+
+func NewInvalidRequestPayloadError() *Error {
+	return &Error{
+		StatusCode: http.StatusBadRequest,
+		Code:       errCodeInvalidRequestPayload,
 	}
 }
 

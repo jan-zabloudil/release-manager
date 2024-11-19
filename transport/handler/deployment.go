@@ -29,7 +29,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Reque
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 

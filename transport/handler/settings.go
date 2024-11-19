@@ -20,7 +20,7 @@ func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 		model.ToSvcUpdateSettingsInput(input),
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -30,7 +30,7 @@ func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getSettings(w http.ResponseWriter, r *http.Request) {
 	s, err := h.SettingsSvc.Get(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 

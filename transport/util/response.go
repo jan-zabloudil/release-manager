@@ -16,6 +16,7 @@ func WriteResponseError(w http.ResponseWriter, r *resperrors.Error) {
 		httpx.WithError(r.Err),
 		httpx.WithErrorCode(r.Code),
 		httpx.WithErrorMessage(r.Message),
+		httpx.WithErrorData(r.Data),
 	); err != nil {
 		slog.Error("writing error response", "error", err)
 	}

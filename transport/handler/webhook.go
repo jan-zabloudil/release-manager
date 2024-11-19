@@ -39,7 +39,7 @@ func (h *Handler) handleGithubTagDeletionWebhook(w http.ResponseWriter, r *http.
 		r.Context(),
 		input,
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 

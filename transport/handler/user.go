@@ -14,13 +14,13 @@ func (h *Handler) getAuthUser(w http.ResponseWriter, r *http.Request) {
 
 	u, err := h.UserSvc.GetAuthenticated(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
 	m, err := h.ProjectSvc.ListMembersForUser(r.Context(), authUserID)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -40,7 +40,7 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.UserSvc.ListAllForAdmin(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
 		userID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 

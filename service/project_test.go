@@ -302,7 +302,7 @@ func TestProjectService_UpdateProject(t *testing.T) {
 			name: "Invalid project update",
 			mockSetup: func(auth *svc.AuthorizationService, projectRepo *repo.ProjectRepository) {
 				auth.On("AuthorizeProjectRoleEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewProjectUnprocessableError())
+				projectRepo.On("UpdateProject", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewInvalidProjectError())
 			},
 			wantErr: true,
 		},

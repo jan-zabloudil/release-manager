@@ -13,7 +13,7 @@ var (
 	ErrCodeUserNotFound                    = "ERR_USER_NOT_FOUND"
 	ErrCodeProjectNotFound                 = "ERR_PROJECT_NOT_FOUND"
 	ErrCodeEnvironmentNotFound             = "ERR_ENVIRONMENT_NOT_FOUND"
-	ErrCodeProjectUnprocessable            = "ERR_PROJECT_UNPROCESSABLE"
+	ErrCodeInvalidProject                  = "ERR_INVALID_PROJECT"
 	ErrCodeEnvironmentUnprocessable        = "ERR_ENVIRONMENT_UNPROCESSABLE"
 	ErrCodeEnvironmentDuplicateName        = "ERR_ENVIRONMENT_DUPLICATE_NAME"
 	ErrCodeSettingsUnprocessable           = "ERR_SETTINGS_UNPROCESSABLE"
@@ -97,10 +97,10 @@ func NewEnvironmentDuplicateNameError() *Error {
 	}
 }
 
-func NewProjectUnprocessableError() *Error {
+func NewInvalidProjectError() *Error {
 	return &Error{
-		Code:    ErrCodeProjectUnprocessable,
-		Message: "Project unprocessable",
+		Code:    ErrCodeInvalidProject,
+		Message: "Invalid project",
 	}
 }
 

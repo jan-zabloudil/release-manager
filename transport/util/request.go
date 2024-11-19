@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"release-manager/pkg/validatorx"
+
 	"github.com/go-chi/chi/v5"
 	httpx "go.strv.io/net/http"
 	"go.strv.io/net/http/param"
@@ -22,6 +24,10 @@ func UnmarshalBody(r *http.Request, b any) error {
 	}
 
 	if err := json.Unmarshal(body, b); err != nil {
+		return err
+	}
+
+	if err := validatorx.ValidateStruct(b); err != nil {
 		return err
 	}
 

@@ -54,7 +54,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, input model.CreatePr
 
 	p, err := model.NewProject(input)
 	if err != nil {
-		return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Project{}, svcerrors.NewInvalidProjectError().Wrap(err).WithMessage(err.Error())
 	}
 
 	u, err := s.userGetter.GetAuthenticated(ctx, authUserID)
@@ -131,7 +131,7 @@ func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdatePr
 
 	if err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		if err := p.Update(input); err != nil {
-			return model.Project{}, svcerrors.NewProjectUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Project{}, svcerrors.NewInvalidProjectError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return p, nil

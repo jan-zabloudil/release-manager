@@ -1,29 +1,42 @@
 package errors
 
 import (
+	"errors"
+
+	"release-manager/pkg/validatorx"
 	svcerrors "release-manager/service/errors"
 )
 
-func ToError(err error) *Error {
+// NewFromBodyUnmarshalErr creates an error from an error that occurred during unmarshalling the request body.
+func NewFromBodyUnmarshalErr(err error) *Error {
+	var validationErr validatorx.ValidationErrors
+	if errors.As(err, &validationErr) {
+		return NewInvalidRequestPayloadError().Wrap(err).WithData(validationErr).WithMessage("Validation errors")
+	}
+
+	return NewInvalidRequestPayloadError().Wrap(err).WithMessage(err.Error())
+}
+
+func NewFromSvcErr(err error) *Error {
 	switch {
-	case IsUnauthorizedError(err):
+	case isUnauthorizedError(err):
 		return NewUnauthorizedError().Wrap(err)
-	case IsForbiddenError(err):
+	case isForbiddenError(err):
 		return NewForbiddenError().Wrap(err)
-	case IsNotFoundError(err):
+	case isNotFoundError(err):
 		return NewNotFoundError().Wrap(err)
-	case IsUnprocessableModelError(err):
+	case isUnprocessableModelError(err):
 		return NewUnprocessableEntityError().Wrap(err)
-	case IsConflictError(err):
+	case isConflictError(err):
 		return NewConflictError().Wrap(err)
-	case IsBadRequestError(err):
+	case isBadRequestError(err):
 		return NewBadRequestError().Wrap(err)
 	default:
 		return NewServerError().Wrap(err)
 	}
 }
 
-func IsNotFoundError(err error) bool {
+func isNotFoundError(err error) bool {
 	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUserNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentNotFound) ||
@@ -40,9 +53,8 @@ func IsNotFoundError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotFound)
 }
 
-func IsUnprocessableModelError(err error) bool {
-	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
+func isUnprocessableModelError(err error) bool {
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
@@ -50,13 +62,13 @@ func IsUnprocessableModelError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
 }
 
-func IsUnauthorizedError(err error) bool {
+func isUnauthorizedError(err error) bool {
 	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeUnauthenticatedUser) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubClientUnauthorized) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackClientUnauthorized)
 }
 
-func IsForbiddenError(err error) bool {
+func isForbiddenError(err error) bool {
 	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInsufficientUserRole) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubClientForbidden) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInsufficientProjectRole) ||
@@ -64,7 +76,7 @@ func IsForbiddenError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeAdminUserCannotBeDeleted)
 }
 
-func IsConflictError(err error) bool {
+func isConflictError(err error) bool {
 	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentDuplicateName) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationAlreadyExists) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberAlreadyExists) ||
@@ -72,9 +84,10 @@ func IsConflictError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectGithubRepoAlreadyUsed)
 }
 
-func IsBadRequestError(err error) bool {
+func isBadRequestError(err error) bool {
 	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotSetForProject) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubNotesInvalidInput) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidGithubTagDeletionWebhook)
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidGithubTagDeletionWebhook) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidProject)
 }
