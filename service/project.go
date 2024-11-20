@@ -200,7 +200,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, input model.Crea
 
 	env, err := model.NewEnvironment(input)
 	if err != nil {
-		return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Environment{}, svcerrors.NewInvalidEnvironmentError().Wrap(err).WithMessage(err.Error())
 	}
 
 	if err := s.repo.CreateEnvironment(ctx, env); err != nil {
@@ -236,7 +236,7 @@ func (s *ProjectService) UpdateEnvironment(
 
 	if err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(input); err != nil {
-			return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Environment{}, svcerrors.NewInvalidEnvironmentError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return e, nil

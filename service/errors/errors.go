@@ -14,7 +14,7 @@ var (
 	ErrCodeProjectNotFound                 = "ERR_PROJECT_NOT_FOUND"
 	ErrCodeEnvironmentNotFound             = "ERR_ENVIRONMENT_NOT_FOUND"
 	ErrCodeInvalidProject                  = "ERR_INVALID_PROJECT"
-	ErrCodeEnvironmentUnprocessable        = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	ErrCodeInvalidEnvironment              = "ERR_INVALID_ENVIRONMENT"
 	ErrCodeEnvironmentDuplicateName        = "ERR_ENVIRONMENT_DUPLICATE_NAME"
 	ErrCodeSettingsUnprocessable           = "ERR_SETTINGS_UNPROCESSABLE"
 	ErrCodeProjectInvitationUnprocessable  = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
@@ -104,10 +104,10 @@ func NewInvalidProjectError() *Error {
 	}
 }
 
-func NewEnvironmentUnprocessableError() *Error {
+func NewInvalidEnvironmentError() *Error {
 	return &Error{
-		Code:    ErrCodeEnvironmentUnprocessable,
-		Message: "Environment unprocessable",
+		Code:    ErrCodeInvalidEnvironment,
+		Message: "Invalid environment",
 	}
 }
 

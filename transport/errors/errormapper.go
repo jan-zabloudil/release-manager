@@ -54,8 +54,7 @@ func isNotFoundError(err error) bool {
 }
 
 func isUnprocessableModelError(err error) bool {
-	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable) ||
@@ -89,5 +88,6 @@ func isBadRequestError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubNotesInvalidInput) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidGithubTagDeletionWebhook) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidProject)
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidProject) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidEnvironment)
 }
