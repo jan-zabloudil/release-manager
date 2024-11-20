@@ -8,7 +8,7 @@ import (
 
 	"release-manager/github/model"
 	"release-manager/github/util"
-	"release-manager/pkg/validator"
+	"release-manager/pkg/validatorx"
 	svcerrors "release-manager/service/errors"
 	svcmodel "release-manager/service/model"
 
@@ -193,7 +193,7 @@ func (c *Client) ParseTagDeletionWebhook(
 		return svcmodel.GithubTagDeletionWebhookOutput{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
 	}
 
-	if err := validator.Validate.Struct(input); err != nil {
+	if err := validatorx.ValidateStruct(input); err != nil {
 		return svcmodel.GithubTagDeletionWebhookOutput{}, svcerrors.NewInvalidGithubTagDeletionWebhookError().Wrap(err)
 	}
 

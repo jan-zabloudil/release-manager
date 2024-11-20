@@ -6,7 +6,7 @@ import (
 
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
-	validator "release-manager/pkg/validator"
+	"release-manager/pkg/validatorx"
 )
 
 const (
@@ -86,7 +86,7 @@ func (i *ProjectInvitation) Validate() error {
 	if i.Email == "" {
 		return errProjectInvitationEmailRequired
 	}
-	if !validator.IsValidEmail(i.Email) {
+	if !validatorx.IsValidEmail(i.Email) {
 		return errProjectInvitationInvalidEmail
 	}
 	if err := i.ProjectRole.Validate(); err != nil {

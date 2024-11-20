@@ -19,7 +19,7 @@ func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
 
 	m, err := h.ProjectSvc.ListMembersForProject(r.Context(), projectID, util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 		params.UserID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 		params.UserID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 

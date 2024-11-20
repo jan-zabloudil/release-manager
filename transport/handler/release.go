@@ -29,7 +29,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -75,7 +75,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -95,7 +95,7 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -121,7 +121,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -140,7 +140,7 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -159,7 +159,7 @@ func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 
@@ -186,7 +186,7 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.ToError(err))
+		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
 		return
 	}
 

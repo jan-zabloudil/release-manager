@@ -8,7 +8,7 @@ import (
 )
 
 type CreateProjectInput struct {
-	Name                      string                    `json:"name"`
+	Name                      string                    `json:"name" validate:"required"`
 	SlackChannelID            string                    `json:"slack_channel_id"`
 	ReleaseNotificationConfig ReleaseNotificationConfig `json:"release_notification_config"`
 }

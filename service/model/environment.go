@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"release-manager/pkg/id"
-	"release-manager/pkg/validator"
+	"release-manager/pkg/validatorx"
 )
 
 var (
@@ -63,7 +63,7 @@ func (e *Environment) Validate() error {
 		return errEnvironmentNameRequired
 	}
 
-	if e.ServiceURL.String() != "" && !validator.IsAbsoluteURL(e.ServiceURL.String()) {
+	if e.ServiceURL.String() != "" && !validatorx.IsAbsoluteURL(e.ServiceURL.String()) {
 		return errEnvironmentServiceURLMustBeAbsolute
 	}
 
