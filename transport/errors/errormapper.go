@@ -46,7 +46,6 @@ func isNotFoundError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound) ||
@@ -89,5 +88,6 @@ func isBadRequestError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidGithubTagDeletionWebhook) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvalid) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentInvalid) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationInvalid)
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationInvalid) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL)
 }
