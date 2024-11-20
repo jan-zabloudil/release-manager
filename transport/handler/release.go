@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"release-manager/pkg/id"
-	resperrors "release-manager/transport/errors"
+	resperr "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -12,13 +12,13 @@ import (
 func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	var input model.CreateReleaseInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -29,7 +29,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -59,13 +59,13 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	var input model.DeleteReleaseInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -75,7 +75,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -85,7 +85,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -95,7 +95,7 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -105,13 +105,13 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	var input model.UpdateReleaseInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -121,7 +121,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -131,7 +131,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -140,7 +140,7 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -150,7 +150,7 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -159,7 +159,7 @@ func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 		rlsID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -169,13 +169,13 @@ func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	var input model.GithubReleaseNotesInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
@@ -186,7 +186,7 @@ func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Requ
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 

@@ -120,7 +120,7 @@ func ToReleases(releases []svcmodel.Release) []Release {
 }
 
 type GithubReleaseNotesInput struct {
-	GitTagName         *string `json:"git_tag_name"`
+	GitTagName         string  `json:"git_tag_name" validate:"required"`
 	PreviousGitTagName *string `json:"previous_git_tag_name"`
 }
 
@@ -131,7 +131,7 @@ type GithubReleaseNotes struct {
 
 func ToSvcGithubReleaseNotesInput(n GithubReleaseNotesInput) svcmodel.GithubReleaseNotesInput {
 	return svcmodel.GithubReleaseNotesInput{
-		GitTagName:         n.GitTagName,
+		GitTagName:         &n.GitTagName,
 		PreviousGitTagName: n.PreviousGitTagName,
 	}
 }
