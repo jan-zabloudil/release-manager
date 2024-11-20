@@ -78,16 +78,30 @@ func ValidateStruct(s any) error {
 }
 
 func registerCustomTranslations() error {
-	// Register translation for http_url tag
-	return validate.RegisterTranslation("http_url", translator, func(ut ut.Translator) error {
-		return ut.Add("http_url", "{0} must be a valid HTTP URL", true)
-	}, func(ut ut.Translator, fe validator.FieldError) string {
-		t, err := ut.T("http_url", fe.Field())
-		if err != nil {
-			panic(fmt.Errorf("failed to translate http_url tag: %w", err))
+	translationFunc := func(tag, message string) error {
+		return validate.RegisterTranslation(tag, translator, func(ut ut.Translator) error {
+			return ut.Add(tag, message, true)
+		}, func(ut ut.Translator, fe validator.FieldError) string {
+			t, err := ut.T(tag)
+			if err != nil {
+				panic(fmt.Errorf("translating tag %s: %w", tag, err))
+			}
+			return t
+		})
+	}
+
+	translations := map[string]string{
+		"http_url": "Field must be a valid HTTP URL",
+		"required": "Field is required",
+	}
+
+	for tag, message := range translations {
+		if err := translationFunc(tag, message); err != nil {
+			return fmt.Errorf("registering %s translation: %w", tag, err)
 		}
-		return t
-	})
+	}
+
+	return nil
 }
 
 func jsonFieldName(structType reflect.Type, fieldName string) string {
