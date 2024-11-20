@@ -13,11 +13,11 @@ var (
 	ErrCodeUserNotFound                    = "ERR_USER_NOT_FOUND"
 	ErrCodeProjectNotFound                 = "ERR_PROJECT_NOT_FOUND"
 	ErrCodeEnvironmentNotFound             = "ERR_ENVIRONMENT_NOT_FOUND"
-	ErrCodeInvalidProject                  = "ERR_INVALID_PROJECT"
-	ErrCodeInvalidEnvironment              = "ERR_INVALID_ENVIRONMENT"
+	ErrCodeProjectInvalid                  = "ERR_PROJECT_INVALID"
+	ErrCodeEnvironmentInvalid              = "ERR_ENVIRONMENT_INVALID"
 	ErrCodeEnvironmentDuplicateName        = "ERR_ENVIRONMENT_DUPLICATE_NAME"
 	ErrCodeSettingsUnprocessable           = "ERR_SETTINGS_UNPROCESSABLE"
-	ErrCodeProjectInvitationUnprocessable  = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
+	ErrCodeProjectInvitationInvalid        = "ERR_PROJECT_INVITATION_INVALID"
 	ErrCodeProjectInvitationAlreadyExists  = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
 	ErrCodeProjectInvitationNotFound       = "ERR_PROJECT_INVITATION_NOT_FOUND"
 	ErrCodeProjectMemberAlreadyExists      = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
@@ -97,16 +97,16 @@ func NewEnvironmentDuplicateNameError() *Error {
 	}
 }
 
-func NewInvalidProjectError() *Error {
+func NewProjectInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeInvalidProject,
+		Code:    ErrCodeProjectInvalid,
 		Message: "Invalid project",
 	}
 }
 
-func NewInvalidEnvironmentError() *Error {
+func NewEnvironmentInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeInvalidEnvironment,
+		Code:    ErrCodeEnvironmentInvalid,
 		Message: "Invalid environment",
 	}
 }
@@ -146,10 +146,10 @@ func NewUserNotProjectMemberError() *Error {
 	}
 }
 
-func NewProjectInvitationUnprocessableError() *Error {
+func NewProjectInvitationInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeProjectInvitationUnprocessable,
-		Message: "Project invitation unprocessable",
+		Code:    ErrCodeProjectInvitationInvalid,
+		Message: "Invalid project invitation",
 	}
 }
 

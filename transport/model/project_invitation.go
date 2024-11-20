@@ -8,8 +8,8 @@ import (
 )
 
 type CreateProjectInvitationInput struct {
-	Email       string `json:"email"`
-	ProjectRole string `json:"project_role"`
+	Email       string `json:"email" validate:"required,email"`
+	ProjectRole string `json:"project_role" validate:"required"`
 }
 
 type ProjectInvitation struct {
