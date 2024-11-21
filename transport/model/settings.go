@@ -5,8 +5,8 @@ import (
 )
 
 type UpdateSettingsInput struct {
-	OrganizationName      *string                   `json:"organization_name"`
-	DefaultReleaseMessage *string                   `json:"default_release_message"`
+	OrganizationName      *string                   `json:"organization_name" validate:"omitempty,min=1"`
+	DefaultReleaseMessage *string                   `json:"default_release_message" validate:"omitempty,min=1"`
 	Slack                 UpdateSlackSettingsInput  `json:"slack"`
 	Github                UpdateGithubSettingsInput `json:"github"`
 }

@@ -17,7 +17,7 @@ type ProjectMember struct {
 }
 
 type UpdateProjectMemberRoleInput struct {
-	ProjectRole string `json:"project_role"`
+	ProjectRole string `json:"project_role" validate:"required"`
 }
 
 type ProjectMemberURLParams struct {

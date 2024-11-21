@@ -16,7 +16,7 @@ var (
 	ErrCodeProjectInvalid                  = "ERR_PROJECT_INVALID"
 	ErrCodeEnvironmentInvalid              = "ERR_ENVIRONMENT_INVALID"
 	ErrCodeEnvironmentDuplicateName        = "ERR_ENVIRONMENT_DUPLICATE_NAME"
-	ErrCodeSettingsUnprocessable           = "ERR_SETTINGS_UNPROCESSABLE"
+	ErrCodeSettingsInvalid                 = "ERR_SETTINGS_INVALID"
 	ErrCodeProjectInvitationInvalid        = "ERR_PROJECT_INVITATION_INVALID"
 	ErrCodeProjectInvitationAlreadyExists  = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
 	ErrCodeProjectInvitationNotFound       = "ERR_PROJECT_INVITATION_NOT_FOUND"
@@ -28,7 +28,7 @@ var (
 	ErrCodeGithubRepoNotFound              = "ERR_GITHUB_REPO_NOT_FOUND"
 	ErrCodeGithubRepoInvalidURL            = "ERR_GITHUB_REPO_INVALID_URL"
 	ErrCodeProjectMemberNotFound           = "ERR_PROJECT_MEMBER_NOT_FOUND"
-	ErrCodeProjectMemberUnprocessable      = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
+	ErrCodeProjectMemberInvalid            = "ERR_PROJECT_MEMBER_INVALID"
 	ErrCodeReleaseInvalid                  = "ERR_RELEASE_INVALID"
 	ErrCodeReleaseNotFound                 = "ERR_RELEASE_NOT_FOUND"
 	ErrCodeSlackIntegrationNotEnabled      = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
@@ -111,10 +111,10 @@ func NewEnvironmentInvalidError() *Error {
 	}
 }
 
-func NewSettingsUnprocessableError() *Error {
+func NewSettingsInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeSettingsUnprocessable,
-		Message: "Settings unprocessable",
+		Code:    ErrCodeSettingsInvalid,
+		Message: "Invalid settings",
 	}
 }
 
@@ -223,10 +223,10 @@ func NewProjectMemberNotFoundError() *Error {
 	}
 }
 
-func NewProjectMemberUnprocessableError() *Error {
+func NewProjectMemberInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeProjectMemberUnprocessable,
-		Message: "Project member unprocessable",
+		Code:    ErrCodeProjectMemberInvalid,
+		Message: "Invalid project member",
 	}
 }
 

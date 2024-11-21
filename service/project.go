@@ -500,7 +500,7 @@ func (s *ProjectService) UpdateMemberRole(
 
 	if err := s.repo.UpdateMember(ctx, projectID, userID, func(m model.ProjectMember) (model.ProjectMember, error) {
 		if err := m.UpdateProjectRole(newRole); err != nil {
-			return model.ProjectMember{}, svcerrors.NewProjectMemberUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.ProjectMember{}, svcerrors.NewProjectMemberInvalidError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return m, nil

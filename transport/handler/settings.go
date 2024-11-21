@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	resperrors "release-manager/transport/errors"
+	resperr "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -11,7 +11,7 @@ import (
 func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 	var input model.UpdateSettingsInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
@@ -20,7 +20,7 @@ func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 		model.ToSvcUpdateSettingsInput(input),
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -30,7 +30,7 @@ func (h *Handler) updateSettings(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getSettings(w http.ResponseWriter, r *http.Request) {
 	s, err := h.SettingsSvc.Get(r.Context(), util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 

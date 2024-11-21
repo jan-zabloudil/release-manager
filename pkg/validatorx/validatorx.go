@@ -37,6 +37,10 @@ func init() {
 		panic(fmt.Errorf("registering default translations: %w", err))
 	}
 
+	if err := registerCustomValidations(); err != nil {
+		panic(fmt.Errorf("registering custom validations: %w", err))
+	}
+
 	if err := registerCustomTranslations(); err != nil {
 		panic(fmt.Errorf("registering custom translations: %w", err))
 	}
@@ -78,11 +82,11 @@ func ValidateStruct(s any) error {
 }
 
 func registerCustomTranslations() error {
-	translationFunc := func(tag, message string) error {
+	translationFunc := func(tag, message string, paramFunc func(fe validator.FieldError) []string) error {
 		return validate.RegisterTranslation(tag, translator, func(ut ut.Translator) error {
 			return ut.Add(tag, message, true)
 		}, func(ut ut.Translator, fe validator.FieldError) string {
-			t, err := ut.T(tag)
+			t, err := ut.T(tag, paramFunc(fe)...)
 			if err != nil {
 				panic(fmt.Errorf("translating tag %s: %w", tag, err))
 			}
@@ -90,18 +94,42 @@ func registerCustomTranslations() error {
 		})
 	}
 
-	translations := map[string]string{
-		"http_url": "Field must be a valid HTTP URL",
-		"required": "Field is required",
+	translations := map[string]struct {
+		message   string
+		paramFunc func(fe validator.FieldError) []string
+	}{
+		"http_url":          {"Field must be a valid HTTP URL", nil},
+		"empty_or_http_url": {"Field must be a valid HTTP URL", nil},
+		"required":          {"Field is required", nil},
+		"min": {
+			"Field must be at least {0} character(s) in length",
+			func(fe validator.FieldError) []string { return []string{fe.Param()} },
+		},
 	}
 
-	for tag, message := range translations {
-		if err := translationFunc(tag, message); err != nil {
+	for tag, t := range translations {
+		paramFunc := t.paramFunc
+		if paramFunc == nil {
+			paramFunc = func(fe validator.FieldError) []string { return nil }
+		}
+
+		if err := translationFunc(tag, t.message, paramFunc); err != nil {
 			return fmt.Errorf("registering %s translation: %w", tag, err)
 		}
 	}
 
 	return nil
+}
+
+func registerCustomValidations() error {
+	return validate.RegisterValidation("empty_or_http_url", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		if value == "" {
+			return true
+		}
+		err := validate.Var(value, "http_url")
+		return err == nil
+	})
 }
 
 func jsonFieldName(structType reflect.Type, fieldName string) string {

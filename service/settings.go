@@ -41,7 +41,7 @@ func (s *SettingsService) Update(ctx context.Context, input model.UpdateSettings
 
 	if err := s.repository.Upsert(ctx, func(s model.Settings) (model.Settings, error) {
 		if err := s.Update(input); err != nil {
-			return model.Settings{}, svcerrors.NewSettingsUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Settings{}, svcerrors.NewSettingsInvalidError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return s, nil
