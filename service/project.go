@@ -54,7 +54,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, input model.CreatePr
 
 	p, err := model.NewProject(input)
 	if err != nil {
-		return model.Project{}, svcerrors.NewInvalidProjectError().Wrap(err).WithMessage(err.Error())
+		return model.Project{}, svcerrors.NewProjectInvalidError().Wrap(err).WithMessage(err.Error())
 	}
 
 	u, err := s.userGetter.GetAuthenticated(ctx, authUserID)
@@ -131,7 +131,7 @@ func (s *ProjectService) UpdateProject(ctx context.Context, input model.UpdatePr
 
 	if err := s.repo.UpdateProject(ctx, projectID, func(p model.Project) (model.Project, error) {
 		if err := p.Update(input); err != nil {
-			return model.Project{}, svcerrors.NewInvalidProjectError().Wrap(err).WithMessage(err.Error())
+			return model.Project{}, svcerrors.NewProjectInvalidError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return p, nil
@@ -200,7 +200,7 @@ func (s *ProjectService) CreateEnvironment(ctx context.Context, input model.Crea
 
 	env, err := model.NewEnvironment(input)
 	if err != nil {
-		return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Environment{}, svcerrors.NewEnvironmentInvalidError().Wrap(err).WithMessage(err.Error())
 	}
 
 	if err := s.repo.CreateEnvironment(ctx, env); err != nil {
@@ -236,7 +236,7 @@ func (s *ProjectService) UpdateEnvironment(
 
 	if err := s.repo.UpdateEnvironment(ctx, projectID, envID, func(e model.Environment) (model.Environment, error) {
 		if err := e.Update(input); err != nil {
-			return model.Environment{}, svcerrors.NewEnvironmentUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Environment{}, svcerrors.NewEnvironmentInvalidError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return e, nil
@@ -317,7 +317,7 @@ func (s *ProjectService) Invite(ctx context.Context, input model.CreateProjectIn
 
 	i, err := model.NewProjectInvitation(input, tkn, authUserID)
 	if err != nil {
-		return model.ProjectInvitation{}, svcerrors.NewProjectInvitationUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.ProjectInvitation{}, svcerrors.NewProjectInvitationInvalidError().Wrap(err).WithMessage(err.Error())
 	}
 
 	memberExists, err := s.memberExists(ctx, i.ProjectID, i.Email)

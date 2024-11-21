@@ -393,7 +393,7 @@ func TestReleaseService_UpdateRelease(t *testing.T) {
 			},
 			mockSetup: func(auth *svc.AuthorizationService, repo *repo.ReleaseRepository) {
 				auth.On("AuthorizeReleaseEditor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewReleaseUnprocessableError())
+				repo.On("UpdateRelease", mock.Anything, mock.Anything, mock.Anything).Return(svcerrors.NewReleaseInvalidError())
 			},
 			wantErr: true,
 		},

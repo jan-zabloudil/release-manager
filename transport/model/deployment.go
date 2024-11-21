@@ -8,8 +8,8 @@ import (
 )
 
 type CreateDeploymentInput struct {
-	ReleaseID     id.Release     `json:"release_id"`
-	EnvironmentID id.Environment `json:"environment_id"`
+	ReleaseID     id.Release     `json:"release_id" validate:"required"`
+	EnvironmentID id.Environment `json:"environment_id" validate:"required"`
 }
 
 type Deployment struct {

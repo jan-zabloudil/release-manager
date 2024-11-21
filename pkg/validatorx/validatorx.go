@@ -2,6 +2,7 @@ package validatorx
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -32,7 +33,13 @@ func init() {
 	english := en.New()
 	uni := ut.New(english, english)
 	translator, _ = uni.GetTranslator("en")
-	_ = entrans.RegisterDefaultTranslations(validate, translator)
+	if err := entrans.RegisterDefaultTranslations(validate, translator); err != nil {
+		panic(fmt.Errorf("registering default translations: %w", err))
+	}
+
+	if err := registerCustomTranslations(); err != nil {
+		panic(fmt.Errorf("registering custom translations: %w", err))
+	}
 }
 
 func IsValidEmail(email string) bool {
@@ -65,6 +72,33 @@ func ValidateStruct(s any) error {
 		}
 
 		return ValidationErrors(errorsMap)
+	}
+
+	return nil
+}
+
+func registerCustomTranslations() error {
+	translationFunc := func(tag, message string) error {
+		return validate.RegisterTranslation(tag, translator, func(ut ut.Translator) error {
+			return ut.Add(tag, message, true)
+		}, func(ut ut.Translator, fe validator.FieldError) string {
+			t, err := ut.T(tag)
+			if err != nil {
+				panic(fmt.Errorf("translating tag %s: %w", tag, err))
+			}
+			return t
+		})
+	}
+
+	translations := map[string]string{
+		"http_url": "Field must be a valid HTTP URL",
+		"required": "Field is required",
+	}
+
+	for tag, message := range translations {
+		if err := translationFunc(tag, message); err != nil {
+			return fmt.Errorf("registering %s translation: %w", tag, err)
+		}
 	}
 
 	return nil

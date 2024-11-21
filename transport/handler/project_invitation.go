@@ -6,7 +6,7 @@ import (
 	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-	resperrors "release-manager/transport/errors"
+	resperr "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -14,13 +14,13 @@ import (
 func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	var input model.CreateProjectInvitationInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
@@ -30,7 +30,7 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -40,13 +40,13 @@ func (h *Handler) createInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	i, err := h.ProjectSvc.ListInvitations(r.Context(), projectID, util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *Handler) listInvitations(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.ProjectInvitationURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 		params.InvitationID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -76,7 +76,7 @@ func (h *Handler) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 	tkn, err := util.GetQueryParam[cryptox.Token](r, "token")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		svcmodel.ProjectInvitationToken(tkn),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -94,7 +94,7 @@ func (h *Handler) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {
 	tkn, err := util.GetQueryParam[cryptox.Token](r, "token")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -102,7 +102,7 @@ func (h *Handler) rejectInvitation(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		svcmodel.ProjectInvitationToken(tkn),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 

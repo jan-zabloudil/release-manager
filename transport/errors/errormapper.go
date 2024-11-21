@@ -46,7 +46,6 @@ func isNotFoundError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubIntegrationNotEnabled) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound) ||
@@ -54,12 +53,8 @@ func isNotFoundError(err error) bool {
 }
 
 func isUnprocessableModelError(err error) bool {
-	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
+	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable)
 }
 
 func isUnauthorizedError(err error) bool {
@@ -89,5 +84,10 @@ func isBadRequestError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackIntegrationNotEnabled) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubNotesInvalidInput) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidGithubTagDeletionWebhook) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeInvalidProject)
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvalid) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentInvalid) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationInvalid) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseInvalid) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentInvalid)
 }

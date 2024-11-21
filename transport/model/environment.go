@@ -8,8 +8,8 @@ import (
 )
 
 type CreateEnvironmentInput struct {
-	Name       string `json:"name"`
-	ServiceURL string `json:"service_url"`
+	Name       string `json:"name" validate:"required"`
+	ServiceURL string `json:"service_url" validate:"omitempty,http_url"`
 }
 
 type UpdateEnvironmentInput struct {

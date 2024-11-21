@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"release-manager/pkg/id"
-	resperrors "release-manager/transport/errors"
+	resperr "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -12,13 +12,13 @@ import (
 func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage("Invalid project ID"))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage("Invalid project ID"))
 		return
 	}
 
 	var input model.CreateDeploymentInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
@@ -29,7 +29,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.ListDeploymentsParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Reque
 		util.ContextAuthUserID(r),
 	)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 

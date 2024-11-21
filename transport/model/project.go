@@ -20,7 +20,9 @@ type UpdateProjectInput struct {
 }
 
 type SetProjectGithubRepoInput struct {
-	RawRepoURL string `json:"github_repo_url"`
+	// RawRepoURL can be also relative URL, e.g. /owner/repo
+	// Therefore URL is not validated here
+	RawRepoURL string `json:"github_repo_url" validate:"required"`
 }
 
 type Project struct {

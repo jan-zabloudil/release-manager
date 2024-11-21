@@ -13,11 +13,11 @@ var (
 	ErrCodeUserNotFound                    = "ERR_USER_NOT_FOUND"
 	ErrCodeProjectNotFound                 = "ERR_PROJECT_NOT_FOUND"
 	ErrCodeEnvironmentNotFound             = "ERR_ENVIRONMENT_NOT_FOUND"
-	ErrCodeInvalidProject                  = "ERR_INVALID_PROJECT"
-	ErrCodeEnvironmentUnprocessable        = "ERR_ENVIRONMENT_UNPROCESSABLE"
+	ErrCodeProjectInvalid                  = "ERR_PROJECT_INVALID"
+	ErrCodeEnvironmentInvalid              = "ERR_ENVIRONMENT_INVALID"
 	ErrCodeEnvironmentDuplicateName        = "ERR_ENVIRONMENT_DUPLICATE_NAME"
 	ErrCodeSettingsUnprocessable           = "ERR_SETTINGS_UNPROCESSABLE"
-	ErrCodeProjectInvitationUnprocessable  = "ERR_PROJECT_INVITATION_UNPROCESSABLE"
+	ErrCodeProjectInvitationInvalid        = "ERR_PROJECT_INVITATION_INVALID"
 	ErrCodeProjectInvitationAlreadyExists  = "ERR_PROJECT_INVITATION_ALREADY_EXISTS"
 	ErrCodeProjectInvitationNotFound       = "ERR_PROJECT_INVITATION_NOT_FOUND"
 	ErrCodeProjectMemberAlreadyExists      = "ERR_PROJECT_MEMBER_ALREADY_EXISTS"
@@ -29,7 +29,7 @@ var (
 	ErrCodeGithubRepoInvalidURL            = "ERR_GITHUB_REPO_INVALID_URL"
 	ErrCodeProjectMemberNotFound           = "ERR_PROJECT_MEMBER_NOT_FOUND"
 	ErrCodeProjectMemberUnprocessable      = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
-	ErrCodeReleaseUnprocessable            = "ERR_RELEASE_UNPROCESSABLE"
+	ErrCodeReleaseInvalid                  = "ERR_RELEASE_INVALID"
 	ErrCodeReleaseNotFound                 = "ERR_RELEASE_NOT_FOUND"
 	ErrCodeSlackIntegrationNotEnabled      = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 	ErrCodeSlackClientUnauthorized         = "ERR_SLACK_CLIENT_UNAUTHORIZED"
@@ -38,7 +38,7 @@ var (
 	ErrCodeGitTagNotFound                  = "ERR_GIT_TAG_NOT_FOUND"
 	ErrCodeGithubReleaseNotFound           = "ERR_GITHUB_RELEASE_NOT_FOUND"
 	ErrCodeReleaseGitTagAlreadyUsed        = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
-	ErrCodeDeploymentUnprocessable         = "ERR_DEPLOYMENT_UNPROCESSABLE"
+	ErrCodeDeploymentInvalid               = "ERR_DEPLOYMENT_INVALID"
 	ErrCodeDeploymentNotFound              = "ERR_DEPLOYMENT_NOT_FOUND"
 	ErrCodeProjectGithubRepoAlreadyUsed    = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
 	ErrCodeGithubNotesInvalidInput         = "ERR_GITHUB_NOTES_INVALID_INPUT"
@@ -97,17 +97,17 @@ func NewEnvironmentDuplicateNameError() *Error {
 	}
 }
 
-func NewInvalidProjectError() *Error {
+func NewProjectInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeInvalidProject,
+		Code:    ErrCodeProjectInvalid,
 		Message: "Invalid project",
 	}
 }
 
-func NewEnvironmentUnprocessableError() *Error {
+func NewEnvironmentInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeEnvironmentUnprocessable,
-		Message: "Environment unprocessable",
+		Code:    ErrCodeEnvironmentInvalid,
+		Message: "Invalid environment",
 	}
 }
 
@@ -146,10 +146,10 @@ func NewUserNotProjectMemberError() *Error {
 	}
 }
 
-func NewProjectInvitationUnprocessableError() *Error {
+func NewProjectInvitationInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeProjectInvitationUnprocessable,
-		Message: "Project invitation unprocessable",
+		Code:    ErrCodeProjectInvitationInvalid,
+		Message: "Invalid project invitation",
 	}
 }
 
@@ -230,10 +230,10 @@ func NewProjectMemberUnprocessableError() *Error {
 	}
 }
 
-func NewReleaseUnprocessableError() *Error {
+func NewReleaseInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeReleaseUnprocessable,
-		Message: "Release unprocessable",
+		Code:    ErrCodeReleaseInvalid,
+		Message: "Invalid release",
 	}
 }
 
@@ -293,10 +293,10 @@ func NewReleaseGitTagAlreadyUsedError() *Error {
 	}
 }
 
-func NewDeploymentUnprocessableError() *Error {
+func NewDeploymentInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeDeploymentUnprocessable,
-		Message: "Deployment unprocessable",
+		Code:    ErrCodeDeploymentInvalid,
+		Message: "Invalid deployment",
 	}
 }
 

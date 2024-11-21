@@ -24,7 +24,7 @@ linters:
     - goconst
     - gocritic
     - gofmt
-    - gomnd
+    - mnd
     - gosec
     - misspell
     - nilerr
@@ -41,7 +41,7 @@ linters:
     - whitespace
 
 linters-settings:
-  gomnd:
+  mnd:
     ignored-functions:
       - 'strconv.Parse*'
       - 'strconv.Format*'

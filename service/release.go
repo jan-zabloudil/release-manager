@@ -71,7 +71,7 @@ func (s *ReleaseService) CreateRelease(
 
 	rls, err := model.NewRelease(input, tag, projectID, authUserID)
 	if err != nil {
-		return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Release{}, svcerrors.NewReleaseInvalidError().Wrap(err).WithMessage(err.Error())
 	}
 
 	if err := s.repo.CreateRelease(ctx, rls); err != nil {
@@ -132,7 +132,7 @@ func (s *ReleaseService) UpdateRelease(
 
 	if err := s.repo.UpdateRelease(ctx, releaseID, func(rls model.Release) (model.Release, error) {
 		if err := rls.Update(input); err != nil {
-			return model.Release{}, svcerrors.NewReleaseUnprocessableError().Wrap(err).WithMessage(err.Error())
+			return model.Release{}, svcerrors.NewReleaseInvalidError().Wrap(err).WithMessage(err.Error())
 		}
 
 		return rls, nil
@@ -270,7 +270,7 @@ func (s *ReleaseService) CreateDeployment(
 	}
 
 	if err := input.Validate(); err != nil {
-		return model.Deployment{}, svcerrors.NewDeploymentUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Deployment{}, svcerrors.NewDeploymentInvalidError().Wrap(err).WithMessage(err.Error())
 	}
 
 	// Important to read release for project to check if the release exists within the given project.
