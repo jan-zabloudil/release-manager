@@ -38,7 +38,7 @@ var (
 	ErrCodeGitTagNotFound                  = "ERR_GIT_TAG_NOT_FOUND"
 	ErrCodeGithubReleaseNotFound           = "ERR_GITHUB_RELEASE_NOT_FOUND"
 	ErrCodeReleaseGitTagAlreadyUsed        = "ERR_RELEASE_GIT_TAG_ALREADY_USED"
-	ErrCodeDeploymentUnprocessable         = "ERR_DEPLOYMENT_UNPROCESSABLE"
+	ErrCodeDeploymentInvalid               = "ERR_DEPLOYMENT_INVALID"
 	ErrCodeDeploymentNotFound              = "ERR_DEPLOYMENT_NOT_FOUND"
 	ErrCodeProjectGithubRepoAlreadyUsed    = "ERR_PROJECT_GITHUB_REPO_ALREADY_USED"
 	ErrCodeGithubNotesInvalidInput         = "ERR_GITHUB_NOTES_INVALID_INPUT"
@@ -293,10 +293,10 @@ func NewReleaseGitTagAlreadyUsedError() *Error {
 	}
 }
 
-func NewDeploymentUnprocessableError() *Error {
+func NewDeploymentInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeDeploymentUnprocessable,
-		Message: "Deployment unprocessable",
+		Code:    ErrCodeDeploymentInvalid,
+		Message: "Invalid deployment",
 	}
 }
 

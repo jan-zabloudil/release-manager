@@ -270,7 +270,7 @@ func (s *ReleaseService) CreateDeployment(
 	}
 
 	if err := input.Validate(); err != nil {
-		return model.Deployment{}, svcerrors.NewDeploymentUnprocessableError().Wrap(err).WithMessage(err.Error())
+		return model.Deployment{}, svcerrors.NewDeploymentInvalidError().Wrap(err).WithMessage(err.Error())
 	}
 
 	// Important to read release for project to check if the release exists within the given project.
