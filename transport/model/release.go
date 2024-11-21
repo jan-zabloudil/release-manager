@@ -16,7 +16,7 @@ type CreateReleaseInput struct {
 }
 
 type UpdateReleaseInput struct {
-	ReleaseTitle *string `json:"release_title"`
+	ReleaseTitle *string `json:"release_title" validate:"omitempty,min=1"`
 	ReleaseNotes *string `json:"release_notes"`
 }
 

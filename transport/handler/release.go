@@ -65,7 +65,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 
 	var input model.DeleteReleaseInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
@@ -111,7 +111,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 
 	var input model.UpdateReleaseInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
