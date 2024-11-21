@@ -14,7 +14,7 @@ type CreateProjectInput struct {
 }
 
 type UpdateProjectInput struct {
-	Name                      *string                              `json:"name"`
+	Name                      *string                              `json:"name" validate:"omitempty,min=1"`
 	SlackChannelID            *string                              `json:"slack_channel_id"`
 	ReleaseNotificationConfig UpdateReleaseNotificationConfigInput `json:"release_notification_config"`
 }

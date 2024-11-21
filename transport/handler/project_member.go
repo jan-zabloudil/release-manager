@@ -5,7 +5,7 @@ import (
 
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
-	resperrors "release-manager/transport/errors"
+	resperr "release-manager/transport/errors"
 	"release-manager/transport/model"
 	"release-manager/transport/util"
 )
@@ -13,13 +13,13 @@ import (
 func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	m, err := h.ProjectSvc.ListMembersForProject(r.Context(), projectID, util.ContextAuthUserID(r))
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -29,7 +29,7 @@ func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.ProjectMemberURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 		params.UserID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 
@@ -49,13 +49,13 @@ func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.ProjectMemberURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
 	var input model.UpdateProjectMemberRoleInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 		params.UserID,
 		util.ContextAuthUserID(r),
 	); err != nil {
-		util.WriteResponseError(w, resperrors.NewFromSvcErr(err))
+		util.WriteResponseError(w, resperr.NewFromSvcErr(err))
 		return
 	}
 

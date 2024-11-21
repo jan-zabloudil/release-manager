@@ -11,17 +11,16 @@ var (
 	// #nosec G101 This is a constant error code, no security risk.
 	errCodeNotBearerTokenFormat = "ERR_TOKEN_NOT_BEARER_FORMAT"
 	// #nosec G101 This is a constant error code, no security risk.
-	errCodeExpiredOrInvalidToken      = "ERR_EXPIRED_OR_INVALID_TOKEN"
-	errCodeMissingBearerToken         = "ERR_MISSING_BEARER_TOKEN"
-	errCodeDefaultNotFound            = "ERR_NOT_FOUND"
-	errCodeDefaultForbidden           = "ERR_FORBIDDEN"
-	errCodeDefaultUnauthorized        = "ERR_UNAUTHORIZED"
-	errCodeMethodNotAllowed           = "ERR_METHOD_NOT_ALLOWED"
-	errCodeDefaultBadRequest          = "ERR_BAD_REQUEST"
-	errCodeDefaultUnprocessableEntity = "ERR_UNPROCESSABLE_ENTITY"
-	errCodeDefaultConflict            = "ERR_CONFLICT"
-	errCodeInvalidRequestPayload      = "ERR_INVALID_REQUEST_PAYLOAD"
-	errCodeUnknown                    = "ERR_UNKNOWN"
+	errCodeExpiredOrInvalidToken = "ERR_EXPIRED_OR_INVALID_TOKEN"
+	errCodeMissingBearerToken    = "ERR_MISSING_BEARER_TOKEN"
+	errCodeDefaultNotFound       = "ERR_NOT_FOUND"
+	errCodeDefaultForbidden      = "ERR_FORBIDDEN"
+	errCodeDefaultUnauthorized   = "ERR_UNAUTHORIZED"
+	errCodeMethodNotAllowed      = "ERR_METHOD_NOT_ALLOWED"
+	errCodeDefaultBadRequest     = "ERR_BAD_REQUEST"
+	errCodeDefaultConflict       = "ERR_CONFLICT"
+	errCodeInvalidRequestPayload = "ERR_INVALID_REQUEST_PAYLOAD"
+	errCodeUnknown               = "ERR_UNKNOWN"
 )
 
 type Error struct {
@@ -128,13 +127,6 @@ func NewInvalidRequestPayloadError() *Error {
 	return &Error{
 		StatusCode: http.StatusBadRequest,
 		Code:       errCodeInvalidRequestPayload,
-	}
-}
-
-func NewUnprocessableEntityError() *Error {
-	return &Error{
-		StatusCode: http.StatusUnprocessableEntity,
-		Code:       errCodeDefaultUnprocessableEntity,
 	}
 }
 

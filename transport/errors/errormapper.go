@@ -25,8 +25,6 @@ func NewFromSvcErr(err error) *Error {
 		return NewForbiddenError().Wrap(err)
 	case isNotFoundError(err):
 		return NewNotFoundError().Wrap(err)
-	case isUnprocessableModelError(err):
-		return NewUnprocessableEntityError().Wrap(err)
 	case isConflictError(err):
 		return NewConflictError().Wrap(err)
 	case isBadRequestError(err):
@@ -50,11 +48,6 @@ func isNotFoundError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGitTagNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubReleaseNotFound) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSlackChannelNotFound)
-}
-
-func isUnprocessableModelError(err error) bool {
-	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable)
 }
 
 func isUnauthorizedError(err error) bool {
@@ -89,5 +82,7 @@ func isBadRequestError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationInvalid) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseInvalid) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentInvalid)
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentInvalid) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberInvalid) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsInvalid)
 }

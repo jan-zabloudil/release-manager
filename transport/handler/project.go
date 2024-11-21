@@ -64,7 +64,7 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 
 	var input model.UpdateProjectInput
 	if err := util.UnmarshalBody(r, &input); err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromBodyUnmarshalErr(err))
 		return
 	}
 
