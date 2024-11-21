@@ -12,7 +12,7 @@ import (
 func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage("Invalid project ID"))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage("Invalid project ID"))
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *Handler) createDeployment(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listDeploymentsForProject(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.ListDeploymentsParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 

@@ -98,9 +98,9 @@ func (h *Handler) setupRoutes() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 	h.Mux.NotFound(func(w http.ResponseWriter, _ *http.Request) {
-		util.WriteResponseError(w, resperrors.NewNotFoundError())
+		util.WriteResponseError(w, resperrors.NewDefaultNotFoundError())
 	})
 	h.Mux.MethodNotAllowed(func(w http.ResponseWriter, _ *http.Request) {
-		util.WriteResponseError(w, resperrors.NewMethodNotAllowedError())
+		util.WriteResponseError(w, resperrors.NewDefaultMethodNotAllowedError())
 	})
 }

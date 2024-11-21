@@ -32,7 +32,7 @@ func (h *Handler) createProject(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getProject(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -58,7 +58,7 @@ func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *Handler) updateProject(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -99,7 +99,7 @@ func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listGithubRepoTags(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -119,7 +119,7 @@ func (h *Handler) listGithubRepoTags(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -145,7 +145,7 @@ func (h *Handler) setGithubRepoForProject(w http.ResponseWriter, r *http.Request
 func (h *Handler) getGithubRepoForProject(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
