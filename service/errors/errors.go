@@ -29,7 +29,7 @@ var (
 	ErrCodeGithubRepoInvalidURL            = "ERR_GITHUB_REPO_INVALID_URL"
 	ErrCodeProjectMemberNotFound           = "ERR_PROJECT_MEMBER_NOT_FOUND"
 	ErrCodeProjectMemberUnprocessable      = "ERR_PROJECT_MEMBER_UNPROCESSABLE"
-	ErrCodeReleaseUnprocessable            = "ERR_RELEASE_UNPROCESSABLE"
+	ErrCodeReleaseInvalid                  = "ERR_RELEASE_INVALID"
 	ErrCodeReleaseNotFound                 = "ERR_RELEASE_NOT_FOUND"
 	ErrCodeSlackIntegrationNotEnabled      = "ERR_SLACK_INTEGRATION_NOT_ENABLED"
 	ErrCodeSlackClientUnauthorized         = "ERR_SLACK_CLIENT_UNAUTHORIZED"
@@ -230,10 +230,10 @@ func NewProjectMemberUnprocessableError() *Error {
 	}
 }
 
-func NewReleaseUnprocessableError() *Error {
+func NewReleaseInvalidError() *Error {
 	return &Error{
-		Code:    ErrCodeReleaseUnprocessable,
-		Message: "Release unprocessable",
+		Code:    ErrCodeReleaseInvalid,
+		Message: "Invalid release",
 	}
 }
 

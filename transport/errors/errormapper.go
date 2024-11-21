@@ -55,7 +55,6 @@ func isNotFoundError(err error) bool {
 func isUnprocessableModelError(err error) bool {
 	return svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeSettingsUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectMemberUnprocessable) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseUnprocessable) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeDeploymentUnprocessable)
 }
 
@@ -89,5 +88,6 @@ func isBadRequestError(err error) bool {
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvalid) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeEnvironmentInvalid) ||
 		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeProjectInvitationInvalid) ||
-		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL)
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeGithubRepoInvalidURL) ||
+		svcerrors.IsErrorWithCode(err, svcerrors.ErrCodeReleaseInvalid)
 }
