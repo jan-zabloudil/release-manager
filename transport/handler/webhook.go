@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -20,13 +21,13 @@ const (
 func (h *Handler) handleGithubTagDeletionWebhook(w http.ResponseWriter, r *http.Request) {
 	event := r.Header.Get(GithubHookEvent)
 	if event != githubWebhookDeleteEventName {
-		util.WriteResponseError(w, resperrors.NewBadRequestError())
+		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(errors.New("not a delete event")))
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(err))
+		util.WriteResponseError(w, resperrors.NewInvalidRequestPayloadError().Wrap(err))
 		return
 	}
 
