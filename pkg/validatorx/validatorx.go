@@ -71,7 +71,7 @@ func ValidateStruct(s any) error {
 		}
 
 		for _, err := range validationErrors {
-			jsonField := jsonFieldName(structType, err.StructField())
+			jsonField := getFieldNameFromTag(structType, err.StructField())
 			errorsMap[jsonField] = err.Translate(translator)
 		}
 
@@ -132,13 +132,24 @@ func registerCustomValidations() error {
 	})
 }
 
-func jsonFieldName(structType reflect.Type, fieldName string) string {
+func getFieldNameFromTag(structType reflect.Type, fieldName string) string {
 	if field, ok := structType.FieldByName(fieldName); ok {
 		jsonTag := field.Tag.Get("json")
 		if jsonTag != "" {
-			// Return the JSON field name, strip any tag options (e.g. omitempty)
+			// Return the JSON field name, strip any tag options (e.g., omitempty)
 			return strings.Split(jsonTag, ",")[0]
 		}
+
+		paramTag := field.Tag.Get("param")
+		if paramTag != "" {
+			// Extract the key-value pair in the format "query=token"
+			parts := strings.Split(paramTag, "=")
+			if len(parts) > 1 {
+				// Return the second part as the name
+				return parts[1]
+			}
+		}
 	}
+
 	return fieldName
 }

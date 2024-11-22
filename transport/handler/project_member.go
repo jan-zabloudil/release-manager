@@ -29,7 +29,7 @@ func (h *Handler) listMembers(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.ProjectMemberURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromURLParamsUnmarshalErr(err))
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *Handler) deleteMember(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.ProjectMemberURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromURLParamsUnmarshalErr(err))
 		return
 	}
 

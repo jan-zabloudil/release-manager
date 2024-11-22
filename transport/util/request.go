@@ -16,7 +16,7 @@ func RequestID(h http.Header) string {
 	return h.Get(httpx.Header.XRequestID)
 }
 
-// UnmarshalBody unmarshals the request body into the provided struct.
+// UnmarshalBody unmarshals the request body into the provided struct and validates it.
 func UnmarshalBody(r *http.Request, b any) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -34,12 +34,17 @@ func UnmarshalBody(r *http.Request, b any) error {
 	return nil
 }
 
-// UnmarshalURLParams parses URL path and query parameters into a struct with tagged fields.
+// UnmarshalURLParams parses URL path and query parameters into a struct and validates it.
 func UnmarshalURLParams[TParams any](r *http.Request) (TParams, error) {
 	var params TParams
 	if err := param.DefaultParser().WithPathParamFunc(chi.URLParam).Parse(r, &params); err != nil {
 		return params, err
 	}
+
+	if err := validatorx.ValidateStruct(params); err != nil {
+		return params, err
+	}
+
 	return params, nil
 }
 
@@ -47,32 +52,14 @@ type ParamUnmarshaller interface {
 	UnmarshalText(data []byte) error
 }
 
-// GetQueryParam retrieves a URL query parameter from the request and unmarshals it into the provided type.
-func GetQueryParam[TParam any, TPtrParam interface {
-	*TParam
-	ParamUnmarshaller
-}](r *http.Request, paramName string) (TParam, error) {
-	paramValue := r.URL.Query().Get(paramName)
-	return unmarshalParam[TParam, TPtrParam](paramValue)
-}
-
 // GetPathParam retrieves a URL path parameter from the request and unmarshals it into the provided type.
 func GetPathParam[TParam any, TPtrParam interface {
 	*TParam
 	ParamUnmarshaller
-}](r *http.Request, paramName string) (TParam, error) {
-	paramValue := chi.URLParam(r, paramName)
-	return unmarshalParam[TParam, TPtrParam](paramValue)
-}
-
-func unmarshalParam[TParam any, TPtrParam interface {
-	*TParam
-	ParamUnmarshaller
-}](paramValue string) (TParam, error) {
-	var zeroValue TParam
+}](r *http.Request, paramName string) (pathParam TParam, err error) {
 	p := TPtrParam(new(TParam))
-	if err := p.UnmarshalText([]byte(paramValue)); err != nil {
-		return zeroValue, err
+	if err = p.UnmarshalText([]byte(chi.URLParam(r, paramName))); err != nil {
+		return pathParam, err
 	}
 	return *p, nil
 }

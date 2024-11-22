@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	cryptox "release-manager/pkg/crypto"
 	"release-manager/pkg/id"
 	svcmodel "release-manager/service/model"
 )
@@ -21,9 +22,13 @@ type ProjectInvitation struct {
 	UpdatedAt   time.Time            `json:"updated_at"`
 }
 
-type ProjectInvitationURLParams struct {
+type CancelProjectInvitationURLParams struct {
 	ProjectID    id.Project           `param:"path=project_id"`
 	InvitationID id.ProjectInvitation `param:"path=invitation_id"`
+}
+
+type ProjectInvitationTokenURLParams struct {
+	Token cryptox.Token `param:"query=token" validate:"required"`
 }
 
 func ToSvcCreateProjectInvitationInput(i CreateProjectInvitationInput, projectID id.Project) svcmodel.CreateProjectInvitationInput {

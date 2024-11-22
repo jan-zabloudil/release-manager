@@ -38,7 +38,7 @@ func (h *Handler) createEnvironment(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.EnvironmentURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromURLParamsUnmarshalErr(err))
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *Handler) updateEnvironment(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getEnvironment(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.EnvironmentURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromURLParamsUnmarshalErr(err))
 		return
 	}
 
@@ -106,7 +106,7 @@ func (h *Handler) listEnvironments(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteEnvironment(w http.ResponseWriter, r *http.Request) {
 	params, err := util.UnmarshalURLParams[model.EnvironmentURLParams](r)
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewFromURLParamsUnmarshalErr(err))
 		return
 	}
 

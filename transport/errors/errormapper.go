@@ -17,6 +17,15 @@ func NewFromBodyUnmarshalErr(err error) *Error {
 	return NewInvalidRequestPayloadError().Wrap(err).WithMessage(err.Error())
 }
 
+func NewFromURLParamsUnmarshalErr(err error) *Error {
+	var validationErr validatorx.ValidationErrors
+	if errors.As(err, &validationErr) {
+		return NewInvalidURLParamsError().Wrap(err).WithData(validationErr).WithMessage("Validation errors")
+	}
+
+	return NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error())
+}
+
 func NewFromSvcErr(err error) *Error {
 	switch {
 	case isUnauthorizedError(err):
