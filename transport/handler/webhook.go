@@ -21,7 +21,7 @@ const (
 func (h *Handler) handleGithubTagDeletionWebhook(w http.ResponseWriter, r *http.Request) {
 	event := r.Header.Get(GithubHookEvent)
 	if event != githubWebhookDeleteEventName {
-		util.WriteResponseError(w, resperrors.NewBadRequestError().Wrap(errors.New("not a delete event")))
+		util.WriteResponseError(w, resperrors.NewDefaultBadRequestError().Wrap(errors.New("not a delete event")))
 		return
 	}
 

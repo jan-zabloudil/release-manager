@@ -20,17 +20,17 @@ func NewFromBodyUnmarshalErr(err error) *Error {
 func NewFromSvcErr(err error) *Error {
 	switch {
 	case isUnauthorizedError(err):
-		return NewUnauthorizedError().Wrap(err)
+		return NewDefaultUnauthorizedError().Wrap(err)
 	case isForbiddenError(err):
-		return NewForbiddenError().Wrap(err)
+		return NewDefaultForbiddenError().Wrap(err)
 	case isNotFoundError(err):
-		return NewNotFoundError().Wrap(err)
+		return NewDefaultNotFoundError().Wrap(err)
 	case isConflictError(err):
-		return NewConflictError().Wrap(err)
+		return NewDefaultConflictError().Wrap(err)
 	case isBadRequestError(err):
-		return NewBadRequestError().Wrap(err)
+		return NewDefaultBadRequestError().Wrap(err)
 	default:
-		return NewServerError().Wrap(err)
+		return NewUnknownError().Wrap(err)
 	}
 }
 

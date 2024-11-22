@@ -12,7 +12,7 @@ import (
 func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *Handler) createRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *Handler) getRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -85,7 +85,7 @@ func (h *Handler) deleteRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -105,7 +105,7 @@ func (h *Handler) listReleases(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -131,7 +131,7 @@ func (h *Handler) updateRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -150,7 +150,7 @@ func (h *Handler) sendReleaseNotification(w http.ResponseWriter, r *http.Request
 func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 	rlsID, err := util.GetPathParam[id.Release](r, "release_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 
@@ -169,7 +169,7 @@ func (h *Handler) upsertGithubRelease(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) generateGithubReleaseNotes(w http.ResponseWriter, r *http.Request) {
 	projectID, err := util.GetPathParam[id.Project](r, "project_id")
 	if err != nil {
-		util.WriteResponseError(w, resperr.NewBadRequestError().Wrap(err).WithMessage(err.Error()))
+		util.WriteResponseError(w, resperr.NewInvalidURLParamsError().Wrap(err).WithMessage(err.Error()))
 		return
 	}
 

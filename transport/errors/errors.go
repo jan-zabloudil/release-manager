@@ -11,16 +11,17 @@ var (
 	// #nosec G101 This is a constant error code, no security risk.
 	errCodeNotBearerTokenFormat = "ERR_TOKEN_NOT_BEARER_FORMAT"
 	// #nosec G101 This is a constant error code, no security risk.
-	errCodeExpiredOrInvalidToken = "ERR_EXPIRED_OR_INVALID_TOKEN"
-	errCodeMissingBearerToken    = "ERR_MISSING_BEARER_TOKEN"
-	errCodeDefaultNotFound       = "ERR_NOT_FOUND"
-	errCodeDefaultForbidden      = "ERR_FORBIDDEN"
-	errCodeDefaultUnauthorized   = "ERR_UNAUTHORIZED"
-	errCodeMethodNotAllowed      = "ERR_METHOD_NOT_ALLOWED"
-	errCodeDefaultBadRequest     = "ERR_BAD_REQUEST"
-	errCodeDefaultConflict       = "ERR_CONFLICT"
-	errCodeInvalidRequestPayload = "ERR_INVALID_REQUEST_PAYLOAD"
-	errCodeUnknown               = "ERR_UNKNOWN"
+	errCodeExpiredOrInvalidToken   = "ERR_EXPIRED_OR_INVALID_TOKEN"
+	errCodeMissingBearerToken      = "ERR_MISSING_BEARER_TOKEN"
+	errCodeDefaultNotFound         = "ERR_NOT_FOUND"
+	errCodeDefaultForbidden        = "ERR_FORBIDDEN"
+	errCodeDefaultUnauthorized     = "ERR_UNAUTHORIZED"
+	errCodeDefaultMethodNotAllowed = "ERR_METHOD_NOT_ALLOWED"
+	errCodeDefaultBadRequest       = "ERR_BAD_REQUEST"
+	errCodeDefaultConflict         = "ERR_CONFLICT"
+	errCodeInvalidRequestPayload   = "ERR_INVALID_REQUEST_PAYLOAD"
+	errCodeInvalidURLParams        = "ERR_INVALID_URL_PARAMS"
+	errCodeUnknown                 = "ERR_UNKNOWN"
 )
 
 type Error struct {
@@ -60,7 +61,7 @@ func (r *Error) WithData(data any) *Error {
 	return r
 }
 
-func NewNotFoundError() *Error {
+func NewDefaultNotFoundError() *Error {
 	return &Error{
 		StatusCode: http.StatusNotFound,
 		Code:       errCodeDefaultNotFound,
@@ -88,35 +89,35 @@ func NewExpiredOrInvalidTokenError() *Error {
 	}
 }
 
-func NewServerError() *Error {
+func NewUnknownError() *Error {
 	return &Error{
 		StatusCode: http.StatusInternalServerError,
 		Code:       errCodeUnknown,
 	}
 }
 
-func NewMethodNotAllowedError() *Error {
+func NewDefaultMethodNotAllowedError() *Error {
 	return &Error{
 		StatusCode: http.StatusMethodNotAllowed,
-		Code:       errCodeMethodNotAllowed,
+		Code:       errCodeDefaultMethodNotAllowed,
 	}
 }
 
-func NewForbiddenError() *Error {
+func NewDefaultForbiddenError() *Error {
 	return &Error{
 		StatusCode: http.StatusForbidden,
 		Code:       errCodeDefaultForbidden,
 	}
 }
 
-func NewUnauthorizedError() *Error {
+func NewDefaultUnauthorizedError() *Error {
 	return &Error{
 		StatusCode: http.StatusUnauthorized,
 		Code:       errCodeDefaultUnauthorized,
 	}
 }
 
-func NewBadRequestError() *Error {
+func NewDefaultBadRequestError() *Error {
 	return &Error{
 		StatusCode: http.StatusBadRequest,
 		Code:       errCodeDefaultBadRequest,
@@ -130,7 +131,14 @@ func NewInvalidRequestPayloadError() *Error {
 	}
 }
 
-func NewConflictError() *Error {
+func NewInvalidURLParamsError() *Error {
+	return &Error{
+		StatusCode: http.StatusBadRequest,
+		Code:       errCodeInvalidURLParams,
+	}
+}
+
+func NewDefaultConflictError() *Error {
 	return &Error{
 		StatusCode: http.StatusConflict,
 		Code:       errCodeDefaultConflict,

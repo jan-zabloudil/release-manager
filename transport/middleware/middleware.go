@@ -44,7 +44,7 @@ func Auth(authClient AuthClient) func(next http.Handler) http.Handler {
 					return
 				}
 
-				util.WriteResponseError(w, resperrors.NewServerError().Wrap(err))
+				util.WriteResponseError(w, resperrors.NewUnknownError().Wrap(err))
 				return
 			}
 
