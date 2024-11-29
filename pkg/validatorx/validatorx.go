@@ -99,7 +99,7 @@ func registerCustomTranslations() error {
 		paramFunc func(fe validator.FieldError) []string
 	}{
 		"http_url":          {"Field must be a valid HTTP URL", nil},
-		"empty_or_http_url": {"Field must be a valid HTTP URL", nil},
+		"optional_http_url": {"Field must be a valid HTTP URL", nil},
 		"required":          {"Field is required", nil},
 		"min": {
 			"Field must be at least {0} character(s) in length",
@@ -122,7 +122,10 @@ func registerCustomTranslations() error {
 }
 
 func registerCustomValidations() error {
-	return validate.RegisterValidation("empty_or_http_url", func(fl validator.FieldLevel) bool {
+	/*
+		Use when validation is required for a URL field that is optional and can be cleared during a PATCH request.
+	*/
+	return validate.RegisterValidation("optional_http_url", func(fl validator.FieldLevel) bool {
 		value := fl.Field().String()
 		if value == "" {
 			return true

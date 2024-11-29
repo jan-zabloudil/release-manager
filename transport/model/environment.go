@@ -14,7 +14,7 @@ type CreateEnvironmentInput struct {
 
 type UpdateEnvironmentInput struct {
 	Name       *string `json:"name" validate:"omitempty,min=1"`
-	ServiceURL *string `json:"service_url" validate:"empty_or_http_url"`
+	ServiceURL *string `json:"service_url" validate:"omitempty,optional_http_url"`
 }
 
 type Environment struct {
