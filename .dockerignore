@@ -1,2 +1,2 @@
-# Exclude locally vendored dependencies.
 vendor/
+.git/
